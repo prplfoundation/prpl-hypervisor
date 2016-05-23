@@ -24,6 +24,93 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 void* exceptionHandler_addr = exceptionHandler;
 
+/** C code entry. Called from hal/$(BOARD)/boot.S */
+int32_t main(uint32_t start_counter_cp0){
+    
+    /* Chipset freq config. */
+    freq_config();
+
+    /* UART start */
+    init_uart(57600, 8000000);
+    
+    /* First some paranoic checks!! */
+    
+    printf("teste 1");
+
+    /* Verify if the processor implements the VZ module */
+    if(!hasVZ()){
+        /* panic */
+        return 1;
+    }
+
+    /* is it in root mode ?  */
+    if(!isRootMode()){
+        /* panic */
+        return 1;
+    }
+    
+    /* This implementation relies on the GuestID field  */
+    if(isRootASID()){ 
+        return -1;
+    }
+    
+    printf("teste 2");
+    
+    /* This implementation relies on the GuestID field */
+    if(!hasGuestID()){
+        /* panic */
+        return 1;
+    }
+    
+    if(has1KPageSupport()){
+        /* Self Protection agains a variant that may implements 1K PageSupport. */
+        Disable1KPageSupport();     
+    }
+    
+    /* Now inialize the hardware */
+    /* Processor inicialization */
+    printf("teste 3"); 
+    if(LowLevelProcInit()){
+        //panic
+        return 1;
+    }
+            
+    /* Initialize memory */
+    /* Register heap space on the allocator */ 
+     if(init_mem()){        
+        return 1;
+    }
+    
+    
+    
+    /*Initialize processor structure*/
+    if(initProc()){
+        return 1;
+    } 
+    
+    if(initializeShedulers()){
+        return 1;
+    }
+    
+    /*Initialize vcpus and virtual machines*/
+    initializeMachines();
+    
+    if(initializeRTMachines()){
+        return 1;
+    }
+    
+    printf("teste 4");
+    /* Run scheduler .*/
+    runScheduler();         
+
+    /* Make the code to jump to the exception handler .*/
+    hal_start_hyper();
+    
+    /* Should never reach this point !!! */
+    return 0;
+}
+
+
 /** Verify if the processor is in root mode */
 int32_t isRootMode(){
 	if( !(hal_lr_guestctl0() & GUESTCTL0_GM) || 
@@ -113,11 +200,12 @@ int32_t LowLevelProcInit(){
 	hal_sr_rcause(hal_lr_rcause() | CAUSE_IV);
 	hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
 	hal_sr_rstatus( (hal_lr_rstatus() & (~STATUS_BEV)));
-	if(hal_lr_rconfig3() & CONFIG3_VEIC){
+    printf("LowLevelProcInit");
+	//if(hal_lr_rconfig3() & CONFIG3_VEIC){
 		/* VEIC externally set. VI will not be supported */
 		/* panic */
-		return 1;
-	}
+	//	return 1;
+	//}
 	
 	//Initializing some flags on guestCtl0
 	//GUESTCTL0_CP0 Allow guest access to some CP0 registers

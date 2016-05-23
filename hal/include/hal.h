@@ -126,6 +126,8 @@ uint32_t isRootASID();
 void setStatusReg(uint32_t bits);
 void setEPC(uint32_t epc);
 void setGuestCTL2(uint32_t guestclt2);
+uint32_t has1KPageSupport();
+void Disable1KPageSupport();
 
 /** Read/Write on guest gpr shadow */
 void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value);

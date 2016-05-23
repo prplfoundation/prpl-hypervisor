@@ -20,7 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define INFOS
 #define CRITICALS
 
-//#define VERBOSE
+#define VERBOSE
 
 
 #define STATICTLB
