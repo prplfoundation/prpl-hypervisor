@@ -17,10 +17,23 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include "libc.h"
 #include "uart.h"
+#include <config.h>
 #include <stdarg.h>
 
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
+
+void udelay (uint32_t usec){
+    uint32_t now = getCounter();
+    uint32_t final = now + usec * (CPU_FREQ / 1000000) / 2;
+
+    for (;;) {
+        now = getCounter();
+        if ((int32_t) (now - final) >= 0) break;
+    }
+}
+
+
 
 void *memset(void *dst, int c, unsigned long bytes){
   unsigned char *Dst = (unsigned char *)dst;
