@@ -26,6 +26,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <dispatcher.h>
 #include <globals.h>
 #include <hypercall.h>
+#include <common.h>
 
 static uint32_t counttimerInt = 0;
 static uint32_t guestexit = 0;
@@ -76,7 +77,8 @@ uint32_t InterruptHandler(){
 	}
 
 	if(flag)
-		Warning("Interrupt handle not implemented.");
+		Warning("Interrupt handler not implemented.");
+                return ERROR;
 
 	return SUCEEDED;
 }
@@ -109,7 +111,9 @@ uint32_t GuestExitException(){
 
 /** Determine the cause and invoke the correct handler */
 uint32_t HandleExceptionCause(){
-	uint32_t CauseCode = getCauseCode();	
+	uint32_t CauseCode = getCauseCode();
+        
+        dumpCP0();
 
 	switch (CauseCode){
 		/* Interrupt */
@@ -204,19 +208,10 @@ int32_t initialize_RT_services(int32_t init, uint32_t counter){
 	return ret;
 }
 
-void printPerformanceCounters(){
-	uint32_t pcounter0;
-	uint32_t pcounter1;
-	
-	pcounter0 = hal_lr_perfcounter0();
-	pcounter1 = hal_lr_perfcounter1();
-	Info("PERF COUNTER ROOT %d",pcounter0);			
-	Info("PERF COUNTER GUEST %d",pcounter1);
-}
-
 int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 	uint32_t ret;
-		
+
+    
 	contextSave(NULL, counter, guestcounter);	
 	
 	ret = HandleExceptionCause();
@@ -230,7 +225,6 @@ int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 		case CHANGE_TO_TARGET_VCPU:
 			curr_vcpu=target_vcpu;
 			break;
-		case ERROR:
 		case PROGRAM_ENDED:		
 			if(remove_vm_and_runBestEffortScheduler()<0){
 				//printPerformanceCounters();		
@@ -240,7 +234,10 @@ int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 			ret = RESCHEDULE;
 			
 			break;
+                case ERROR:                        
 		default:
+                        CRITICALS("Critical error ocurred. Hypervisor stopped.");
+                        while(1);
 			break;
 	}	
 	
