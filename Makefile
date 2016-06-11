@@ -15,22 +15,30 @@
 
 
 # Setup PIC32MZEF core configuration to be used with pic32mzef_boot__v0_1.hex
-ABI=32
-ENDIAN=EL
-MEMORY_SIZE=512K	# Memory available on the ChipKit Wifire PIC32 Board
-ELF_ENTRY=0xbfc00000	# Where PC will be set when ELF is loaded- boot vector
-APP_START=0x80001000	# Where program code will be located - boot ROM will
-			# jump here once it has run
+BAUDRATE=115200
+F_CLK=200000000
+SERIAL_DEV=/dev/ttyACM0
 
-include ${MIPS_ELF_ROOT}/share/mips/rules/mipshal.mk
 
 BASE=./
 HAL=$(BASE)hal
 MICROCHIP=$(HAL)/microchip
 
-#CFLAGS += -g -O1
-CFLAGS=-O0 -g -EL -mips32r2 -Wa,-mvirt  -G 0 -fno-builtin -c -I $(COMMON) -I $(SEAD3) -I include/ -I $(HAL)/include/ -I$(COMMON) 
-LDFLAGS += -g
+CFLAGS_STRIP = -fdata-sections -ffunction-sections
+LDFLAGS_STRIP = --gc-sections 
+LDFLAGS = -Thal/microchip/pic32mz.ld 
+
+CFLAGS = -EL -O2 -c -mabi=32 -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
+
+
+AS_MIPS = mips-mti-elf-as -EL
+LD_MIPS = mips-mti-elf-ld #$(LDFLAGS_STRIP)
+DUMP_MIPS = mips-mti-elf-objdump
+READ_MIPS = mips-mti-elf-readelf
+OBJ_MIPS = mips-mti-elf-objcopy
+SIZE_MIPS = mips-mti-elf-size
+GCC_MIPS= mips-mti-elf-gcc
+
 
 OBJS = kernel.o \
 dispatcher.o \
@@ -43,6 +51,7 @@ scheduler.o \
 $(HAL)/hal.o \
 $(HAL)/tlb.o \
 $(HAL)/vcpu.o \
+$(HAL)/common.o \
 $(MICROCHIP)/boot.o \
 $(MICROCHIP)/uart.o \
 $(MICROCHIP)/chipset.o 
@@ -54,16 +63,33 @@ BIN = prplHypervisor
 all: $(APP)
 
 $(APP): $(OBJS)
-	$(LD) $(LDFLAGS)  $^ -o $@
-	$(OBJDUMP) -dr $(APP) > $(BIN).dasm
+	$(LD_MIPS) $(LDFLAGS)  $^ -o $@
+	$(DUMP_MIPS) --disassemble --reloc $(APP) > $(BIN).lst
+	$(DUMP_MIPS) -h $(APP) > $(BIN).sec
+	$(DUMP_MIPS) -s $(APP) > $(BIN).cnt
+	$(OBJ_MIPS) -O binary $(APP) $(BIN).bin
+	$(OBJ_MIPS) -O ihex --change-addresses=0x80000000 $(APP) $(BIN).hex
+	$(SIZE_MIPS) $(APP)
 
 %.o: %.c 
-	$(CC) $(CFLAGS) $(INCLUDES) -c $^ -o $@
+	$(GCC_MIPS) $(CFLAGS) $(INCLUDES) -c $^ -o $@
 
 %.o: %.S
-	$(CC) $(CFLAGS) $(INCLUDES) -c $^ -o $@
+	$(GCC_MIPS) $(CFLAGS) $(INCLUDES) -c $^ -o $@
 	
-.PHONY: clean
+serial:
+	stty ${BAUDRATE} raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F ${SERIAL_DEV}
+
+load: serial
+	./pic32prog -d ${SERIAL_DEV} $(BIN).hex
+
+debug: serial
+	cat ${SERIAL_DEV}
+
 clean:
 	rm -f $(APP) $(OBJS)
-	rm -f $(BIN).dasm
+	rm -f $(BIN).lst
+	rm -f $(BIN).sec
+	rm -f $(BIN).cnt
+	rm -f $(BIN).bin
+	rm -f $(BIN).hex
