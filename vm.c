@@ -126,7 +126,7 @@ void initializeMachines(void) {
 	}else{
 	//	inMemoryLoad();
 	}
-	
+    
 	create_vm(idleconf);
 }
 
@@ -144,13 +144,11 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	/* number of fix tlb entries */
 	uint32_t ntlbent = vm[0][2];
 
-	Info("Creating virtual machine");
-
 	if(!(nd = (ll_node_t*) calloc(1, sizeof(ll_node_t) + sizeof(vm_t))))
 		return NULL;
-
+    
 	ret = (vm_t*)((unsigned int)nd + sizeof(ll_node_t));
-	
+    
 	//Memory map
 	ret->base_addr = vm[0][0];
 	ret->size = vm[0][1];
@@ -161,6 +159,7 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	ret->init = 1;
 
 	ret->tlbentries = NULL;
+        
 #ifdef STATICTLB	
 	/* allocate a tlb entry to the VM */
 	if(ret->os_type != IDLEVCPU){
@@ -193,7 +192,6 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 		ret->vmmap = NULL;
 		ret->id = 0;
 	}
-	
 
 	/* fill the tlb entries to the VM */
 	for(i=0; i<ntlbent; i++, tlbindex++){
@@ -259,8 +257,8 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
 	vcpu_t *ret;
 	ll_node_t *nd;
 
-	Info("Creating vcpu");
-
+	Info("Creating VCPUs");
+        
 	if(!(nd = (ll_node_t *) calloc(1, sizeof(vcpu_t)+sizeof(ll_node_t))))
 		return NULL;
 
@@ -309,5 +307,5 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
 	nd->ptr = ret;
 	ll_append(&(vm->vcpus), nd);
 
-  return ret;
+        return ret;
 }

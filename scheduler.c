@@ -42,7 +42,8 @@ int initializeShedulers(){
 	 ll_init(&rt_vcpu_active_list);
 	 ll_init(&rt_vcpu_waiting_list);
 	 ll_init(&rt_services_init_vcpu_list);
-	 	 
+	 ll_init(&virtualmachines);
+         ll_init(&virtualmachines_rt);
 	 return 0;
 }
 
