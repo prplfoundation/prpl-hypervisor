@@ -22,18 +22,6 @@
 
 
 void freq_config(){
-    
-    SYSKEY = 0xAA996655;
-    SYSKEY = 0x556699AA;
-    PBDIV2 &= 0xFFFFFF80 | 0x00000000;
-    SYSKEY = 0x33333333;
-    while(OSCCON&OSWEN);
-
-    
-    /*SYSKEY = 0xAA996655;
-    SYSKEY = 0x556699AA;
-    CONFCON &= (1<<13);
-    SYSKEY = 0x33333333;
-    while(OSCCON&OSWEN);*/
+    /* configured in the bootloader */    
     
 }
