@@ -24,19 +24,21 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 void* exceptionHandler_addr = exceptionHandler;
 
+
 /** C code entry. Called from hal/$(BOARD)/boot.S */
-int32_t main(uint32_t start_counter_cp0){
+int32_t main(char * _edata, char* _data, char* _erodata){
     
+
     /* Chipset freq config. */
     freq_config();
-
-    /* UART start */
-    init_uart(57600, 8000000);
     
+    /* UART start */
+    init_uart(115200, 200000000);
+    
+    udelay(3000000);
+
     /* First some paranoic checks!! */
     
-    printf("teste 1");
-
     /* Verify if the processor implements the VZ module */
     if(!hasVZ()){
         /* panic */
@@ -54,8 +56,6 @@ int32_t main(uint32_t start_counter_cp0){
         return -1;
     }
     
-    printf("teste 2");
-    
     /* This implementation relies on the GuestID field */
     if(!hasGuestID()){
         /* panic */
@@ -69,19 +69,17 @@ int32_t main(uint32_t start_counter_cp0){
     
     /* Now inialize the hardware */
     /* Processor inicialization */
-    printf("teste 3"); 
     if(LowLevelProcInit()){
         //panic
         return 1;
     }
+    
             
     /* Initialize memory */
     /* Register heap space on the allocator */ 
      if(init_mem()){        
         return 1;
     }
-    
-    
     
     /*Initialize processor structure*/
     if(initProc()){
@@ -95,11 +93,11 @@ int32_t main(uint32_t start_counter_cp0){
     /*Initialize vcpus and virtual machines*/
     initializeMachines();
     
+    
     if(initializeRTMachines()){
         return 1;
     }
-    
-    printf("teste 4");
+
     /* Run scheduler .*/
     runScheduler();         
 
@@ -200,7 +198,6 @@ int32_t LowLevelProcInit(){
 	hal_sr_rcause(hal_lr_rcause() | CAUSE_IV);
 	hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
 	hal_sr_rstatus( (hal_lr_rstatus() & (~STATUS_BEV)));
-    printf("LowLevelProcInit");
 	//if(hal_lr_rconfig3() & CONFIG3_VEIC){
 		/* VEIC externally set. VI will not be supported */
 		/* panic */
@@ -228,28 +225,8 @@ int32_t LowLevelProcInit(){
 		return 1;
 	}
 		
-#ifdef YAMON_DEBUG
-	uint32_t yamon_return = YAMON_FUNC_REGISTER_CPU_ISR(YAMON_DEFAULT_HANDLER, exception_handler_p, NULL, NULL); 
-			
-	if(yamon_return){
-		Info("YAMON Interrupt handler registered!");
-	}else{
-#ifdef DEBUG
-		Warning("Failed to register YAMON Interrupt handler. Code %x !\n",yamon_return);
-#endif
-	}
-	
-	yamon_return = YAMON_FUNC_REGISTER_ESR(YAMON_DEFAULT_HANDLER,exception_handler_p,NULL,NULL);
-	
-	if(!yamon_return){
-		Info("YAMON exception handlers registered!");
-	}else{
-#ifdef DEBUG
-		Warning("Failed to register YAMON exception handler. Code %x !\n",yamon_return);
-#endif
-	}
 
-#else
+#ifndef MICROCHIP
 	/* Patch the processor interrupt address. */
 	hal_patch_exception_vector(0x80000000);
 	hal_patch_exception_vector(0x80000180);
