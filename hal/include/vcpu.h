@@ -133,8 +133,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define MESSAGE_TOO_BIG		-3
 #define MESSAGE_EMPTY		 0
 
-#define MESSAGELIST_SZ	2
-#define MESSAGE_SZ 	64
+#define MESSAGELIST_SZ	1
+#define MESSAGE_SZ 	32
 
 #define NETWORK_VINTERRUPT	14
 

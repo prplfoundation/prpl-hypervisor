@@ -20,8 +20,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define INFOS
 #define CRITICALS
 
+#define MICROCHIP
+
 #define VERBOSE
 
+#define CPU_FREQ  200000000
+#define UART_SPEED 115200
 
 #define STATICTLB
 
@@ -32,22 +36,26 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define QUANTUM     (30 * MILISECOND)
 
 /* Heap Size */
-#define HEAP_SIZE 0x80000 
+#define HEAP_SIZE 0x8000 
 
 /* Heap Address */ 
-#define HEAP_ADDRESS  0x80032000
+#define HEAP_ADDRESS  0x80002000
 
 #define VMCONF_NUMCOLUNS 6
 
+#define VMCONF {0}
+
 /* Static TLB - 1 Linux 32MB VM and 1 Hellfire VM.*/
-#define VMCONF {0x90000000, 	0x200000, 	3,		LINUX,		0xff, 	  0x8029d040, \
+/*#define VMCONF {0x90000000, 	0x200000, 	3,		LINUX,		0xff, 	  0x8029d040, \
 		1, 		0x10000, 	0x11000,	PAGEMASK_16MB,	0,    	  4, \
 		1,		0x1F000,	0,      	PAGEMASK_1MB,  	0x1F000,  2, \
 		1,		0x1b100,	0,      	PAGEMASK_4KB,  	0x1b100,  2, \
 		0x91200000, 	0x100000, 	2,		HELLFIRE,	0, 	  0x800010e4, \
 		2, 		0x14000, 	0,		PAGEMASK_1MB,	0,    	  4, \
 		2,		0x1F000,	0,      	PAGEMASK_4KB,  	0x1F000,  2, \
-		0,		      0,        0,              0,              0,        0  }
+		0,		      0,        0,              0,              0,        0  }*/
+
+
 
 /* Static TLB - 1 Linux 32MB VM.*/
 

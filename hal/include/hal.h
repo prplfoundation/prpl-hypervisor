@@ -108,6 +108,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define HYPCODE_SHIFT  11
 
+int32_t main(char * _edata, char* _erodata, char* _data);
+
 /** This rotines should be called just from HAL */
 int32_t ConfigureGPRShadow();
 

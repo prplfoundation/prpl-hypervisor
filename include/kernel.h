@@ -67,7 +67,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define HCALL_SEND_MSG  0x300
 
 
-int32_t main(uint32_t start_counter_cp0);
 uint32_t HandleExceptionCause();
 int32_t initialize_RT_services(int32_t,uint32_t);
 int32_t exceptionHandler();
