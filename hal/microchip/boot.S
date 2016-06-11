@@ -16,15 +16,73 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 #include <boot.h>
-#include <mips/regdef.h>
+#include <regdef.h>
 
 
 /* Patch the interrupt vector at 0x80000180, 0x80000000 and 0x80000200,for now. 
    We are using IV mode. For now, the int_vector routine handle all interrupt or exeception.
    The propose of this is to make the execution jumps to the int_vector routine when in exception or interrupt context.
 */
-	.set noreorder
-	
+    .set noreorder
+    .section .exception
+    .org    0xf8
+_ebase:
+    .word   0x9d000000
+_imgptr:
+.word   -1
+    .set at
+
+    .text
+    .align 2
+
+    .global _entry
+    .ent    _entry
+_entry:
+    .set noreorder
+    .set noat
+
+    la  gp, _gp
+    la  sp, _stack
+
+#    mfc0  k1, $12
+#    li    k0, 0xFFBF00FA
+#    and   k1, k1, k0
+#    mtc0  k1, $12
+
+    #mtc0  zero , $13      # Initilizing cause register    
+
+    # clear the .bss
+    la  a0, _bss_end
+    la  a1, _bss_start
+$BSS_CLEAR:
+    sw  zero, 0(a1)
+    slt v1, a1, a0
+    addiu   a1, a1, 4
+    bnez    v1, $BSS_CLEAR
+    nop
+
+    # copy .data from flash to SRAM
+    la  a0, _edata
+    la  a1, _data
+    la  a2, _erodata
+$COPY_DATA:
+    lw  v0, 0(a2)
+    sw  v0, 0(a1)
+    slt v1, a1, a0
+    addiu   a1, a1, 4
+    addiu   a2, a2, 4
+    bnez    v1, $COPY_DATA
+    nop
+
+    # jump to main
+    jal main
+    nop
+
+$L1:
+    beq zero, zero, $L1
+    nop
+.end _entry
+
 	
 /**************************************************************************************
    V I  E X C E P T I O N   H A N D L E R S
