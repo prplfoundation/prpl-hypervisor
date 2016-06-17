@@ -25,6 +25,20 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 void* exceptionHandler_addr = exceptionHandler;
 
 
+static void print_config(void)
+{
+        printf("\n===========================================================");
+        printf("\nprplHypervsior %s [%s, %s]", KERNEL_VER, __DATE__, __TIME__);
+        printf("\nCopyright (c) 2016, prpl Foundation");
+        printf("\n===========================================================");
+        printf("\nCPU ID:        %s", CPU_ID);
+        printf("\nARCH:          %s", CPU_ARCH);
+        printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
+        printf("\nHeap size:     %dKbytes", HEAP_SIZE/1024);
+        printf("\nVMs:           %d\n", NVMACHINES);
+}
+
+
 /** C code entry. Called from hal/$(BOARD)/boot.S */
 int32_t main(char * _edata, char* _data, char* _erodata){
     
@@ -35,8 +49,8 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     /* UART start */
     init_uart(115200, 200000000);
     
-    udelay(3000000);
-
+    print_config();
+    
     /* First some paranoic checks!! */
     
     /* Verify if the processor implements the VZ module */
@@ -61,19 +75,19 @@ int32_t main(char * _edata, char* _data, char* _erodata){
         /* panic */
         return 1;
     }
-    
+
     if(has1KPageSupport()){
         /* Self Protection agains a variant that may implements 1K PageSupport. */
         Disable1KPageSupport();     
     }
-    
+
+
     /* Now inialize the hardware */
     /* Processor inicialization */
     if(LowLevelProcInit()){
         //panic
         return 1;
     }
-    
             
     /* Initialize memory */
     /* Register heap space on the allocator */ 
@@ -93,16 +107,19 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     /*Initialize vcpus and virtual machines*/
     initializeMachines();
     
-    
-    if(initializeRTMachines()){
+    /* TODO: Enable configuration and execution of RT VCPUs*/
+    /*if(initializeRTMachines()){
         return 1;
-    }
+    }*/
 
     /* Run scheduler .*/
-    runScheduler();         
+    runScheduler();     
 
-    /* Make the code to jump to the exception handler .*/
-    hal_start_hyper();
+    /* Configure the execution of the first Guest */
+    configureGuestExecution(RESCHEDULE);    
+
+    /* configure system timer */
+    configure_timer();
     
     /* Should never reach this point !!! */
     return 0;
@@ -144,6 +161,7 @@ int32_t ConfigureGPRShadow(){
 	/* Configure the GPR Shadow. The hypervisor will use the highest shadow page. 
 	   Still, the hypervisor needs at least one GPR Shadow.
 	 */
+    
 	srsclt_reg = hal_lr_srsclt();
 	num_shadow_gprs = (srsclt_reg & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	if(num_shadow_gprs == 0){
@@ -180,29 +198,11 @@ int32_t ConfigureGPRShadow(){
 int32_t LowLevelProcInit(){
 	uint32_t status;
 	/* Processor User Guide 9.2.4 - Coprocessor 0 inicialization */
-	//hal_sr_rcause( (((hal_lr_rcause() & ~CAUSE_WP) & ~CAUSE_IP0) & ~CAUSE_IP1) );
-//	hal_sr_rconfig( (hal_lr_rconfig() & ~CONFIG_K0) | CONFIG_K0_UNCACHED);
-	hal_sr_rconfig( ((hal_lr_rconfig() & ~CONFIG_K0)) | 4);
+        /* FIXME: This should be done before load data to SRAM. */
+       // hal_sr_rconfig( ((hal_lr_rconfig() & ~CONFIG_K0)) | 4);
 
 	/* enable kseg0 cache for guest coprocessor 0 */
-	MoveToGuestCP0(16, 0, (MoveFromGuestCP0(16, 0) & ~0x7) | 4);
-//	hal_sr_rcount(0);
-//	hal_sr_rcompare(0);
-	/* status reg is set after patch the interrupt vector */
-	
-
-	/* Low leve TLB inicialization */
-//	init_tlb();
-	
-	/* Configure IV mode  See table 7.2 page 141. */
-	hal_sr_rcause(hal_lr_rcause() | CAUSE_IV);
-	hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
-	hal_sr_rstatus( (hal_lr_rstatus() & (~STATUS_BEV)));
-	//if(hal_lr_rconfig3() & CONFIG3_VEIC){
-		/* VEIC externally set. VI will not be supported */
-		/* panic */
-	//	return 1;
-	//}
+	//MoveToGuestCP0(16, 0, (MoveFromGuestCP0(16, 0) & ~0x7) | 4);
 	
 	//Initializing some flags on guestCtl0
 	//GUESTCTL0_CP0 Allow guest access to some CP0 registers
@@ -212,35 +212,15 @@ int32_t LowLevelProcInit(){
 	
 	hal_sr_guestctl0Ext(hal_lr_guestctl0Ext() | GUESTCTL0EXT_CGI);
 	
-	
 	//Disabling Exceptions when guest modifies own CP0 registers
 	hal_sr_guestctl0Ext(hal_lr_guestctl0Ext() | GUESTCTL0EXT_FCD);
 	
-	MoveToGuestCP0(11,0,0);
-	
-	hal_sr_gtoffset(0);
-	
 	if (ConfigureGPRShadow()){
-		/* panic */
+	
 		return 1;
 	}
 		
-
-#ifndef MICROCHIP
-	/* Patch the processor interrupt address. */
-	hal_patch_exception_vector(0x80000000);
-	hal_patch_exception_vector(0x80000180);
-	hal_patch_exception_vector(0x80000200);
-
-#endif
-
-	/* Set the exception vetor to the normal location and enable the IM7 (timer interrupt) */
-	status = hal_lr_rstatus();
-	status = (status & ~STATUS_ERL) | STATUS_IM7;
-	hal_sr_rstatus(status);
-	
-	//Setting gtOffset to 0
-	setGTOffset(0);
+        setGTOffset(0);
 	
 	return 0;
 }
@@ -248,7 +228,7 @@ int32_t LowLevelProcInit(){
 /** Return execCode field from cause register */
 uint32_t getCauseCode(){
 	uint32_t execcode = hal_lr_rcause();
-	
+    
 	return (execcode & CAUSE_EXECCODE) >> CAUSE_EXECCODE_SHIFT;
 }
 
@@ -843,4 +823,10 @@ void setGuestCTL2(uint32_t guestclt2){
 uint32_t getRandom(){
 	return hal_lr_random();
 }
-			
+
+
+/*Invoked when there is not ready VCPU to perform.*/
+void idlevcpu(){
+    while(1){};
+}
+
