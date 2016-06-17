@@ -15,14 +15,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+
+
 #include <libc.h>
 #include <types.h>
 
 void dumpCP0(){
     uint32_t temp;
     
-    asm volatile ("mfgc0 %[temp], $12, 0": [temp] "=r"(temp) :);
-    printf("\nSTATUS      0x%x", temp);
-    asm volatile ("mfgc0 %[temp], $13, 0": [temp] "=r"(temp) :);
-    printf("\nCAUSE      0x%x", temp);
+    //asm volatile ("mfc0 %[temp], $12, 0": [temp] "=r"(temp) :);
+    printf("\nSTATUS      0x%x", hal_lr_rstatus());
+    //asm volatile ("mfc0 %[temp], $13, 0": [temp] "=r"(temp) :);
+    printf("\nCAUSE      0x%x", hal_lr_rcause());
+    printf("\nSRSCTL     0x%x", hal_lr_srsclt());
+   
+    
 }
