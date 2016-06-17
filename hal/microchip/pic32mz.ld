@@ -40,18 +40,17 @@ SECTIONS
         . = 0x200;
         *(.vector0)
         . = 0x1000;
-        hal/microchip/boot.o
         _text = .;
         *(.text)
             *(.text.*)
         _etext = .;
     } > flash
 
-    /*.MIPS.abiflags : {
+    .MIPS.abiflags : {
         __MIPS_abiflags_start = .;
         *(.MIPS.abiflags)
         __MIPS_abiflags_end = .;
-    } > flash*/
+    } > flash
 
     .rodata :
     {
