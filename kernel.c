@@ -15,6 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+
 #include <types.h>
 #include <hal.h>
 #include <config.h>
@@ -28,59 +29,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercall.h>
 #include <common.h>
 
+
 static uint32_t counttimerInt = 0;
 static uint32_t guestexit = 0;
 
 /** Hardware interrupt handle */
 uint32_t InterruptHandler(){
 	uint32_t flag = 1;
-	uint32_t pending = getInterruptPending();
-
-	if(pending & HARDWARE_INT_5){ /* timer interrupt */				
-		clearInterruptMask(STATUS_HARDWARE_INT_5);
-		counttimerInt++;
-		setInterruptMask(STATUS_HARDWARE_INT_5);
-		return RESCHEDULE;
-	}
 	
-	if(pending & HARDWARE_INT_6){ /* timer interrupt */				
-		clearInterruptMask(STATUS_HARDWARE_INT_6);
-		Warning("int6");
-		setInterruptMask(STATUS_HARDWARE_INT_6);
-//		return SUCEEDED;
-		flag = 0;
-	}
-	
-	
-	if(pending & HARDWARE_INT_4){ /* timer interrupt */				
-		clearInterruptMask(STATUS_HARDWARE_INT_4);
-		Warning("int4");
-		setInterruptMask(STATUS_HARDWARE_INT_4);
-		flag = 0;
-		//return SUCEEDED;
-	}
-	
-	if(pending & HARDWARE_INT_3){ /* timer interrupt */				
-		clearInterruptMask(STATUS_HARDWARE_INT_3);
-		Warning("int3");
-		setInterruptMask(STATUS_HARDWARE_INT_3);
-		flag = 0;
-	//	return SUCEEDED;
-	}
+        /*TODO: Only timer interrupt supported. This must be rewrite due to EIC support. */
+    
+        timer_int_handler();
 
-	if(pending & HARDWARE_INT_2){ /* timer interrupt */				
-		clearInterruptMask(STATUS_HARDWARE_INT_2);
-		Warning("int2");
-		setInterruptMask(STATUS_HARDWARE_INT_2);
-		flag = 0;
-		//return SUCEEDED;
-	}
-
-	if(flag)
-		Warning("Interrupt handler not implemented.");
-                return ERROR;
-
-	return SUCEEDED;
+	return RESCHEDULE;
 }
 
 /** Handle guest exceptions */
@@ -88,8 +49,6 @@ uint32_t GuestExitException(){
 	uint32_t guestcause = getGCauseCode();
 	uint32_t epc = getEPC();
 	uint32_t ret = SUCEEDED;
-	
-	//printf("epc 0x%x", epc);
 	
 	switch (guestcause) {
 	    case 0x0:	
@@ -112,24 +71,24 @@ uint32_t GuestExitException(){
 /** Determine the cause and invoke the correct handler */
 uint32_t HandleExceptionCause(){
 	uint32_t CauseCode = getCauseCode();
-        
-        dumpCP0();
 
 	switch (CauseCode){
 		/* Interrupt */
 	case 	0:	
 			return InterruptHandler();
-			break;
 		/* GuestExit */
 	case	0x1b:	
 			return GuestExitException();
-			break;
 	/* TLB load, store or fetch exception */
 	case	0x3:						
 	case 	0x2:
 			Warning("TLB miss: VCPU: %d\n", curr_vcpu->id);
 			return TLBDynamicMap(curr_vcpu);
-			break;
+        
+        /*FIXME: The processors is with strange case code after bootloader initialization. 
+         The cause is cleaned after the first timer interruption. */
+        case    0x1d: return SUCEEDED;
+        case    0x15: return SUCEEDED;
 	default:
 		/* panic */
 		Warning("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), curr_vcpu->id);
@@ -146,9 +105,9 @@ void configureGuestExecution(uint32_t exCause){
 	if(exCause == RESCHEDULE || exCause == CHANGE_TO_TARGET_VCPU)
 		dispatcher();
 
-	if(exCause == RESCHEDULE){
+	/*if(exCause == RESCHEDULE){
 		confTimer(QUANTUM);
-	}
+	}*/
 	
 	if (!isEnteringGuestMode()){
 		Warning("Conditions to enter in GuestMode not satisfied!");
@@ -209,13 +168,11 @@ int32_t initialize_RT_services(int32_t init, uint32_t counter){
 }
 
 int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
-	uint32_t ret;
+	uint32_t ret, temp=0;
 
-    
-	contextSave(NULL, counter, guestcounter);	
-	
-	ret = HandleExceptionCause();
-	
+        contextSave(NULL, counter, guestcounter);	
+        ret = HandleExceptionCause();
+
 	switch(ret){
 		case SUCEEDED:
 			break;
@@ -236,14 +193,15 @@ int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 			break;
                 case ERROR:                        
 		default:
-                        CRITICALS("Critical error ocurred. Hypervisor stopped.");
+                        Critical("Critical error ocurred. Hypervisor stopped.");
+                        dumpCP0();
                         while(1);
 			break;
-	}	
-	
-	Warning("*");
+	}
 	
 	configureGuestExecution(ret);
+        
+         Warning("*");
 
 	return 0;
 }
