@@ -1,5 +1,5 @@
-#include <types.h>
 #include <config.h>
+#include <types.h>
 #include "pic32mz.h"
 
 
@@ -16,7 +16,7 @@ void init_uart(uint32_t baudrate, uint32_t sysclk){
 
 
 void putchar(char c){   
-    while(U2STA&UTXBF);
+    while(U2STA&USTA_UTXBF);
     U2TXREG = c;   
 }
 
