@@ -27,9 +27,9 @@ MICROCHIP=$(HAL)/microchip
 CFLAGS_STRIP = -fdata-sections -ffunction-sections
 LDFLAGS_STRIP = --gc-sections 
 LDFLAGS = -Thal/microchip/pic32mz.ld 
-
-CFLAGS = -EL -O2 -c -mabi=32 -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
-
+#CFLAGS = -EL -O2 -c -mtune=m14k  -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
+CFLAGS = -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK}
+         
 
 AS_MIPS = mips-mti-elf-as -EL
 LD_MIPS = mips-mti-elf-ld #$(LDFLAGS_STRIP)
@@ -40,7 +40,8 @@ SIZE_MIPS = mips-mti-elf-size
 GCC_MIPS= mips-mti-elf-gcc
 
 
-OBJS = kernel.o \
+OBJS = $(MICROCHIP)/boot.o \
+kernel.o \
 dispatcher.o \
 hypercall.o \
 libc.o \
@@ -52,7 +53,6 @@ $(HAL)/hal.o \
 $(HAL)/tlb.o \
 $(HAL)/vcpu.o \
 $(HAL)/common.o \
-$(MICROCHIP)/boot.o \
 $(MICROCHIP)/uart.o \
 $(MICROCHIP)/chipset.o 
 
