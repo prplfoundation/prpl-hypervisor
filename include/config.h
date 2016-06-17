@@ -15,35 +15,45 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/* Debug and info UART prints */
 #define DEBUG
 #define WARNINGS
 #define INFOS
 #define CRITICALS
-
 #define MICROCHIP
-
 #define VERBOSE
 
+/* Hypervisor version and board info */
+#define KERNEL_VER "v0.5.0"
+#define CPU_ID "M5150"
+#define CPU_ARCH "Microchip Starter Kit"
 #define CPU_FREQ  200000000
 #define UART_SPEED 115200
 
-#define STATICTLB
+/* Timer and scheduler configuration */
 
-/* 50MHz core - counter at 25Mhz */
-#define MILISECOND    (25000000 / 1000)
+/* 200MHz core - counter at 100Mhz */
+#define MILISECOND    (100000000 / 1000)
+/* Scheduler Quantum */
+#define QUANTUM     (10 * MILISECOND)
 
-/* quantum */
-#define QUANTUM     (30 * MILISECOND)
+
+/* Heap configuration */
 
 /* Heap Size */
 #define HEAP_SIZE 0x8000 
-
 /* Heap Address */ 
 #define HEAP_ADDRESS  0x80002000
 
+
+#define NVMACHINES 0
+#define STATICTLB
 #define VMCONF_NUMCOLUNS 6
 
+
 #define VMCONF {0}
+
+
 
 /* Static TLB - 1 Linux 32MB VM and 1 Hellfire VM.*/
 /*#define VMCONF {0x90000000, 	0x200000, 	3,		LINUX,		0xff, 	  0x8029d040, \
