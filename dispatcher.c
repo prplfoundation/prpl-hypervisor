@@ -21,7 +21,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 void dispatcher(){	
 	int i;
-		
 	setGuestPreviousShadowSet(curr_vcpu->gprshadowset);
 		
 	//Check if needs to save GP registers context
@@ -31,11 +30,11 @@ void dispatcher(){
 		vcpu_sgpr[curr_vcpu->gprshadowset]=curr_vcpu;
 	}else{
 		if(curr_vcpu->init){
-			restore_sgpr_ctx(curr_vcpu->gp_registers);
+                    //FIXME: This line results in critical fault. Must be debugged. 
+                    //restore_sgpr_ctx(curr_vcpu->gp_registers);
 		}
 		vcpu_sgpr[curr_vcpu->gprshadowset]=curr_vcpu;		
 	}
-	
 	/* First scheduling of a VM */
 #ifdef STATICTLB	
 	if(curr_vm->init){
@@ -47,7 +46,6 @@ void dispatcher(){
 		curr_vm->init=0;		
 	}
 #endif	
-		
 	setGLowestGShadow(curr_vcpu->gprshadowset);	
 	setEPC(curr_vcpu->pc);
 	setGuestID(curr_vm->id);
@@ -56,7 +54,6 @@ void dispatcher(){
 	if(curr_vm->id!=0){
 		setGuestMode();
 	}
-	
 	//Initialize vcpu
 	if(curr_vcpu->init){
 		curr_vcpu->gp_registers[REG_SP]=curr_vcpu->sp;
