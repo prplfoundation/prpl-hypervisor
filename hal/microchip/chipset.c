@@ -1,4 +1,5 @@
 #include <globals.h>
+#include <config.h>
 #include "pic32mz.h"
 
 void freq_config(){
@@ -10,7 +11,8 @@ void freq_config(){
 void configure_timer(){
     unsigned int temp_CP0;
 
-    /* configure the interrupt controller to compatibility mode */
+    /* All interrupt levels are handled at GPR shadow 7 */
+    /* Other GPR shadows are used for VM execution. */
     PRISS = 7<<28 | 7<<24 | 7<<20 | 7<<16 | 7<<12 | 7<<8 | 7<<4;
     
     Info("Configuring Timer");
@@ -19,17 +21,22 @@ void configure_timer(){
     temp_CP0 = mfc0(CP0_CAUSE, 0);      /* Get Cause */
     temp_CP0 |= CAUSE_IV;           /* Set Cause IV */
     mtc0(CP0_CAUSE, 0, temp_CP0);       /* Update Cause */
-    INTCONCLR = INTCON_MVEC;        /* Clear the MVEC bit */
+    INTCONSET = INTCON_MVEC;        /* Set the MVEC bit - Vetored interrupt mode. */
     temp_CP0 = mfc0(CP0_STATUS, 0);     /* Get Status */
     temp_CP0 &= ~STATUS_BEV;        /* Clear Status IV */
+    temp_CP0 &= ~STATUS_EXL; 
     mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
+    
+    /* Interrupt 14 (timer 3) handled at 0x9d000200 */
+    OFF(14) = 0x200;
 
     /* Using PIC32's timers 2/3 for 32bit counter*/
     T2CON = 0;
     TMR2 = 0x0;
     TMR3 = 0;
-    PR2 = 0x86A0;
-    PR3 = 0x1;
+    PR2 = 0x4240;
+    PR3 = 0xf;
+
     IPCSET(2) = 0x00001f00;
     IFSCLR(0) = 0x00000200;
     IECSET(0) = 0x00000200;
@@ -39,11 +46,12 @@ void configure_timer(){
     T2CON |= 0x8008;
     
     Info("Starting Hypervisor Execution");
-
-    asm volatile ("ei");
     
+    asm volatile ("ei");
     /* Wait for the first timer interrupt */ 
-    while(1){};
+    while(1){
+        putchar('!');
+    };
 }
 
 

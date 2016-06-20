@@ -167,12 +167,17 @@ int32_t initialize_RT_services(int32_t init, uint32_t counter){
 	return ret;
 }
 
+int32_t counter_old;
 int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 	uint32_t ret, temp=0;
-
+        
+        Warning("#");
+        
         contextSave(NULL, counter, guestcounter);	
         ret = HandleExceptionCause();
-
+        
+        
+        
 	switch(ret){
 		case SUCEEDED:
 			break;
@@ -200,8 +205,6 @@ int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 	}
 	
 	configureGuestExecution(ret);
-        
-         Warning("*");
-
+    Warning("*");
 	return 0;
 }

@@ -46,7 +46,7 @@ int32_t HypercallHandler(){
 												
 			//Create vcpu with task_addr as parameter
 			/* FIXME: PIP needed during RTvcpu creation */
-			vcpu = create_vcpu(curr_vm,h->entry_point,h->task_addr,h->stack_pointer, 0);
+			vcpu = create_vcpu(curr_vm,h->entry_point,h->task_addr,h->stack_pointer, 0, BAREOS_RT);
 			
 			//Setting task parameters
 			vcpu->task.unique_name = service_name;

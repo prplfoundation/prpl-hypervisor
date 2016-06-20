@@ -28,34 +28,8 @@ _imgptr:
 _isr:
     .set noreorder
     .set noat
-  /*  la   $gp, _gp
-    la  $sp, _stack    */
-
-        addi  $sp, $sp, -104
-        sw    $at, 16($sp)
-        sw    $v0, 20($sp)
-        sw    $v1, 24($sp)
-        sw    $a0, 28($sp)
-        sw    $a1, 32($sp)
-        sw    $a2, 36($sp)
-        sw    $a3, 40($sp)
-        sw    $t0, 44($sp)
-        sw    $t1, 48($sp)
-        sw    $t2, 52($sp)
-        sw    $t3, 56($sp)
-        sw    $t4, 60($sp)
-        sw    $t5, 64($sp)
-        sw    $t6, 68($sp)
-        sw    $t7, 72($sp)
-        sw    $t8, 76($sp)
-        sw    $t9, 80($sp)
-        sw    $ra, 84($sp)
-        mfc0  $k0, $14        #C0_EPC=14 (Exception PC)
-        sw    $k0, 88($sp)
-        mfhi  $k1
-        sw    $k1, 92($sp)
-        mflo  $k1
-        sw    $k1, 96($sp)
+        /*la   $gp, _gp
+        la  $sp, _stack    */
 
         add $a1,$a0,0
         li $a0, 0        /* init parameter is 0. Its not the first execution of exceptionHandler */
@@ -65,39 +39,12 @@ _isr:
         jalr $k1
         nop
     
-        #Restore all temporary registers
-        lw    $at, 16($sp)
-        lw    $v0, 20($sp)
-        lw    $v1, 24($sp)
-        lw    $a0, 28($sp)
-        lw    $a1, 32($sp)
-        lw    $a2, 36($sp)
-        lw    $a3, 40($sp)
-        lw    $t0, 44($sp)
-        lw    $t1, 48($sp)
-        lw    $t2, 52($sp)
-        lw    $t3, 56($sp)
-        lw    $t4, 60($sp)
-        lw    $t5, 64($sp)
-        lw    $t6, 68($sp)
-        lw    $t7, 72($sp)
-        lw    $t8, 76($sp)
-        lw    $t9, 80($sp)
-        lw    $ra, 84($sp)
-        lw    $k0, 88($sp)
-        lw    $k1, 92($sp)
-        mthi  $k1
-        lw    $k1, 96($sp)
-        mtlo  $k1
-        addi  $sp, $sp, 104
-    
-    
     
 isr_return:
-    /*ei*/
     eret
     nop
 .end _isr
+
 
     .set at
     .align 2
@@ -929,17 +876,12 @@ idlevcpu:
 .ent hal_start_hyper
 hal_start_hyper:
         .set noreorder
-        /*la $k0, exceptionHandler */
-        /*mtc0 $k0, $14, 0*/ /* Enter on exceptionHandler on eret */
-        /*li $a1, 1
-        la $a2, isr_return */
-        /*wrpgpr $ra, $a2*/ /* highest GPR shadow to the hypervisor. Configure GPR registers. */
-        wrpgpr $sp, $sp
-        wrpgpr $gp, $gp
-        wrpgpr $a0, $a1
-        /*ehb
-        eret*/
+        la $k1, _gp
+        wrpgpr $gp, $k1
+        la $k1, _stack
+        wrpgpr $sp, $k1
         jr $ra
+        /*mfc0 $v0, $12, 2*/
         nop
         .set reorder
 .end hal_start_hyper

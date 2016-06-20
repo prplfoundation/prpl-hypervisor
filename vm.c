@@ -204,32 +204,32 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	/* Set the VM entry Point and scheduler*/
 	switch(ret->os_type){
 		case BAREOS:
-			vcpu = create_vcpu(ret, 0x80000200, 0 ,0, vm[0][4]);	
+			vcpu = create_vcpu(ret, 0x80000200, 0 ,0, vm[0][4], BAREOS);	
 			addVcpu_bestEffortList(vcpu);			
 			ll_append(&virtualmachines, nd);
 			break;
 		case GENERIC: 	
-			vcpu = create_vcpu(ret, 0x80000000, 0, 0, vm[0][4]);
+			vcpu = create_vcpu(ret, 0x80000000, 0, 0, vm[0][4], GENERIC);
 			addVcpu_bestEffortList(vcpu);
 			ll_append(&virtualmachines, nd);
 			break;
 		case HELLFIRE:
-			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4]);
+			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4], HELLFIRE);
 			addVcpu_bestEffortList(vcpu);
 			ll_append(&virtualmachines, nd);
 			break;
 		case BAREOS_RT:
-			vcpu = create_vcpu(ret, 0x801000f4, 0, 0, vm[0][4]);
+			vcpu = create_vcpu(ret, 0x801000f4, 0, 0, vm[0][4], BAREOS_RT);
 			addVcpu_servicesInitList(vcpu);		
 			ll_append(&virtualmachines_rt, nd);
 			break;
 		case LINUX:
-			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4]);
+			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4], LINUX);
 			addVcpu_bestEffortList(vcpu);		
 			ll_append(&virtualmachines, nd);
 			break;
 		case IDLEVCPU:
-			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4]);
+			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4], IDLEVCPU);
 			idle_vcpu = vcpu;		
 			ll_append(&virtualmachines, nd);
 			break;
@@ -249,7 +249,7 @@ void machine_init_vm(vm_t *d) {
   
 }
 
-vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer, uint32_t pip){	
+vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer, uint32_t pip, uint32_t ostype){	
 	static uint32_t vcpu_id=0;
 	static uint32_t shadow_gpr_to_assign = 0;
 	uint32_t num_shadow_gprs;
@@ -272,14 +272,16 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
 	num_shadow_gprs = hal_lr_srsclt();
 	num_shadow_gprs = (num_shadow_gprs & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	
-	//Highest shadown gpr is used to 
-	if(shadow_gpr_to_assign==num_shadow_gprs){
-		ret->gprshadowset=shadow_gpr_to_assign-1;
-	}else{
-		ret->gprshadowset = shadow_gpr_to_assign;
-		shadow_gpr_to_assign++;
-	}
-		
+    if (ostype == IDLEVCPU){
+        ret->gprshadowset = num_shadow_gprs;
+    }else
+        //Highest shadown gpr is used to 
+        if(shadow_gpr_to_assign==num_shadow_gprs){
+            ret->gprshadowset=shadow_gpr_to_assign-1;
+        }else{
+            ret->gprshadowset = shadow_gpr_to_assign;
+            shadow_gpr_to_assign++;
+        }
 	
 	ret->pip = pip;
 	ret->id = vcpu_id;	

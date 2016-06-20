@@ -115,8 +115,10 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     /* Run scheduler .*/
     runScheduler();     
 
-    /* Configure the execution of the first Guest */
-    configureGuestExecution(RESCHEDULE);    
+    hal_start_hyper();
+
+    /* Configure the execution of the first Guest */    
+    //configureGuestExecution(RESCHEDULE);    
 
     /* configure system timer */
     configure_timer();
@@ -203,11 +205,13 @@ int32_t LowLevelProcInit(){
 
 	/* enable kseg0 cache for guest coprocessor 0 */
 	//MoveToGuestCP0(16, 0, (MoveFromGuestCP0(16, 0) & ~0x7) | 4);
+	//hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
 	
 	//Initializing some flags on guestCtl0
 	//GUESTCTL0_CP0 Allow guest access to some CP0 registers
 	//GUESTCTL0_GT Allow guest read acess to count and compare registers
 	//GUESTCTL0_CF Allow guest to read and write config registers
+	
 	hal_sr_guestctl0(hal_lr_guestctl0() | GUESTCTL0_CP0 | GUESTCTL0_GT | GUESTCTL0_CF |  GUESTCTL0_CG);
 	
 	hal_sr_guestctl0Ext(hal_lr_guestctl0Ext() | GUESTCTL0EXT_CGI);

@@ -71,7 +71,7 @@ typedef struct vm_t {
 }vm_t;
 
 
-vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer,  uint32_t pip);
+vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer,  uint32_t pip, uint32_t ostype);
 void delete_vcpu(vcpu_t*);
 vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]);
 vm_t *get_vm(unsigned int);
