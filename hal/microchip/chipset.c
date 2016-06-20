@@ -34,9 +34,11 @@ void configure_timer(){
     T2CON = 0;
     TMR2 = 0x0;
     TMR3 = 0;
-    PR2 = 0x4240;
-    PR3 = 0xf;
 
+    /* Scheduler quantum */    
+    PR2 = (QUANTUM & 0xFFFF);
+    PR3 = (QUANTUM >> 16);
+        
     IPCSET(2) = 0x00001f00;
     IFSCLR(0) = 0x00000200;
     IECSET(0) = 0x00000200;
