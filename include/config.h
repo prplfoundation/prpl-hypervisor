@@ -46,25 +46,28 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define HEAP_ADDRESS  0x80002000
 
 
-#define NVMACHINES 0
+#define NVMACHINES 1
 #define STATICTLB
 #define VMCONF_NUMCOLUNS 6
 
 
-#define VMCONF {0}
+//#define VMCONF {0}
 
 
+/* Static TLB - 1 bare metal*/
+#define VMCONF {0x9d010000, 0x4000, 	4,		BAREOS,		0, 	  0x9d001000, \
+                1, 		0x1d010, 	0x1d011,	PAGEMASK_4KB,	0x1d000,    2, \
+                1,              0x1d012,        0,              PAGEMASK_4KB,   0x1d002,    2, \
+                1,		0x00010,	0x00011,        PAGEMASK_4KB,  	0x00000,    2, \
+                1,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
+                0x9d014000,     0x4000,   4,              BAREOS,         0,        0x9d001000, \
+                2,              0x1d014,        0x1d015,        PAGEMASK_4KB,   0x1d000,    2, \
+                2,              0x1d016,        0,              PAGEMASK_4KB,   0x1d002,    2, \
+                2,              0x00012,        0x00013,        PAGEMASK_4KB,   0x00000,    2, \
+                2,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
+                0,	     0,        0,              0,              0,        0  }
 
-/* Static TLB - 1 Linux 32MB VM and 1 Hellfire VM.*/
-/*#define VMCONF {0x90000000, 	0x200000, 	3,		LINUX,		0xff, 	  0x8029d040, \
-		1, 		0x10000, 	0x11000,	PAGEMASK_16MB,	0,    	  4, \
-		1,		0x1F000,	0,      	PAGEMASK_1MB,  	0x1F000,  2, \
-		1,		0x1b100,	0,      	PAGEMASK_4KB,  	0x1b100,  2, \
-		0x91200000, 	0x100000, 	2,		HELLFIRE,	0, 	  0x800010e4, \
-		2, 		0x14000, 	0,		PAGEMASK_1MB,	0,    	  4, \
-		2,		0x1F000,	0,      	PAGEMASK_4KB,  	0x1F000,  2, \
-		0,		      0,        0,              0,              0,        0  }*/
-
+                
 
 
 /* Static TLB - 1 Linux 32MB VM.*/
