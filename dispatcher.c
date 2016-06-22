@@ -47,7 +47,6 @@ void dispatcher(){
 	}
 #endif	
 	setGLowestGShadow(curr_vcpu->gprshadowset);	
-	setEPC(curr_vcpu->pc);
 	setGuestID(curr_vm->id);
 	
 	/* Avoid to enter in guest mode for hypervisor tasks. */
