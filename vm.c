@@ -127,7 +127,7 @@ void initializeMachines(void) {
 	//	inMemoryLoad();
 	}
     
-	create_vm(idleconf);
+	//create_vm(idleconf);
 }
 
 
@@ -204,7 +204,7 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	/* Set the VM entry Point and scheduler*/
 	switch(ret->os_type){
 		case BAREOS:
-			vcpu = create_vcpu(ret, 0x80000200, 0 ,0, vm[0][4], BAREOS);	
+			vcpu = create_vcpu(ret, vm[0][5], 0 ,0, vm[0][4], BAREOS);	
 			addVcpu_bestEffortList(vcpu);			
 			ll_append(&virtualmachines, nd);
 			break;
@@ -250,7 +250,7 @@ void machine_init_vm(vm_t *d) {
 }
 
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer, uint32_t pip, uint32_t ostype){	
-	static uint32_t vcpu_id=0;
+	static uint32_t vcpu_id=1;
 	static uint32_t shadow_gpr_to_assign = 0;
 	uint32_t num_shadow_gprs;
 	
@@ -284,8 +284,12 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
         }
 	
 	ret->pip = pip;
-	ret->id = vcpu_id;	
-	vcpu_id++;
+    if (ostype == IDLEVCPU){
+        ret->id = 0;  
+    }else{
+        ret->id = vcpu_id;	
+        vcpu_id++;
+    }
 	
 	//Not initialized
 	ret->init=1;
