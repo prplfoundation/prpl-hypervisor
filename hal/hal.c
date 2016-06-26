@@ -37,6 +37,7 @@ static void print_config(void)
         printf("\nHeap size:     %dKbytes", HEAP_SIZE/1024);
         printf("\nScheduler      %dms", QUANTUM/100000);
         printf("\nVMs:           %d\n", NVMACHINES);
+        printf("\n guestclt0:    0x%x", hal_lr_guestctl0());
 }
 
 
@@ -115,11 +116,8 @@ int32_t main(char * _edata, char* _data, char* _erodata){
 
     /* Run scheduler .*/
     runScheduler();     
-
+    
     hal_start_hyper();
-
-    /* Configure the execution of the first Guest */    
-    //configureGuestExecution(RESCHEDULE);    
 
     /* configure system timer */
     configure_timer();
@@ -206,7 +204,7 @@ int32_t LowLevelProcInit(){
 
 	/* enable kseg0 cache for guest coprocessor 0 */
 	//MoveToGuestCP0(16, 0, (MoveFromGuestCP0(16, 0) & ~0x7) | 4);
-	//hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
+	hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
 	
 	//Initializing some flags on guestCtl0
 	//GUESTCTL0_CP0 Allow guest access to some CP0 registers

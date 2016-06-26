@@ -177,7 +177,13 @@ int32_t HypercallHandler(){
 		case HCALL_HALT_GUEST:{
 			ret = PROGRAM_ENDED;
 			break;			
-		}		
+		}
+                case HCALL_START_TIMER_GUEST:{
+                    uint32_t interval  = MoveFromPreviousGuestGPR(REG_A0);
+                    register_timer(interval);
+                    break;
+                }
+                    
 		default:
 			break;
 		

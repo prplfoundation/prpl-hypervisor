@@ -55,21 +55,21 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GUESTCTL0EXT_CGI (1<<4)
 
 #define DEBUG_DM        (1<<30)
-#define STATUS_EXL      (1<<1)
+/*#define STATUS_EXL      (1<<1)
 #define STATUS_ERL      (1<<2)
 #define STATUS_BEV      (1<<22)
-#define STATUS_IE        1
+#define STATUS_IE        1*/
 #define STATUS_IM7      (1<<15)
 #define CAUSE_WP        (1<<22)
-#define CAUSE_IP0       (1<<8)
-#define CAUSE_IP1       (1<<9)
+/*#define CAUSE_IP0       (1<<8)
+#define CAUSE_IP1       (1<<9)*/
 #define CONFIG_K0        0x7
 #define	CAUSE_EXECCODE  (0x1F << 2)
-#define CAUSE_IV        (1<<23)
+/*#define CAUSE_IV        (1<<23)*/
 #define CAUSE_IP         0x3FF00
-#define CAUSE_BD        (1<<31)
-#define CAUSE_TI	(1<<30)
-#define INTCTL_VS        0X20
+/*#define CAUSE_BD        (1<<31)
+#define CAUSE_TI	(1<<30)*/
+#define INTCTL_VS        0x2
 #define PAGEGRAIN_ESP   (1<<28)
 #define SRSCLT_PSS      (0xF<<6)
 #define SRSCLT_HSS	(0xF<<26)
@@ -98,10 +98,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CAUSE_EXECCODE_SHIFT	2
 #define CAUSE_IP_SHIFT		8
 #define CAUSE_PCI_SHIFT		26
+#define CAUSE_IPL_SHIFT         10
 #define INTCTL_VS_SHIFT		5
 #define STATUS_IM_SHIFT		8
 #define GUESTCTL1_RID_SHIFT	16
-
+#define GUESTCLT2_GRIPL_SHIFT   24
+#define VIEWIPL_IPL_SHIFT       2
 
 //Hypercall fields
 #define HYPCODE  (0x3FF<<11)

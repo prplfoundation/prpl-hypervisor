@@ -175,6 +175,7 @@ typedef struct vcpu_t {
 	uint32_t gp;
 	uint32_t arg;
 	uint32_t init;	
+        uint32_t timer_interval;
 	message_buffer_t messages;
 }vcpu_t;
 

@@ -655,6 +655,16 @@ hal_lr_pid:
 	mfc0 $v0, $15, 0x0
 .end hal_lr_pid	
 
+
+.global hal_lr_viewipl
+.ent hal_lr_viewipl
+hal_lr_viewipl:
+        jr $ra
+        mfc0 $v0, $12, 0x4
+.end hal_lr_viewipl 
+
+
+
 .global save_sgpr_ctx
 .ent save_sgpr_ctx
 save_sgpr_ctx:

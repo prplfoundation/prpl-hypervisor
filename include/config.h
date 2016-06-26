@@ -55,7 +55,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 /* Static TLB - 1 bare metal*/
-#define VMCONF {0x9d010000, 0x4000, 	4,		BAREOS,		0, 	  0x9d001000, \
+/*#define VMCONF {0x9d010000, 0x4000, 	4,		BAREOS,		0, 	  0x9d001000, \
                 1, 		0x1d010, 	0x1d011,	PAGEMASK_4KB,	0x1d000,    2, \
                 1,              0x1d012,        0,              PAGEMASK_4KB,   0x1d002,    2, \
                 1,		0x00010,	0x00011,        PAGEMASK_4KB,  	0x00000,    2, \
@@ -65,7 +65,23 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
                 2,              0x1d016,        0,              PAGEMASK_4KB,   0x1d002,    2, \
                 2,              0x00012,        0x00013,        PAGEMASK_4KB,   0x00000,    2, \
                 2,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
-                0,	     0,        0,              0,              0,        0  }
+                0,	     0,        0,              0,              0,        0  }*/
+
+#define VMCONF {0x9d010000, 0x4000,     3,              BAREOS,         0,        0x9d001000, \
+                1,              0x1d010,        0,              PAGEMASK_16KB,  0x1d000,    2, \
+                1,              0x00010,        0,              PAGEMASK_16KB,   0x00000,    2, \
+                1,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
+                0x9d014000,     0x4000,   3,              BAREOS,         0,        0x9d001000, \
+                2,              0x1d014,        0,              PAGEMASK_16KB,   0x1d000,    2, \
+                2,              0x00014,        0,              PAGEMASK_16KB,   0x00000,    2, \
+                2,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
+                0,           0,        0,              0,              0,        0  }
+
+/*#define VMCONF {0x9d010000, 0x4000,     3,              BAREOS,         0,        0x9d001000, \
+                1,              0x1d010,        0,              PAGEMASK_16KB,  0x1d000,    2, \
+                1,              0x00010,        0,              PAGEMASK_16KB,   0x00000,    2, \
+                1,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
+                0,           0,        0,              0,              0,        0  }*/
 
                 
 

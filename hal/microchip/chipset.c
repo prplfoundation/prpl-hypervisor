@@ -1,5 +1,6 @@
 #include <globals.h>
 #include <config.h>
+#include <hal.h>
 #include "pic32mz.h"
 
 void freq_config(){
@@ -56,15 +57,51 @@ void configure_timer(){
     };
 }
 
-
-void timer_int_handler(){
+uint32_t count = 0;
+uint32_t timer_int_handler(){
     
-    if (IFS(0) & 0x00000200){
-        IFSCLR(0) = 0x00000200;
-        putchar('1');
+    uint32_t ret = SUCEEDED;
+    
+    if (IFS(0) & 0x1000000){
+        curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
+        IFSCLR(0) = 0x1000000;
+        T4CON = 0;
     }
     if (IFS(0) & 0x00004000){
         IFSCLR(0) = 0x00004000;
+        ret = RESCHEDULE;
     }
+    return ret;
 }
 
+
+void register_timer(uint32_t interval){
+    curr_vcpu->timer_interval = interval;
+    start_vm_timer(interval);
+    
+}
+
+
+void start_vm_timer(uint32_t interval){
+    T4CON = 0;
+    TMR4 = 0x0;
+    TMR5 = 0;
+
+    PR4 = interval & 0xffff;
+    PR5 = interval >> 16;
+                   
+    OFF(24) = 0x200;
+        
+    IPCSET(4) = 0x1C000000;
+    IFSCLR(0) = 0x1000000;
+    IECSET(0) = 0x80000;
+    IPCSET(6) = 0xe;
+    IFSCLR(0) = 0x80000;
+    IECSET(0) = 0x1000000;      
+    T4CON |= 0x8008;
+}
+
+void stop_vm_timer(){
+    T4CON = 0;
+    IFSCLR(0) = 0x1000000;
+}
