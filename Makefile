@@ -81,7 +81,7 @@ serial:
 	stty ${BAUDRATE} raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F ${SERIAL_DEV}
 
 load: serial
-	./pic32prog -d ${SERIAL_DEV} $(BIN).hex
+	./pic32prog -S -d ${SERIAL_DEV} $(BIN).hex
 
 debug: serial
 	cat ${SERIAL_DEV}
