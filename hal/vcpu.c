@@ -358,6 +358,7 @@ void contextSave(vcpu_t *vcpu, uint32_t counter, uint32_t guestcount){
         vcputosave->cp0_registers[17][0] = MoveFromGuestCP0(17,0);
         vcputosave->cp0_registers[16][3] = MoveFromGuestCP0(16,3);
         vcputosave->cp0_registers[30][0] = MoveFromGuestCP0(30,0);
+        
         vcputosave->pc = getEPC();
     }
 }
@@ -388,8 +389,9 @@ void contextRestore(){
 	uint32_t pending;
     
     if (currentVCPU != idle_vcpu ){
-		
+
 	MoveToGuestCP0(12, 0, currentVCPU->cp0_registers[12][0]);
+
 	/* Restoring Guest Time. See documentation! */
 	if(currentVCPU->cp0_registers[11][0]!=0){
 		/* determines the new gtoffset */
@@ -422,7 +424,7 @@ void contextRestore(){
 		MoveToGuestCP0(11, 0, currentVCPU->cp0_registers[11][0]);
 	}
 
-	
+
 	/* Finished restore guest timer. Restoring the other registers hereafter */
 	//pending = getInterruptPending() & currentVCPU->pip;
 	//clearInterruptMask(pending<<2);
@@ -445,19 +447,16 @@ void contextRestore(){
 	MoveToGuestCP0(16, 3, currentVCPU->cp0_registers[16][3]);
 	MoveToGuestCP0(30, 0, currentVCPU->cp0_registers[30][0]);
 	
-
+    }
 	/* config interrupt pass-through (PIP) */
 	//MoveToGuestCP0(12, 6, (MoveFromGuestCP0(12, 6) | currentVCPU->pip));
 	//MoveToGuestCP0(10, 5, (MoveFromGuestCP0(10, 5) & ~(0xff << 10)) | pending);
-
 	if(currentVCPU->guestclt2){
 		setGuestCTL2(currentVCPU->guestclt2);
 		currentVCPU->guestclt2 = 0;
 	}else{
 		setGuestCTL2(currentVCPU->guestclt2);
 	}
-	
-    }
     
 	setEPC(currentVCPU->pc);
     

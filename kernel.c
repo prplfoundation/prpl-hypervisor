@@ -101,19 +101,13 @@ void configureGuestExecution(uint32_t exCause){
 	uint32_t count;
 	uint32_t currentCount;
 	uint32_t elapsedTime;
-
-	if(exCause == RESCHEDULE || exCause == CHANGE_TO_TARGET_VCPU)
+    
+	if(exCause == RESCHEDULE || exCause == CHANGE_TO_TARGET_VCPU){
 		dispatcher();
+    }
 
-	/*if(exCause == RESCHEDULE){
-		confTimer(QUANTUM);
-	}*/
 	
-	if (!isEnteringGuestMode()){
-		Warning("Conditions to enter in GuestMode not satisfied!");
-	}
-		
-	contextRestore();
+    contextRestore();
 }
 
 
@@ -194,7 +188,7 @@ int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 			ret = RESCHEDULE;
 			
 			break;
-                case ERROR:                        
+        case ERROR:                        
 		default:
                         Critical("Critical error ocurred. Hypervisor stopped.");
                         dumpCP0();

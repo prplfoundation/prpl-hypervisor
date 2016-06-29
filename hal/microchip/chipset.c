@@ -3,11 +3,28 @@
 #include <hal.h>
 #include "pic32mz.h"
 
+PIC32MZ_DEVCFG (
+    _DEVCFG0_JTAG_DISABLE |      /* Disable JTAG port */
+    _DEVCFG0_TRC_DISABLE,        /* Disable trace port */
+    _DEVCFG1_FNOSC_SPLL |        /* System clock supplied by SPLL */
+    _DEVCFG1_POSCMOD_DISABLE |   /* Primary oscillator disabled */
+    _DEVCFG1_CLKO_DISABLE,       /* CLKO output disable */
+
+    _DEVCFG2_FPLLIDIV_1 |        /* PLL input divider = 1 */
+    _DEVCFG2_FPLLRNG_5_10 |      /* PLL input range is 5-10 MHz */
+    _DEVCFG2_FPLLICLK_FRC |      /* Select FRC as input to PLL */
+    _DEVCFG2_FPLLMULT(50) |      /* PLL multiplier = 50x */
+    _DEVCFG2_FPLLODIV_2,         /* PLL postscaler = 1/2 */
+    _DEVCFG3_FETHIO |            /* Default Ethernet pins */
+    _DEVCFG3_USERID(0xffff));    /* User-defined ID */
+
+
 void freq_config(){
     /* configured in the bootloader */    
     
 }
 
+uint32_t tick_count = 0;
 
 void configure_timer(){
     unsigned int temp_CP0;
@@ -50,6 +67,8 @@ void configure_timer(){
     
     Info("Starting Hypervisor Execution");
     
+  //  start_vm_timer(1500000);
+    
     asm volatile ("ei");
     /* Wait for the first timer interrupt */ 
     while(1){
@@ -57,19 +76,22 @@ void configure_timer(){
     };
 }
 
-uint32_t count = 0;
+
 uint32_t timer_int_handler(){
     
     uint32_t ret = SUCEEDED;
     
     if (IFS(0) & 0x1000000){
-        curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
+        //curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
         IFSCLR(0) = 0x1000000;
-        T4CON = 0;
+        //putchar('*');
     }
     if (IFS(0) & 0x00004000){
         IFSCLR(0) = 0x00004000;
-        ret = RESCHEDULE;
+        curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
+        if ((tick_count++)%10==0){
+            ret = RESCHEDULE;
+        }
     }
     return ret;
 }
