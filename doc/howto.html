@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.org">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<TITLE>Hypervisor Deployment on PIC32MZ2048EFM144 platform.</TITLE>
+
+<!-- Included tutorial.css -->
+<STYLE TYPE="text/css">
+pre {
+
+	background-color:#E0E0E0  ;
+	}
+
+</STYLE>
+
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<CENTER>
+<H1>Hypervisor Deployment on PIC32MZ2048EFM144 platform.</H1>
+</CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+
+  <OL>
+  <LI><A HREF="#toc1">Introduction</A>
+  <LI><A HREF="#toc2">Pre-Requisits</A>
+  <LI><A HREF="#toc3">Thrid part software and tools</A>
+  <LI><A HREF="#toc4">Deployment</A>
+  <LI><A HREF="#toc5">Bare-metal application development</A>
+  <LI><A HREF="#toc6">Considerations</A>
+  </OL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+
+<A NAME="toc1"></A>
+<H1>1. Introduction</H1>
+
+<P>
+This how-to is intended to show how to compile the hypervisor with a virtualized bare-metal application the PIC32MZ2048EFM144 Microchip SoC without using the MPLABX compiler or linker scripts.
+</P>
+
+<A NAME="toc2"></A>
+<H1>2. Pre-Requisits</H1>
+
+ <UL>
+ <LI>Ubuntu 14.04 LTS or greater. It should work on Debian as well. 
+ <LI>PIC32MZ Embedded Connectivity Starter Kit board and cables. 
+ </UL>
+
+<A NAME="toc3"></A>
+<H1>3. Thrid part software and tools</H1>
+
+ <UL>
+ <LI>MPLABX IPE already installed (used to flash the bootloader for the first time).
+    <UL>
+    <LI>You don't need the MPLABX IDE installed, just the IPE. 
+    </UL>
+ <LI>MIPS-MTI toolchain already installed. (Download page: <A HREF="https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/">https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/</A>)
+ <LI>pic32prog to flash the hypervisor and VMs (Source code: <A HREF="https://github.com/sergev/pic32prog">https://github.com/sergev/pic32prog</A>)
+ <LI>git client installed. 
+ <LI>Installed srecord software package.
+    <UL>
+    <LI>sudo apt-get install srecord
+    </UL>
+ </UL>
+
+<A NAME="toc4"></A>
+<H1>4. Deployment</H1>
+
+<P>
+1) Clone the git repositori of the the prplHypervisor and make sure you are at master branch:
+</P>
+
+<PRE>
+  git clone https://github.com/prplfoundation/prpl-hypervisor
+  git checkout master 
+</PRE>
+
+<P>
+2) Use the MPLABX IPE to flash the Microchip_UART.hex to the board. It can be found at the prplHypervisor/bin directory.
+</P>
+
+    <UL>
+    <LI>The bootloader was generated from the project <A HREF="https://github.com/chipKIT32/PIC32-avrdude-bootloader">https://github.com/chipKIT32/PIC32-avrdude-bootloader</A>. 
+    <LI>After flashed, the LED1 will keep blinking showing the that the bootloader is ready to upload a hex file.
+    </UL>
+
+<P>
+3) At the prplHypervisor directory use the make command to compile the hypervisor and the sample bare-metal application using the MIPS-MTI toolchain. This process will generate the firmware.bin file. Such file contains the 
+hypervisor and the VM's code. 
+</P>
+
+<PRE>
+  ~/prplHypervisor$: make
+  mips-mti-elf-gcc -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I ./hal/include/ -DCPU_SPEED=200000000  -c hal/microchip/boot.S -o hal/microchip/boot.o
+  mips-mti-elf-gcc -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I ./hal/include/ -DCPU_SPEED=200000000  -c kernel.c -o kernel.o
+  
+  ...
+  
+  mips-mti-elf-objdump -s apps/uart.elf &gt; apps/uart.cnt
+  mips-mti-elf-objcopy -O binary apps/uart.elf apps/uart.bin
+  mips-mti-elf-size apps/uart.elf
+     text    data     bss     dec     hex filename
+     8244      16       8    8268    204c apps/uart.elf
+  make[1]: Leaving directory `/home/crmoratelli/hyper/prplHypervisor/bare-metal-apps'
+  ./genhex.sh uart;
+  0+1 records in
+  1+0 records out
+  65536 bytes (66 kB) copied, 0,000201578 s, 325 MB/s
+  0+1 records in
+  1+0 records out
+  65536 bytes (66 kB) copied, 0,000179478 s, 365 MB/s
+</PRE>
+
+<P>
+4) Upload the resulting firwarem.hex file to the board using "make load" command. For this, use a second USB cable to connect to the board's UART port. 
+</P>
+
+<PRE>
+  ~/prplHypervisor$: make load
+  stty 115200 raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F /dev/ttyACM0
+  ./pic32prog -S -d /dev/ttyACM0 firmware.hex
+  Programmer for Microchip PIC32 microcontrollers, Version 2.0.186
+      Copyright: (C) 2011-2015 Serge Vakulenko
+        Adapter: STK500v2 Bootloader
+   Program area: 1d000000-1d1fffff
+      Processor: Bootloader
+   Flash memory: 2048 kbytes
+    Boot memory: 80 kbytes
+           Data: 131072 bytes
+          Erase: done
+  Program flash: ################################# done
+   Program rate: 6600 bytes per second
+</PRE>
+
+<P>
+5) You can make a cat command to the ttyACM0 dev to see the application output. 
+</P>
+
+<PRE>
+  ~/prplHypervisor#: cat /dev/ttyACM0 
+  Int count: 156115
+  Int count: 157116
+  Int count: 158117
+  Int count: 159117
+  Int count: 160118
+  Int count: 161119
+  Int count: 162120
+  Int count: 163121
+  Int count: 164121
+  Int count: 165122
+  Int count: 166123
+  Int count: 167124
+  ...
+</PRE>
+
+<A NAME="toc5"></A>
+<H1>5. Bare-metal application development</H1>
+
+<P>
+To develop new applications go throught the ~/prplHypervisor/bare-metal-apps/apps directory and see the uart.c example. This is code that is virtualized and executed when the file firmware.hex is flashed to the board.
+</P>
+<P>
+This example does not show how to compile concurrent VMs. A complete example will be provided soon. 
+</P>
+
+<A NAME="toc6"></A>
+<H1>6. Considerations</H1>
+
+<UL>
+<LI>Upload a new firmware to the board requires turn off the board. 
+<LI>On power on, the board will always stop at the bootloader waiting for upload an application. 
+    <UL>
+    <LI>This is for debugging purposes only. 
+    </UL>
+</UL>
+
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags howto.txt -->
+</BODY></HTML>

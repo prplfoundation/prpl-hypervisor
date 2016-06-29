@@ -1,0 +1,126 @@
+Hypervisor Deployment on PIC32MZ2048EFM144 platform.
+
+
+%!target  : html
+%!encoding: utf-8
+%!style  : tutorial.css
+%!options : --toc --enum-title --css-inside
+
+
+= Introduction =
+
+This how-to is intended to show how to compile the hypervisor with a virtualized bare-metal application the PIC32MZ2048EFM144 Microchip SoC without using the MPLABX compiler or linker scripts.
+
+
+= Pre-Requisits =
+
+ - Ubuntu 14.04 LTS or greater. It should work on Debian as well. 
+ - PIC32MZ Embedded Connectivity Starter Kit board and cables. 
+
+ 
+= Thrid part software and tools =
+
+ - MPLABX IPE already installed (used to flash the bootloader for the first time).
+    - You don't need the MPLABX IDE installed, just the IPE. 
+ - MIPS-MTI toolchain already installed. (Download page: https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/)
+ - pic32prog to flash the hypervisor and VMs (Source code: https://github.com/sergev/pic32prog)
+ - git client installed. 
+ - Installed srecord software package.
+    - sudo apt-get install srecord
+ 
+
+= Deployment =
+
+
+1) Clone the git repositori of the the prplHypervisor and make sure you are at master branch:
+
+```
+git clone https://github.com/prplfoundation/prpl-hypervisor
+git checkout master 
+```
+
+2) Use the MPLABX IPE to flash the Microchip_UART.hex to the board. It can be found at the prplHypervisor/bin directory.
+    - The bootloader was generated from the project https://github.com/chipKIT32/PIC32-avrdude-bootloader. 
+    - After flashed, the LED1 will keep blinking showing the that the bootloader is ready to upload a hex file.
+
+
+3) At the prplHypervisor directory use the make command to compile the hypervisor and the sample bare-metal application using the MIPS-MTI toolchain. This process will generate the firmware.bin file. Such file contains the 
+hypervisor and the VM's code. 
+
+```
+~/prplHypervisor$: make
+mips-mti-elf-gcc -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I ./hal/include/ -DCPU_SPEED=200000000  -c hal/microchip/boot.S -o hal/microchip/boot.o
+mips-mti-elf-gcc -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I ./hal/include/ -DCPU_SPEED=200000000  -c kernel.c -o kernel.o
+
+...
+
+mips-mti-elf-objdump -s apps/uart.elf > apps/uart.cnt
+mips-mti-elf-objcopy -O binary apps/uart.elf apps/uart.bin
+mips-mti-elf-size apps/uart.elf
+   text    data     bss     dec     hex filename
+   8244      16       8    8268    204c apps/uart.elf
+make[1]: Leaving directory `/home/crmoratelli/hyper/prplHypervisor/bare-metal-apps'
+./genhex.sh uart;
+0+1 records in
+1+0 records out
+65536 bytes (66 kB) copied, 0,000201578 s, 325 MB/s
+0+1 records in
+1+0 records out
+65536 bytes (66 kB) copied, 0,000179478 s, 365 MB/s
+```
+
+
+4) Upload the resulting firwarem.hex file to the board using "make load" command. For this, use a second USB cable to connect to the board's UART port. 
+
+```
+~/prplHypervisor$: make load
+stty 115200 raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F /dev/ttyACM0
+./pic32prog -S -d /dev/ttyACM0 firmware.hex
+Programmer for Microchip PIC32 microcontrollers, Version 2.0.186
+    Copyright: (C) 2011-2015 Serge Vakulenko
+      Adapter: STK500v2 Bootloader
+ Program area: 1d000000-1d1fffff
+    Processor: Bootloader
+ Flash memory: 2048 kbytes
+  Boot memory: 80 kbytes
+         Data: 131072 bytes
+        Erase: done
+Program flash: ################################# done
+ Program rate: 6600 bytes per second
+```
+
+5) You can make a cat command to the ttyACM0 dev to see the application output. 
+
+```
+~/prplHypervisor#: cat /dev/ttyACM0 
+Int count: 156115
+Int count: 157116
+Int count: 158117
+Int count: 159117
+Int count: 160118
+Int count: 161119
+Int count: 162120
+Int count: 163121
+Int count: 164121
+Int count: 165122
+Int count: 166123
+Int count: 167124
+...
+```
+
+
+= Bare-metal application development =
+
+To develop new applications go throught the ~/prplHypervisor/bare-metal-apps/apps directory and see the uart.c example. This is code that is virtualized and executed when the file firmware.hex is flashed to the board.
+
+This example does not show how to compile concurrent VMs. A complete example will be provided soon. 
+
+= Considerations =
+
+- Upload a new firmware to the board requires turn off the board. 
+- On power on, the board will always stop at the bootloader waiting for upload an application. 
+    - This is for debugging purposes only. 
+
+
+
+

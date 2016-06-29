@@ -59,8 +59,9 @@ $(MICROCHIP)/chipset.o
 APP = prplHypervisor.elf
 BIN = prplHypervisor
 
+APP_LIST= uart
 
-all: $(APP)
+all: $(APP) apps generate_firmware
 
 $(APP): $(OBJS)
 	$(LD_MIPS) $(LDFLAGS)  $^ -o $@
@@ -81,11 +82,20 @@ serial:
 	stty ${BAUDRATE} raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F ${SERIAL_DEV}
 
 load: serial
-	./pic32prog -S -d ${SERIAL_DEV} $(BIN).hex
+	./pic32prog -S -d ${SERIAL_DEV} firmware.hex
 
 debug: serial
 	cat ${SERIAL_DEV}
+	
+apps:
+	for i in $(APP_LIST) ; do \
+		$(MAKE) -C bare-metal-apps/ APP_NAME=$$i \
+	;done
 
+generate_firmware:
+	$(foreach var, $(APP_LIST), ./genhex.sh $(var);)
+
+	
 clean:
 	rm -f $(APP) $(OBJS)
 	rm -f $(BIN).lst
@@ -93,3 +103,4 @@ clean:
 	rm -f $(BIN).cnt
 	rm -f $(BIN).bin
 	rm -f $(BIN).hex
+	$(MAKE) -C bare-metal-apps/ clean
