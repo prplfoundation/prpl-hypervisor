@@ -82,7 +82,7 @@ int main() {
     asm volatile ("ei");
     
     while(1){
-        printf("\nMove roboot: %d", t2);
+        printf("\nMove robot: %d", t2);
         udelay(1000000);
     }
     
