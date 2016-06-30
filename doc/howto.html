@@ -162,11 +162,22 @@ hypervisor and the VM's code.
 <H1>5. Bare-metal application development</H1>
 
 <P>
-To develop new applications go throught the ~/prplHypervisor/bare-metal-apps/apps directory and see the uart.c example. This is code that is virtualized and executed when the file firmware.hex is flashed to the board.
+To develop new applications move to the ~/prplHypervisor/bare-metal-apps/apps directory and see the arm-control.c, uart.c and blink.c examples. This is the code that is virtualized and executed when the file firmware.hex is flashed to the board.
 </P>
 <P>
-This example does not show how to compile concurrent VMs. A complete example will be provided soon. 
+The hypervisor can be configured for up to 3 bare-metal applications (virtual machines). Each virtual machine has 64Kb of SRAM and 32Kb of flash code. Virtual machines with more hardware 
+capacity can be added. But, this requires a different configuration file (config.h). Contact the PUCRS team for support. 
 </P>
+<P>
+To configure the enviroment to generate a system configuration with a different number of VMs is necessary a minor modification at the main Makefile. Thus,
+open the file ~/prplHypervisor/Makefile and modify the variable APP_LIST. This variable must contain the names of the desired bare-metal applications. The following 
+example generates a virtualized system with the applications uart, arm-control and blink. 
+</P>
+
+<PRE>
+  #List of bare-metal applications 
+  APP_LIST= uart arm-control blink
+</PRE>
 
 <A NAME="toc6"></A>
 <H1>6. Considerations</H1>

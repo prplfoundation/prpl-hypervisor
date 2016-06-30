@@ -13,6 +13,13 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
+#List of bare-metal applications 
+APP_LIST= uart arm-control blink
+
+########################################################################################################
+# SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES#
+########################################################################################################
+
 
 # Setup PIC32MZEF core configuration to be used with pic32mzef_boot__v0_1.hex
 BAUDRATE=115200
@@ -59,9 +66,7 @@ $(MICROCHIP)/chipset.o
 APP = prplHypervisor.elf
 BIN = prplHypervisor
 
-APP_LIST= uart
-
-all: $(APP) apps generate_firmware
+all: clean config_vms $(APP) apps generate_firmware
 
 $(APP): $(OBJS)
 	$(LD_MIPS) $(LDFLAGS)  $^ -o $@
@@ -93,7 +98,12 @@ apps:
 	;done
 
 generate_firmware:
-	$(foreach var, $(APP_LIST), ./genhex.sh $(var);)
+	./scripts/genhex.sh $(APP_LIST)
+
+config_vms:
+	./scripts/config.sh $(APP_LIST)
+	
+	
 
 	
 clean:
