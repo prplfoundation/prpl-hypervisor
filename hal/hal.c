@@ -37,7 +37,6 @@ static void print_config(void)
         printf("\nHeap size:     %dKbytes", HEAP_SIZE/1024);
         printf("\nScheduler      %dms", QUANTUM/100000);
         printf("\nVMs:           %d\n", NVMACHINES);
-        printf("\n guestclt0:    0x%x", hal_lr_guestctl0());
 }
 
 

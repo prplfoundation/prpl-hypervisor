@@ -158,6 +158,26 @@ int32_t HypercallHandler(){
 			
 			break;
 		}
+
+                case HCALL_PUF_SHARED_MEMORY:{
+                        
+                        vcpu_t* vcpu = curr_vcpu;
+
+                        /* Getting parameters from guest*/
+                        uint32_t source_id  = MoveFromPreviousGuestGPR(REG_A0); /* Maybe you want to keep track of the guest ID for control purposes. */
+                        char* buffer_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1); /* pointer to the guest buffer */
+                        
+                        /* Copy the message the receiver */
+                        char* buffer_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buffer_ptr, curr_vm->base_addr, 32, 0xf); /* map the guest memory */
+                        
+                        printf("\nGuest buffer as seen by the hypervisor : %s", buffer_ptr_mapped);
+                        
+                        /* Write on guest's buffer */
+                        strcpy(buffer_ptr_mapped, "Hello! You are my guest!");
+                        
+                        break;
+                }
+		
 		case HCALL_INTERRUPT_GUEST:{
 			vcpu_t* vcpu;
 			

@@ -165,7 +165,23 @@ hyp_ipc_receive_message:
         jr $ra
         nop
         .end hyp_ipc_receive_message
+        
 
+        .global hyp_puf_shared_memory
+hyp_puf_shared_memory:
+        .ent hyp_puf_shared_memory
+        hypcall 0x150
+        jr $ra
+        nop
+        .end hyp_puf_shared_memory
+        
+        .global hyp_get_guest_id
+hyp_get_guest_id:
+        .ent hyp_get_guest_id
+        hypcall 0x200
+        jr $ra
+        nop
+        .end hyp_get_guest_id
         
         .global spinlock
         .ent spinlock

@@ -70,3 +70,23 @@ void irq_network(){
                 message_list.num_messages++;
         }
 }
+
+void print_net_error(int32_t error){
+    switch (error){
+        case MESSAGE_VCPU_NOT_FOUND:
+            printf("\nTarget VCPU not found.");
+            break;
+        case MESSAGE_FULL:
+            printf("\nMessage queue full on the target VCPU.");
+            break;
+        case  MESSAGE_TOO_BIG:
+            printf("\nMessage too big.");
+            break;
+        case MESSAGE_EMPTY:
+            printf("\nReceiver queue empty.");
+            break;
+        default:
+            printf("\nUnkown error 0x%x", error);
+            break;
+        }
+}

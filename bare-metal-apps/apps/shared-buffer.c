@@ -15,11 +15,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-
+/* Shared buffer example for PUF */
 
 #include <pic32mz.h>
 #include <libc.h>
-#include <network.h>
 
 
 volatile int32_t t2 = 0;
@@ -28,22 +27,24 @@ void irq_timer(){
  t2++;     
 }
 
-
-char message_buffer[] = "hello world!";
-
+char buffer[32] = "abcdefghijklmnopkrstuvxzABCDEFGH";
 
 int main() {
-    int32_t ret;
     
-    while (1){
-        ret = SendMessage(1, message_buffer, strlen(message_buffer)+1);
-        if (ret<=0){
-            print_net_error(ret);
-        }
-
-        udelay(4000000);
-   }
+    /* get guest id */
+    uint32_t guestid = hyp_get_guest_id();
     
+    printf("Guest ID: %d", guestid);
+    
+    /* share buffer with the hypervisor */
+    hyp_puf_shared_memory(guestid, buffer);
+    
+    /* printf the hypervisor message */
+    printf("\nModified guest buffer: %s", buffer);
+    
+    /* do nothing */
+    while(1);
+        
     return 0;
 }
 

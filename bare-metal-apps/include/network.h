@@ -24,6 +24,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define MESSAGELIST_SZ  10
 #define MESSAGE_SZ      128
 
+
+/** Return values for inter-vm communication hypercalls  */
+#define MESSAGE_VCPU_NOT_FOUND  -1
+#define MESSAGE_FULL            -2
+#define MESSAGE_TOO_BIG         -3
+#define MESSAGE_EMPTY            0
+
+
 /** Struct for message exchange 
     It is a circular buffer. Message_list is a char matrix statically allocated.
  */

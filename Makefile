@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #List of bare-metal applications 
-APP_LIST=  arm-control uart
+APP_LIST=  shared-buffer
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES#
