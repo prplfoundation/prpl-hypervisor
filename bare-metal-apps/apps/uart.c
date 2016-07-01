@@ -82,7 +82,7 @@ int main() {
     
 
     while (1){
-        printf("\nInt count: %d", t2);
+        // printf("\nInt count: %d", t2);
         udelay(1000000);
    }
     
