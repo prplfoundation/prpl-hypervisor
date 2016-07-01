@@ -10,3 +10,5 @@
 **/*.sec
 **/*.hex
 
+include/config.h
+
