@@ -67,3 +67,10 @@ extern void srand(uint32_t seed);
 extern int32_t printf(const int8_t *fmt, ...);
 extern int32_t sprintf(int8_t *out, const int8_t *fmt, ...);
 
+typedef unsigned int mutex_t;
+
+void lock(mutex_t *mutex);
+void spinlock(mutex_t *mutex);
+void unlock(mutex_t *mutex);
+
+

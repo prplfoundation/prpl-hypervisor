@@ -499,3 +499,28 @@ int sprintf(int8_t *out, const int8_t *fmt, ...){
         va_start(args, fmt);
         return print(&out, fmt, args);
 }
+
+
+void udelay(uint32_t usec){
+    uint32_t now = mfc0 (CP0_COUNT, 0);
+    uint32_t final = now + usec * (CPU_SPEED / 1000000) / 2;
+
+    for (;;) {
+        now = mfc0 (CP0_COUNT, 0);
+        if ((int32_t) (now - final) >= 0) break;
+    }
+}
+
+void putchar(int32_t value){
+    while(U2STA & USTA_UTXBF);
+    U2TXREG = value;    
+}
+
+int32_t kbhit(void){
+        return (U2STA & USTA_URXDA);
+}
+
+int32_t getchar(void){
+    while(!kbhit());
+    return (uint8_t)U2RXREG;
+}

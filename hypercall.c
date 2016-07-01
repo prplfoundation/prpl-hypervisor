@@ -85,7 +85,7 @@ int32_t HypercallHandler(){
 			uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
 			char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1); 
 			uint32_t message_size = MoveFromPreviousGuestGPR(REG_A2);
-			
+                        
 			/* check if the message has acceptable size */
 			if(message_size > MESSAGE_SZ){
 				MoveToPreviousGuestGPR(REG_V0, MESSAGE_TOO_BIG);
@@ -112,13 +112,12 @@ int32_t HypercallHandler(){
 			memcpy(vcpu->messages.message_list[vcpu->messages.in].message,message_ptr_mapped,message_size);
 			vcpu->messages.message_list[vcpu->messages.in].size = message_size;
 			vcpu->messages.message_list[vcpu->messages.in].source_id = curr_vcpu->id;
-			
+                        
 			vcpu->messages.num_messages++;
 			vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
 			
 			/* generate virtual interrupt to guest */
-			vcpu->guestclt2 |= (1<<NETWORK_VINTERRUPT);
-			vcpu->cp0_registers[12][0] |= (1<<NETWORK_VINTERRUPT);
+			vcpu->guestclt2 |= (2<<GUESTCLT2_GRIPL_SHIFT);
 				
 			/* Return success to sender */
 			MoveToPreviousGuestGPR(REG_V0, message_size);
@@ -146,7 +145,7 @@ int32_t HypercallHandler(){
 
 			/* Copy the message the receiver */
 			messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
-			char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vcpu->vm->base_addr, messagesz, 0x1f);
+			char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vcpu->vm->base_addr, messagesz, 0xf);
 			memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
 			
 			/* Return the message size to the receiver */

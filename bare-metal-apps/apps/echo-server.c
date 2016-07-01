@@ -15,7 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+
 
 #include <pic32mz.h>
 #include <libc.h>
@@ -28,11 +28,14 @@ void irq_timer(){
 }
 
 
+char buffer[128];
+
 int main() {
-    
+    uint32_t source;
     while (1){
-        printf("\nInt count: %d", t2);
-        udelay(1000000);
+        ReceiveMessage(&source, buffer);
+        printf("\n%s", buffer);
+        //udelay(4000000);
    }
     
     return 0;

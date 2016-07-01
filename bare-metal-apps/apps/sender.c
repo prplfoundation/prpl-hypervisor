@@ -15,7 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+
 
 #include <pic32mz.h>
 #include <libc.h>
@@ -28,11 +28,17 @@ void irq_timer(){
 }
 
 
+char message_buffer[] = "hello world!";
+
+
 int main() {
     
+    asm volatile("hypcall 0x123");
+    
     while (1){
-        printf("\nInt count: %d", t2);
-        udelay(1000000);
+        SendMessage(1, message_buffer, strlen(message_buffer)+1);
+        printf("\nsent");
+        udelay(4000000);
    }
     
     return 0;

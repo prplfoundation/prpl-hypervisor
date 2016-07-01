@@ -15,26 +15,36 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+#ifndef NETWORK_H
+#define NETWORK_H
 
 #include <pic32mz.h>
-#include <libc.h>
 
 
-volatile int32_t t2 = 0;
+#define MESSAGELIST_SZ  10
+#define MESSAGE_SZ      128
 
-void irq_timer(){
- t2++;     
-}
+/** Struct for message exchange 
+    It is a circular buffer. Message_list is a char matrix statically allocated.
+ */
+typedef struct{
+        uint32_t source_id;
+        uint32_t size; /* size of each message in message_list */
+        uint8_t message[MESSAGE_SZ];
+} message_t;
+
+typedef struct {
+        uint32_t in;
+        uint32_t out;
+        uint32_t num_messages;
+        message_t messages[MESSAGELIST_SZ];
+} message_buffer_t;
 
 
-int main() {
-    
-    while (1){
-        printf("\nInt count: %d", t2);
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+void init_network();
+int ReceiveMessage(int *source, char *message);
+int SendMessage(unsigned target_id, void* message, unsigned size);
+void network_int_handler();
+
+#endif
 

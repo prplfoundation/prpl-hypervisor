@@ -50,7 +50,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define VMCONF_NUMCOLUNS 6
 
 
-#define VMCONF {0x9d010000, 0x4000,     3,              HELLFIRE,         0,        0x9d001000, \
+#define VMCONF {80010000, 0x4000,     3,              HELLFIRE,         0,        0x9d001000, \
                 1,              0x1d010,        0x1d014,        PAGEMASK_16KB,  0x1d000,    2, \
                 1,              0x00010,        0,              PAGEMASK_64KB,   0x00000,    2, \
                 1,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \

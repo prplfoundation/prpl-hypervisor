@@ -125,6 +125,10 @@ $COPY_DATA:
 	bnez	$v1, $COPY_DATA
 	nop
 
+	jal     init_proc
+	nop
+	jal     init_network
+	nop
         jal     main
         nop
 $L1:
@@ -144,3 +148,57 @@ hypcall_enable_timer:
         .set reorder
 .end hypcall_enable_timer
 
+        
+        .global hyp_ipc_send_message
+hyp_ipc_send_message:
+        .ent hyp_ipc_send_message
+        hypcall 0x300
+        jr $ra
+        nop
+        .end hyp_ipc_send_message
+
+        .global hyp_ipc_receive_message
+hyp_ipc_receive_message:
+        .ent hyp_ipc_receive_message
+        hypcall 0x301
+        sw $v1, 0($a0)
+        jr $ra
+        nop
+        .end hyp_ipc_receive_message
+
+        
+        .global spinlock
+        .ent spinlock
+spinlock:
+        ll $t0, 0($a0)
+        bne $t0, $zero, spinlock
+        addiu $t0, $zero, 1
+        sc $t0, 0($a0)
+        beq $t0, $zero, spinlock
+        nop
+        jr $ra
+        nop
+        .end spinlock
+
+        .global lock
+lock:
+        .ent lock
+        ll $t0, 0($a0)
+        bne $t0, $zero, .lock_failed
+        addiu $t0, $zero, 1
+        sc $t0, 0($a0)
+        beq $t0, $zero, .lock_failed
+        nop
+        jr $ra
+        addiu $v0, $zero, 1
+.lock_failed:
+        jr $ra
+        addiu $v0, $zero, 0
+        .end lock
+
+        .global unlock
+unlock:
+        .ent unlock
+        jr $ra
+        sw $zero, 0($a0)
+        .end unlock
