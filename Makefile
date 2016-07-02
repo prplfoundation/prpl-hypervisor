@@ -94,6 +94,7 @@ debug: serial
 	cat ${SERIAL_DEV}
 	
 apps:
+	mkdir -p bare-metal-apps/build/bin
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C bare-metal-apps/ clean; \
 		$(MAKE) -C bare-metal-apps/ APP_NAME=$$i \
@@ -116,4 +117,4 @@ clean:
 	rm -f $(BIN).bin
 	rm -f $(BIN).hex
 	$(MAKE) -C bare-metal-apps/ clean
-	rm -rf bare-metal-apps/build/bin/*
+	rm -rf bare-metal-apps/build
