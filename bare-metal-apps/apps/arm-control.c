@@ -33,6 +33,17 @@ void _irq_handler(uint32_t status, uint32_t cause)
     t2++;
 }
 
+void init_uart3(uint32_t baudrate, uint32_t sysclk)
+{
+    // setup uart3 tx on
+    RPD10R |= 0x01;
+
+    U3MODE = 0;         // disable autobaud, TX and RX enabled only, 8N1, idle=HIGH
+    U3STA = 0x1400;     // enable TX and RX
+    U3BRG = ((int)( ((sysclk/2) / (16*baudrate)) -1)) + 1;
+    U3MODESET = 0x8840;
+}
+
 void udelay(uint32_t usec){
     uint32_t now = mfc0 (CP0_COUNT, 0);
     uint32_t final = now + usec * (CPU_SPEED / 1000000) / 2;
@@ -46,6 +57,11 @@ void udelay(uint32_t usec){
 void putchar(int32_t value){
     while(U2STA & USTA_UTXBF);
     U2TXREG = value;
+}
+
+void putchar3(int32_t value){
+    while(U3STA & USTA_UTXBF);
+    U3TXREG = value;
 }
 
 int32_t kbhit(void){
@@ -149,10 +165,16 @@ int main() {
 
     asm volatile ("ei");
     
+    init_uart3(115200, 200000000);
+    // init_uart(115200, 200000000);
+
 	stop_sequence();
 
     while(1) {
-    	start_sequence(action_light_on, sizeof(action_light_on) / sizeof(struct owi_command));
+    	// start_sequence(action_light_on, sizeof(action_light_on) / sizeof(struct owi_command));
+
+    	putchar3('h');
+    	udelay(2000000);
     }
     
     return 0;
