@@ -38,7 +38,7 @@ custom C library
 */
 extern void putchar(int32_t value);
 extern int32_t kbhit(void);
-extern int32_t getchar(void);
+extern uint8_t getchar(void);
 extern int8_t *strcpy(int8_t *dst, const int8_t *src);
 extern int8_t *strncpy(int8_t *s1, int8_t *s2, int32_t n);
 extern int8_t *strcat(int8_t *dst, const int8_t *src);

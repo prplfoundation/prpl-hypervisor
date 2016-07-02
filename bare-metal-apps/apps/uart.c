@@ -29,6 +29,8 @@ void irq_timer(){
 
 
 int main() {
+    /* Select output serial 2 = UART2, 4 = UART4 */
+    serial_select(4);
     
     while (1){
         printf("\nInt count: %d", t2);

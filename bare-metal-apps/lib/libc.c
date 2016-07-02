@@ -18,6 +18,20 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <libc.h>
 
+static uint32_t serial_port = 2;
+
+int32_t serial_select(uint32_t serial_number){
+    /* select serial 2 or 4 as output */
+    switch (serial_number){
+        case 2: serial_port = 2;
+                return 2;
+        case 4: serial_port = 4;
+                return 4;
+        default:
+            return -1;
+    }
+}
+
 int8_t *strcpy(int8_t *dst, const int8_t *src){
 	int8_t *dstSave=dst;
 	int32_t c;
@@ -512,15 +526,28 @@ void udelay(uint32_t usec){
 }
 
 void putchar(int32_t value){
-    while(U2STA & USTA_UTXBF);
-    U2TXREG = value;    
+    if (serial_port == 2){
+        while(U2STA & USTA_UTXBF);
+        U2TXREG = value;    
+    }else if (serial_port == 4){
+        while(U4STA & USTA_UTXBF);
+        U4TXREG = value;    
+    }
 }
 
 int32_t kbhit(void){
+    if (serial_port == 2){
         return (U2STA & USTA_URXDA);
+    }else if (serial_port == 4){
+        (U4STA & USTA_URXDA);
+    }
 }
 
-int32_t getchar(void){
+uint8_t getchar(void){
     while(!kbhit());
-    return (uint8_t)U2RXREG;
+    if (serial_port == 2){
+        return (uint8_t)U2RXREG;
+    }else if (serial_port == 4){
+        return (uint8_t)U4RXREG;
+    }
 }

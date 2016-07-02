@@ -48,7 +48,7 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     freq_config();
     
     /* UART start */
-    init_uart(115200, 200000000);
+    init_uart(115200, 9600, 200000000);
     
     print_config();
     
