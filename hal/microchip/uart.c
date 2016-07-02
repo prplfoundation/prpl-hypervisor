@@ -5,6 +5,8 @@
 
 void init_uart(uint32_t baudrate_u2, uint32_t baudrate_u4, uint32_t sysclk){
 
+    U2RXR = 1;  // RPG6 -> U2RX
+    RPB14R = 2; //RPB14R ->U2TX
 
     U2MODE = 0;         // disable autobaud, TX and RX enabled only, 8N1, idle=HIGH
     U2STA = 0x1400;     // enable TX and RX
