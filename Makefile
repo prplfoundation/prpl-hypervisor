@@ -61,6 +61,7 @@ $(HAL)/hal.o \
 $(HAL)/tlb.o \
 $(HAL)/vcpu.o \
 $(HAL)/common.o \
+$(MICROCHIP)/flash.o \
 $(MICROCHIP)/uart.o \
 $(MICROCHIP)/chipset.o 
 
