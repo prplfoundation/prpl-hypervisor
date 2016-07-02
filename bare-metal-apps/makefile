@@ -16,15 +16,15 @@ all:
 	$(AS_MIPS) -o build/crt0.o lib/crt0.s
 	$(GCC_MIPS) -o build/libc.o lib/libc.c
 	$(GCC_MIPS) -o build/platform.o lib/platform.c
+	$(GCC_MIPS) -o build/network.o lib/network.c	
 	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c
-	$(GCC_MIPS) -o build/network.o lib/network.c
-	$(LD_MIPS) -Tlib/pic32mz.ld -Map build/$(APP_NAME).map -N -o build/$(APP_NAME).elf \
-		build/crt0.o build/network.o build/libc.o build/platform.o build/$(APP_NAME).o
-	$(DUMP_MIPS) --disassemble --reloc build/$(APP_NAME).elf > build/$(APP_NAME).lst
-	$(DUMP_MIPS) -h build/$(APP_NAME).elf > build/$(APP_NAME).sec
-	$(DUMP_MIPS) -s build/$(APP_NAME).elf > build/$(APP_NAME).cnt
-	$(OBJ_MIPS) -O binary build/$(APP_NAME).elf build/$(APP_NAME).bin
-	$(SIZE_MIPS) build/$(APP_NAME).elf
+	$(LD_MIPS) -Tlib/pic32mz.ld -Map build/$(APP_NAME).map -N -o build/bin/$(APP_NAME).elf \
+		build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o
+	$(DUMP_MIPS) --disassemble --reloc build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).lst
+	$(DUMP_MIPS) -h build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).sec
+	$(DUMP_MIPS) -s build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).cnt
+	$(OBJ_MIPS) -O binary build/bin/$(APP_NAME).elf build/bin/$(APP_NAME).bin
+	$(SIZE_MIPS) build/bin/$(APP_NAME).elf
 
 clean:
 	-rm -rf *~ *.o *.axf *.map *.lst *.sec *.cnt *.txt *.bin *.srec *.hex *.elf

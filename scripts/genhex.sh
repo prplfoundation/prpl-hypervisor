@@ -19,7 +19,7 @@ dd if=prplHypervisor.bin of=/tmp/prplHypervisor.bin bs=64K conv=sync
 
 for i in $*; do 
     ## fill the VMs binary file to 32Kb
-    dd if=bare-metal-apps/build/$i.bin of=/tmp/$i.bin bs=32K conv=sync
+    dd if=bare-metal-apps/build/bin/$i.bin of=/tmp/$i.bin bs=32K conv=sync
 done
 
 rm -rf /tmp/tmp.bin

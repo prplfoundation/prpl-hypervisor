@@ -145,9 +145,9 @@ int32_t HypercallHandler(){
 
 			/* Copy the message the receiver */
 			messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
-			char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vcpu->vm->base_addr, messagesz, 0xf);
+			char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, curr_vm->base_addr, messagesz, 0xf);
 			memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
-			
+                        
 			/* Return the message size to the receiver */
 			MoveToPreviousGuestGPR(REG_V0, messagesz);
 			MoveToPreviousGuestGPR(REG_V1, vcpu->messages.message_list[vcpu->messages.out].source_id); 

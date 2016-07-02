@@ -19,9 +19,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define NETWORK_H
 
 #include <pic32mz.h>
+#include <libc.h>
 
 
-#define MESSAGELIST_SZ  10
+#define MESSAGELIST_SZ  5
 #define MESSAGE_SZ      128
 
 
@@ -35,22 +36,23 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /** Struct for message exchange 
     It is a circular buffer. Message_list is a char matrix statically allocated.
  */
-typedef struct{
+struct message_t{
         uint32_t source_id;
         uint32_t size; /* size of each message in message_list */
         uint8_t message[MESSAGE_SZ];
-} message_t;
+};
 
-typedef struct {
+
+struct message_list_t{
         uint32_t in;
         uint32_t out;
         uint32_t num_messages;
-        message_t messages[MESSAGELIST_SZ];
-} message_buffer_t;
+        struct message_t messages[MESSAGELIST_SZ];
+};
 
 
 void init_network();
-int ReceiveMessage(int *source, char *message);
+int ReceiveMessage(int *source, char *message, int block);
 int SendMessage(unsigned target_id, void* message, unsigned size);
 void network_int_handler();
 

@@ -16,6 +16,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 
+/*************************************************************
+ * Ping-Pong application - Inter-VM communication.
+ * To execute the Ping-Pong modify the APP_LIST variable in 
+ * the main Makefile to compile the ping.c and pong.c files.
+ * Example:
+ *      APP_LIST=  ping pong
+ * */
+
 
 #include <pic32mz.h>
 #include <libc.h>
@@ -29,20 +37,24 @@ void irq_timer(){
 }
 
 
-char message_buffer[] = "hello world!";
+char message_buffer[128];
 
 
 int main() {
-    int32_t ret;
-    
+    int32_t ret, source;
+    printf("\nping VM ID %d", hyp_get_guest_id());
     while (1){
-        ret = SendMessage(1, message_buffer, strlen(message_buffer)+1);
+        udelay(1000000); /* send a message by second. */        
+        sprintf(message_buffer, "%s %d", "ping?", t2);
+        ret = SendMessage(2, message_buffer, strlen(message_buffer)+1);
         if (ret<=0){
             print_net_error(ret);
+        }else{
+            ret = ReceiveMessage(&source, message_buffer, 1);
+            if(ret)
+                printf("\nping VM: message from VM ID %d: \"%s\" (%d bytes)", source, message_buffer, ret);
         }
-
-        udelay(4000000);
-   }
+    }
     
     return 0;
 }
