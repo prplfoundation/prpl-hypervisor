@@ -90,7 +90,7 @@ serial:
 	stty ${BAUDRATE} raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F ${SERIAL_DEV}
 
 load: serial
-	./pic32prog -S -d ${SERIAL_DEV} firmware.hex
+	./bin/pic32prog -S -d ${SERIAL_DEV} firmware.hex
 
 debug: serial
 	cat ${SERIAL_DEV}
