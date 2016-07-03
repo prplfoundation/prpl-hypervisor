@@ -3,13 +3,21 @@
 #include "pic32mz.h"
 
 
-void init_uart(uint32_t baudrate, uint32_t sysclk){
+void init_uart(uint32_t baudrate_u2, uint32_t baudrate_u4, uint32_t sysclk){
 
 
     U2MODE = 0;         // disable autobaud, TX and RX enabled only, 8N1, idle=HIGH
     U2STA = 0x1400;     // enable TX and RX
-    U2BRG = ((int)( ((sysclk/2) / (16*baudrate)) -1)) + 1;
-    U2MODESET = 0x8840;
+    U2BRG = ((int)( ((sysclk/2) / (16*baudrate_u2)) -1)) + 1;
+    U2MODESET = 0x8810;
+    
+    RPG6R = 0x2; /* RPG6 to UART4 TX */
+    U4RXR = 0x2;  /* RPB14 to UART4 RX */
+    
+    U4MODE = 0;         // disable autobaud, TX and RX enabled only, 8N1, idle=HIGH
+    U4STA = 0x1400;     // enable TX and RX
+    U4BRG = ((int)( ((sysclk/2) / (16*baudrate_u4)) -1)) + 1;
+    U4MODESET = 0x8810;
     
 }
 

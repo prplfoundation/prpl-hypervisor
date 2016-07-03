@@ -35,7 +35,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /* 200MHz core - counter at 100Mhz */
 #define MILISECOND    (100000000 / 1000)
 /* Scheduler Quantum */
-#define QUANTUM     (3 * MILISECOND)
+#define QUANTUM     (1 * MILISECOND)
 
 /* Heap configuration */
 
@@ -50,11 +50,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define VMCONF_NUMCOLUNS 6
 
 
-#define VMCONF {0x9d010000, 0x4000,     3,              BAREOS,         0,        0x9d001000, \
+#define VMCONF {0x80010000, 0x4000,     3,              BAREOS,         0,        0x9d001000, \
                 1,              0x1d010,        0x1d014,         PAGEMASK_16KB,  0x1d000,    2, \
                 1,              0x00010,        0,              PAGEMASK_64KB,   0x00000,    2, \
                 1,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \
-                0x9d018000,     0x4000,   3,              BAREOS,         0,        0x9d001000, \
+                0x80020000,     0x4000,   3,              BAREOS,         0,        0x9d001000, \
                 2,              0x1d018,        0x1d01c,        PAGEMASK_16KB,   0x1d000,    2, \
                 2,              0x00020,        0,              PAGEMASK_64KB,   0x00000,    2, \
                 2,              0x1f822,        0,              PAGEMASK_4KB,   0x1f822,    2, \

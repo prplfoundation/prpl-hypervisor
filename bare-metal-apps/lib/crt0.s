@@ -125,6 +125,10 @@ $COPY_DATA:
 	bnez	$v1, $COPY_DATA
 	nop
 
+	jal     init_proc
+	nop
+	jal     init_network
+	nop
         jal     main
         nop
 $L1:
@@ -144,3 +148,87 @@ hypcall_enable_timer:
         .set reorder
 .end hypcall_enable_timer
 
+        
+        .global hyp_ipc_send_message
+        .ent hyp_ipc_send_message
+hyp_ipc_send_message:
+        .set noreorder 
+        hypcall 0x300
+        jr $ra
+        nop
+        .end hyp_ipc_send_message
+
+        .global hyp_ipc_receive_message
+        .ent hyp_ipc_receive_message
+hyp_ipc_receive_message:
+        .set noreorder 
+        hypcall 0x301
+        sw $v1, 0($a0)
+        jr $ra
+        nop
+.end hyp_ipc_receive_message
+        
+
+        .global hyp_puf_shared_memory
+        .ent hyp_puf_shared_memory        
+hyp_puf_shared_memory:
+        .set noreorder 
+        hypcall 0x150
+        jr $ra
+        nop
+        .set reorder
+.end hyp_puf_shared_memory
+        
+        .global hyp_get_guest_id
+        .ent hyp_get_guest_id        
+hyp_get_guest_id:
+        .set noreorder 
+        hypcall 0x200
+        jr $ra
+        nop
+        .set reorder        
+.end hyp_get_guest_id
+        
+        
+        
+        .global spinlock
+        .ent spinlock
+spinlock:
+        .set noreorder 
+        ll $t0, 0($a0)
+        bne $t0, $zero, spinlock
+        addiu $t0, $zero, 1
+        sc $t0, 0($a0)
+        beq $t0, $zero, spinlock
+        nop
+        jr $ra
+        nop
+        .set reorder        
+        .end spinlock
+
+        .global lock
+        .ent lock
+lock:
+        .set noreorder 
+        ll $t0, 0($a0)
+        bne $t0, $zero, .lock_failed
+        addiu $t0, $zero, 1
+        sc $t0, 0($a0)
+        beq $t0, $zero, .lock_failed
+        nop
+        jr $ra
+        addiu $v0, $zero, 1
+.lock_failed:
+        jr $ra
+        addiu $v0, $zero, 0
+        .set reorder                
+.end lock
+
+        .global unlock
+        .ent unlock
+unlock:
+        .set noreorder 
+        jr $ra
+        sw $zero, 0($a0)
+        .set reorder                
+.end unlock

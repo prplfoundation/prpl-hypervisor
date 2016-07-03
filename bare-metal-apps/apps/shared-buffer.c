@@ -15,7 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+/* Shared buffer example for PUF */
 
 #include <pic32mz.h>
 #include <libc.h>
@@ -24,16 +24,27 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 volatile int32_t t2 = 0;
 
 void irq_timer(){
-    t2++;
+ t2++;     
 }
 
-int main() {
+char buffer[32] = "abcdefghijklmnopkrstuvxzABCDEFGH";
 
-    while (1){
-        // printf("\nblink: %d", t2);
-        udelay(1000000);
-   }
+int main() {
     
+    /* get guest id */
+    uint32_t guestid = hyp_get_guest_id();
+    
+    printf("Guest ID: %d", guestid);
+    
+    /* share buffer with the hypervisor */
+    hyp_puf_shared_memory(guestid, buffer);
+    
+    /* printf the hypervisor message */
+    printf("\nModified guest buffer: %s", buffer);
+    
+    /* do nothing */
+    while(1);
+        
     return 0;
 }
 

@@ -61,6 +61,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define HCALL_HALT_GUEST 0x001
 #define HCALL_START_TIMER_GUEST 0x002
 
+/* PUF hypercalls */
+#define HCALL_PUF_SHARED_MEMORY 0x150
+
 
 
 #endif

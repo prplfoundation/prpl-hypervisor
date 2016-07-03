@@ -14,7 +14,8 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #List of bare-metal applications 
-APP_LIST= uart arm-control blink
+APP_LIST=  ping pong
+#APP_LIST=  shared-buffer
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES#
@@ -93,7 +94,9 @@ debug: serial
 	cat ${SERIAL_DEV}
 	
 apps:
+	mkdir -p bare-metal-apps/build/bin
 	for i in $(APP_LIST) ; do \
+		$(MAKE) -C bare-metal-apps/ clean; \
 		$(MAKE) -C bare-metal-apps/ APP_NAME=$$i \
 	;done
 
@@ -114,3 +117,4 @@ clean:
 	rm -f $(BIN).bin
 	rm -f $(BIN).hex
 	$(MAKE) -C bare-metal-apps/ clean
+	rm -rf bare-metal-apps/build

@@ -18,6 +18,20 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <libc.h>
 
+static uint32_t serial_port = 2;
+
+int32_t serial_select(uint32_t serial_number){
+    /* select serial 2 or 4 as output */
+    switch (serial_number){
+        case 2: serial_port = 2;
+                return 2;
+        case 4: serial_port = 4;
+                return 4;
+        default:
+            return -1;
+    }
+}
+
 int8_t *strcpy(int8_t *dst, const int8_t *src){
 	int8_t *dstSave=dst;
 	int32_t c;
@@ -498,4 +512,42 @@ int sprintf(int8_t *out, const int8_t *fmt, ...){
         
         va_start(args, fmt);
         return print(&out, fmt, args);
+}
+
+
+void udelay(uint32_t usec){
+    uint32_t now = mfc0 (CP0_COUNT, 0);
+    uint32_t final = now + usec * (CPU_SPEED / 1000000) / 2;
+
+    for (;;) {
+        now = mfc0 (CP0_COUNT, 0);
+        if ((int32_t) (now - final) >= 0) break;
+    }
+}
+
+void putchar(int32_t value){
+    if (serial_port == 2){
+        while(U2STA & USTA_UTXBF);
+        U2TXREG = value;    
+    }else if (serial_port == 4){
+        while(U4STA & USTA_UTXBF);
+        U4TXREG = value;    
+    }
+}
+
+int32_t kbhit(void){
+    if (serial_port == 2){
+        return (U2STA & USTA_URXDA);
+    }else if (serial_port == 4){
+        (U4STA & USTA_URXDA);
+    }
+}
+
+uint8_t getchar(void){
+    while(!kbhit());
+    if (serial_port == 2){
+        return (uint8_t)U2RXREG;
+    }else if (serial_port == 4){
+        return (uint8_t)U4RXREG;
+    }
 }

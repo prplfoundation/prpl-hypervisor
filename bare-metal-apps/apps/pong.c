@@ -15,7 +15,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+/*************************************************************
+ * Ping-Pong application - Inter-VM communication.
+ * To execute the Ping-Pong modify the APP_LIST variable in 
+ * the main Makefile to compile the ping.c and pong.c files.
+ * Example:
+ *      APP_LIST=  ping pong
+ * */
+
 
 #include <pic32mz.h>
 #include <libc.h>
@@ -24,14 +31,24 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 volatile int32_t t2 = 0;
 
 void irq_timer(){
-    t2++;
+ t2++;     
 }
 
-int main() {
 
+char buffer[128];
+char resp[] = "pong!";
+
+int main() {
+    uint32_t source;
+    int32_t ret;
+    
+    printf("\npong VM ID %d", hyp_get_guest_id());
     while (1){
-        // printf("\nblink: %d", t2);
-        udelay(1000000);
+        ret = ReceiveMessage(&source, buffer, 1);
+        if (ret){
+            printf("\npong VM: message from VM ID %d: \"%s\" (%d bytes)", source, buffer, ret);
+            SendMessage(source, resp, strlen(resp)+1);
+        }
    }
     
     return 0;

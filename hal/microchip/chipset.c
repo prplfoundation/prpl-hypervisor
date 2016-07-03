@@ -88,7 +88,8 @@ uint32_t timer_int_handler(){
     }
     if (IFS(0) & 0x00004000){
         IFSCLR(0) = 0x00004000;
-        curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
+        /* insert timer interrupt on guest*/
+        curr_vcpu->guestclt2 = curr_vcpu->guestclt2 | (1 << GUESTCLT2_GRIPL_SHIFT);
         if ((tick_count++)%10==0){
             ret = RESCHEDULE;
         }
