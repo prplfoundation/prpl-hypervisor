@@ -53,6 +53,11 @@ struct owi_command action_light_on [] = {
 	{ .command = owi_stop, .duration_us = 2000000 }
 };
 
+struct owi_command left_right [] = {
+	{ .command = owi_base_counter_clockwise, .duration_us = 2000000 },
+	{ .command = owi_base_clockwise, .duration_us = 2000000 }
+};
+
 int8_t counter = 0;
 
 void send_owi_command(unsigned char *command)
@@ -92,12 +97,17 @@ void start_sequence(struct owi_command *commands, int num_commands)
  * main
  */
 int main() {
+
+	serial_select(4);
+
 	stop_sequence();
 
     while(1) {
-    	// start_sequence(action_light_on, sizeof(action_light_on) / sizeof(struct owi_command));
 
-    	putchar3('h');
+    	send_owi_command(owi_light_on);
+
+    	start_sequence(left_right, sizeof(left_right) / sizeof(struct owi_command));
+
     	udelay(2000000);
     }
     
