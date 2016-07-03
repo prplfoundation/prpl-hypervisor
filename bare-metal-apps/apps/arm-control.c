@@ -20,6 +20,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <libc.h>
 
+volatile int32_t t2 = 0;
+
+void irq_timer(){
+ t2++;
+}
+
 /*
  * OWI arm definitions
  */
