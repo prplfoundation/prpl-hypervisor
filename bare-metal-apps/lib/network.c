@@ -20,7 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 
 static struct message_list_t message_list;
-static mutex_t wait = 1;
+static volatile mutex_t wait = 1;
 
 
 void init_network(){
@@ -32,10 +32,12 @@ int ReceiveMessage(int *source, char *message, int block){
         unsigned int size, out;
         
         if(message_list.num_messages == 0 && block){
-                spinlock(&wait);
+             spinlock(&wait);
         }else if (message_list.num_messages == 0){
-                return 0;
+            return 0;
         }
+        
+        asm volatile("di");
         
         out = message_list.out;
         size = message_list.messages[out].size;
@@ -45,6 +47,8 @@ int ReceiveMessage(int *source, char *message, int block){
         
         message_list.out = (out + 1) % MESSAGELIST_SZ;
         message_list.num_messages--;
+        
+        asm volatile("ei");
         
         return size;
 }
@@ -62,11 +66,12 @@ void irq_network(){
                 return;
         }
         in = message_list.in;
+
         while(ret && message_list.num_messages < MESSAGELIST_SZ){
                 ret = message_list.messages[in].size = hyp_ipc_receive_message(&message_list.messages[in].source_id, message_list.messages[in].message);
                 if(!ret){
-                        unlock(&wait);
-                        return;
+                    unlock(&wait);
+                    return;
                 }
                 in = message_list.in = (in + 1) % MESSAGELIST_SZ;
                 message_list.num_messages++;

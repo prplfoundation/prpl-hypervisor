@@ -27,14 +27,33 @@ void irq_timer(){
  t2++;     
 }
 
+uint8_t buffer[32];
+
+uint32_t getbuffer(uint8_t *buffer, uint32_t size){
+    uint8_t a;
+    uint32_t i;
+    for(i=0;i<size;i++){
+        buffer[i]=getchar();
+        putchar(buffer[i]);
+        if(buffer[i]=='\r'){
+            break;
+        }
+    }
+    return i;
+}
 
 int main() {
+    uint32_t a, ret, count;
+    uint32_t guestid = hyp_get_guest_id();
+    
     /* Select output serial 2 = UART2, 6 = UART6 */
     serial_select(UART2);
     
     while (1){
-        printf("\nInt count: %d", t2);
-        udelay(1000000);
+        printf("\n\rInputUART Guest ID %d - press any key plus ENTER ...", guestid);
+        ret = getbuffer(buffer, sizeof(buffer));
+        if (ret)
+            SendMessage(2, buffer, ret);
    }
     
     return 0;

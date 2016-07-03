@@ -5,22 +5,24 @@
 
 void init_uart(uint32_t baudrate_u2, uint32_t baudrate_u4, uint32_t sysclk){
 
-    U2RXR = 1;  // RPG6 -> U2RX
-    RPB14R = 2; //RPB14R ->U2TX
+    U2RXR = 1;  /* RPG6 to UART2 RX */
+    RPB14R = 2; /* RPB14R to UART2 TX */
 
-    U2MODE = 0;         // disable autobaud, TX and RX enabled only, 8N1, idle=HIGH
-    U2STA = 0x1400;     // enable TX and RX
-    U2BRG = ((int)( ((sysclk/2) / (16*baudrate_u2)) -1)) + 1;
-    U2MODESET = 0x8810;
+    U2STA = 0;
+    U2BRG = ((int)( ((sysclk/2) / (16*baudrate_u2)) -1)) + 1;    
+    U2MODE = UMODE_PDSEL_8NPAR |            /* 8-bit data, no parity */
+                UMODE_ON;                       /* UART Enable */
+    U2STASET = USTA_URXEN | USTA_UTXEN;     /* RX / TX Enable */
     
-    RPG6R = 0x2; /* RPG6 to UART4 TX */
-    U4RXR = 0x2;  /* RPB14 to UART4 RX */
     
-    U4MODE = 0;         // disable autobaud, TX and RX enabled only, 8N1, idle=HIGH
-    U4STA = 0x1400;     // enable TX and RX
-    U4BRG = ((int)( ((sysclk/2) / (16*baudrate_u4)) -1)) + 1;
-    U4MODESET = 0x8810;
-    
+    U6RXR = 3; /* RPD0 to UART6 RX (pin 11) */
+    RPF2R = 4; /* RPF2 to UART6 TX (pin 12)*/
+
+    U6STA = 0;
+    U6BRG = ((int)( ((sysclk/2) / (16*baudrate_u4)) -1)) + 1;    
+    U6MODE = UMODE_PDSEL_8NPAR |            /* 8-bit data, no parity */
+                UMODE_ON;                       /* UART Enable */
+    U6STASET = USTA_URXEN | USTA_UTXEN;     /* RX / TX Enable */
 }
 
 
@@ -50,3 +52,14 @@ void blink_led() {
     }
 
 }
+
+
+int32_t kbhit(void){
+        return (U2STA & USTA_URXDA);
+}
+
+uint32_t getchar(void){
+    while(!kbhit());
+    return (uint32_t)U2RXREG;
+}
+

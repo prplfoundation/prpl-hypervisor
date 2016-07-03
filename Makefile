@@ -15,7 +15,7 @@
 
 #List of bare-metal applications 
 # APP_LIST=  ping pong
-APP_LIST = arm-control
+APP_LIST = inputUART outputUART
 #APP_LIST=  shared-buffer
 
 ########################################################################################################

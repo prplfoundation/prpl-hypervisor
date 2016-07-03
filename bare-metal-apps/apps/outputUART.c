@@ -28,13 +28,28 @@ void irq_timer(){
 }
 
 
+uint8_t buffer[32];
+
+void printf_buffer(uint8_t *buffer, uint32_t size){
+    uint32_t i;
+    for(i=0;i<size;i++){
+        putchar(buffer[i]);
+    }
+}
+
 int main() {
-    /* Select output serial 2 = UART2, 6 = UART6 */
-    serial_select(UART2);
+    uint32_t ret, source;
+    uint32_t a;
     
+    uint32_t guestid = hyp_get_guest_id();
+    
+    /* Select output serial 2 = UART2, 6 = UART6 */
+    serial_select(UART6);
+    printf("\n\routputUART Guest ID %d. Waiting message.");
     while (1){
-        printf("\nInt count: %d", t2);
-        udelay(1000000);
+        ret = ReceiveMessage(&source, buffer, 1);
+        printf("\n\routputUART Guest ID %d - size %d ", guestid, ret);
+        printf_buffer(buffer, ret);
    }
     
     return 0;

@@ -18,15 +18,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <libc.h>
 
-static uint32_t serial_port = 2;
+static uint32_t serial_port = UART2;
 
 int32_t serial_select(uint32_t serial_number){
     /* select serial 2 or 4 as output */
     switch (serial_number){
-        case 2: serial_port = 2;
-                return 2;
-        case 4: serial_port = 4;
-                return 4;
+        case UART2: serial_port = UART2;
+                return UART2;
+        case UART6: serial_port = UART6;
+                return UART6;
         default:
             return -1;
     }
@@ -526,28 +526,28 @@ void udelay(uint32_t usec){
 }
 
 void putchar(int32_t value){
-    if (serial_port == 2){
+    if (serial_port == UART2){
         while(U2STA & USTA_UTXBF);
         U2TXREG = value;    
-    }else if (serial_port == 4){
-        while(U4STA & USTA_UTXBF);
-        U4TXREG = value;    
+    }else if (serial_port == UART6){
+        while(U6STA & USTA_UTXBF);
+        U6TXREG = value;    
     }
 }
 
 int32_t kbhit(void){
-    if (serial_port == 2){
+    if (serial_port == UART2){
         return (U2STA & USTA_URXDA);
-    }else if (serial_port == 4){
-        (U4STA & USTA_URXDA);
+    }else if (serial_port == UART6){
+        return (U6STA & USTA_URXDA);
     }
 }
 
-uint8_t getchar(void){
+uint32_t getchar(void){
     while(!kbhit());
-    if (serial_port == 2){
-        return (uint8_t)U2RXREG;
-    }else if (serial_port == 4){
-        return (uint8_t)U4RXREG;
+    if (serial_port == UART2){
+        return (uint32_t)U2RXREG;
+    }else if (serial_port == UART6){
+        return (uint32_t)U6RXREG;
     }
 }
