@@ -14,7 +14,8 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #List of bare-metal applications 
-APP_LIST=  ping pong
+# APP_LIST=  ping pong
+APP_LIST = arm-control
 #APP_LIST=  shared-buffer
 
 ########################################################################################################

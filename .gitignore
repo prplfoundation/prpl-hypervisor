@@ -1,0 +1,14 @@
+.cproject
+.project
+
+**/*.bin
+**/*.cnt
+**/*.elf
+**/*.lst
+**/*.map
+**/*.o
+**/*.sec
+**/*.hex
+
+include/config.h
+
