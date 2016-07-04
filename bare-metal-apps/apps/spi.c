@@ -28,16 +28,18 @@ void irq_timer(){
 }
 
 
+/* SP1 configuration */
 void setupSPI1(){
     SPI1CON = 0;
-    
+    /* registers configuration */
 }
 
 int main() {
     /* Select output serial 2 = UART2, 6 = UART6 */
     serial_select(UART2);
     
-    printf("\nconfiguring SPI");
+    printf("\nConfiguring SPI.");
+    
     setupSPI1();
     
     while (1){
