@@ -88,7 +88,7 @@ uint32_t HandleExceptionCause(){
 	case	0x3:						
 	case 	0x2:
 			Warning("TLB miss: VCPU: %d\n", curr_vcpu->id);
-			return TLBDynamicMap(curr_vcpu);
+			return ERROR;
         
         /*FIXME: The processors is with strange case code after bootloader initialization. 
          The cause is cleaned after the first timer interruption. */
@@ -138,7 +138,7 @@ int32_t initialize_RT_services(int32_t init, uint32_t counter){
 				//PANIC
 				Critical("Error on RT services initialization.");
 				Critical("Hypervisor execution stopped.");
-				while(1);
+				WaitforReset();
 				break;						
 			default:
 				break;
@@ -197,7 +197,7 @@ int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
 		default:
                         Critical("Critical error ocurred. Hypervisor stopped.");
                         dumpCP0();
-                        while(1);
+                        WaitforReset();
 			break;
 	}
 	

@@ -832,3 +832,12 @@ void idlevcpu(){
     while(1){};
 }
 
+/* Critical error ocurred. Waiting for reset */
+void WaitforReset(){
+    while(1){
+        if (!(PORTB & (1 << 12))) {
+            SoftReset();
+        }
+    }
+}
+
