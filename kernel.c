@@ -40,6 +40,11 @@ uint32_t InterruptHandler(){
         /*TODO: Only timer interrupt supported. This must be rewrite due to EIC support. */
     
         ret = timer_int_handler();
+        
+        /* Check for sw1 button pressed*/
+        if (!(PORTB & (1 << 12))) {
+            SoftReset();
+        }
 
 	return ret;
 }

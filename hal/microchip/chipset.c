@@ -36,9 +36,9 @@ PIC32MZ_DEVCFG (
     _DEVCFG3_USERID(0xffff));    /* User-defined ID */
 
 
-void freq_config(){
-    /* configured in the bootloader */    
-    
+void hardware_config(){
+    TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
+    CNPUB =     (1 << 12);     /* enable pull-up */
 }
 
 uint32_t tick_count = 0;
@@ -145,3 +145,24 @@ void stop_vm_timer(){
     T4CON = 0;
     IFSCLR(0) = 0x1000000;
 }
+
+/* Performs software reset to the board. */
+void SoftReset(){
+    
+    printf("\nReset button (sw1) pressed. Performing software reset.");
+    udelay(1000000);
+    
+    NVMKEY = 0x0;
+    NVMKEY = 0xAA996655;
+    NVMKEY = 0x556699AA;
+
+    RSWRST |= 1;
+    
+    /* read RSWRST register to trigger reset */
+    volatile int* p = &RSWRST;
+    *p;
+    
+    /* prevent any unwanted code execution until reset occurs*/
+    while(1) ;  
+}
+

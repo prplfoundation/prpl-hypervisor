@@ -44,8 +44,8 @@ static void print_config(void)
 int32_t main(char * _edata, char* _data, char* _erodata){
     
 
-    /* Chipset freq config. */
-    freq_config();
+    /* Specific hardware configuration. */
+    hardware_config();
     
     /* UART start */
     init_uart(115200, 9600, 200000000);
