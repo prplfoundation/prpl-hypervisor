@@ -12,14 +12,13 @@ READ_MIPS = mips-mti-elf-readelf
 OBJ_MIPS = mips-mti-elf-objcopy
 SIZE_MIPS = mips-mti-elf-size
 
-all:
+all: clean
 	$(AS_MIPS) -o build/crt0.o lib/crt0.s
 	$(GCC_MIPS) -o build/libc.o lib/libc.c
 	$(GCC_MIPS) -o build/platform.o lib/platform.c
 	$(GCC_MIPS) -o build/network.o lib/network.c	
 	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c
-	$(LD_MIPS) -Tlib/pic32mz.ld -Map build/$(APP_NAME).map -N -o build/bin/$(APP_NAME).elf \
-		build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o
+	$(LD_MIPS) build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o -o build/bin/$(APP_NAME).elf -Tlib/pic32mz.ld -Llib/ -liidquiddikey -Map build/$(APP_NAME).map -N
 	$(DUMP_MIPS) --disassemble --reloc build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).lst
 	$(DUMP_MIPS) -h build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).sec
 	$(DUMP_MIPS) -s build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).cnt

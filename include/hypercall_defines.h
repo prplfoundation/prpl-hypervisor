@@ -65,6 +65,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define HCALL_PUF_SHARED_MEMORY 0x150
 
 
+/** FLASH hypercalls **/
+#define HCALL_FLASH_READ  0x151  /* a0 = destination buffer */
+#define HCALL_FLASH_WRITE 0x152  /* a0 = source buffer */
+
+
+#define HCALL_GET_MAC     0x153  /* a0 = destination buffer */
 
 #endif
 

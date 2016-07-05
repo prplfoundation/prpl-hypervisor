@@ -203,6 +203,41 @@ int32_t HypercallHandler(){
                     break;
                 }
                     
+		case HCALL_FLASH_READ:{
+			vcpu_t* vcpu = curr_vcpu;
+
+			uint8_t * dest = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 1024, 0xf);
+
+			flash_read1Kbuffer(dest);
+
+			break;
+		}
+
+		case HCALL_FLASH_WRITE:{
+			vcpu_t* vcpu = curr_vcpu;
+
+			uint8_t * source = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 1024, 0xf);
+
+			flash_write1Kbuffer(source);
+
+		break;
+		}
+
+		case HCALL_GET_MAC:{
+			vcpu_t* vcpu = curr_vcpu;
+
+			uint8_t * mac = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 6, 0xf);
+
+			mac[0] = *((uint8_t *) 0xBF882320);
+			mac[1] = *((uint8_t *) 0xBF882321);
+			mac[2] = *((uint8_t *) 0xBF882310);
+			mac[3] = *((uint8_t *) 0xBF882311);
+			mac[4] = *((uint8_t *) 0xBF882300);
+			mac[5] = *((uint8_t *) 0xBF882301);
+
+		break;
+		}
+
 		default:
 			break;
 		

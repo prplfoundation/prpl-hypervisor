@@ -15,7 +15,8 @@
 
 #List of bare-metal applications 
 # APP_LIST=  ping pong
-APP_LIST = inputUART outputUART
+APP_LIST = iidquiddikey_test iidquiddikey
+# APP_LIST = iidquiddikey
 #APP_LIST=  shared-buffer
 
 ########################################################################################################
