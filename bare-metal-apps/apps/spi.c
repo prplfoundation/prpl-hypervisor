@@ -30,8 +30,13 @@ void irq_timer(){
 
 /* SP1 configuration */
 void setupSPI1(){
+    uint32_t rData;
+    
     SPI1CON = 0;
-    /* registers configuration */
+    rData=SPI1BUF;
+    SPI1BRG=0x1;
+    SPI1STATCLR=0x40;
+    SPI1CON=0x8220; // use F PB /4 clock frequency
 }
 
 int main() {
@@ -45,6 +50,7 @@ int main() {
     while (1){
         printf("\nInt count: %d", t2);
         udelay(1000000);
+        SPI1BUF='A';  
    }
     
     return 0;

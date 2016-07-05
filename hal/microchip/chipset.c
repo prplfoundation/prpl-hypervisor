@@ -39,6 +39,11 @@ PIC32MZ_DEVCFG (
 void hardware_config(){
     TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
     CNPUB =     (1 << 12);     /* enable pull-up */
+    
+    /* SPI1 pin map */
+    RPF4R = 5; /*SPI TX */
+    SDI1R = 2; /* SPI RX */
+    RPD1R = 0xc;
 }
 
 uint32_t tick_count = 0;
