@@ -42,17 +42,21 @@ char message_buffer[128];
 
 int main() {
     int32_t ret, source;
+    udelay(100000);
     printf("\nping VM ID %d", hyp_get_guest_id());
     while (1){
-        udelay(1000000); /* send a message by second. */        
         sprintf(message_buffer, "%s %d", "ping?", t2);
         ret = SendMessage(2, message_buffer, strlen(message_buffer)+1);
-        if (ret<=0){
+        if (ret<0){
             print_net_error(ret);
         }else{
-            ret = ReceiveMessage(&source, message_buffer, 1);
-            if(ret)
-                printf("\nping VM: message from VM ID %d: \"%s\" (%d bytes)", source, message_buffer, ret);
+            ret = ReceiveMessage(&source, message_buffer, sizeof(message_buffer), 1);
+            if (ret<0){
+                print_net_error(ret);
+            }else{
+                if(ret)
+                    printf("\nping VM: message from VM ID %d: \"%s\" (%d bytes)", source, message_buffer, ret);
+            }
         }
     }
     

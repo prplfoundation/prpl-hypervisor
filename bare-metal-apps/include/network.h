@@ -52,7 +52,7 @@ struct message_list_t{
 
 
 void init_network();
-int ReceiveMessage(int *source, char *message, int block);
+int ReceiveMessage(int *source, char *message, int bufsz, int block);
 int SendMessage(unsigned target_id, void* message, unsigned size);
 void network_int_handler();
 

@@ -44,8 +44,10 @@ int main() {
     
     printf("\npong VM ID %d", hyp_get_guest_id());
     while (1){
-        ret = ReceiveMessage(&source, buffer, 1);
-        if (ret){
+        ret = ReceiveMessage(&source, buffer, sizeof(buffer), 1);
+        if (ret<0){
+            print_net_error(ret);
+        }else{
             printf("\npong VM: message from VM ID %d: \"%s\" (%d bytes)", source, buffer, ret);
             SendMessage(source, resp, strlen(resp)+1);
         }

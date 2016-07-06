@@ -26,7 +26,7 @@ void init_network(){
 }
 
 
-int ReceiveMessage(int *source, char *message, int block){
+int ReceiveMessage(int *source, char *message, int bufsz, int block){
         unsigned int size, out;
         
         asm volatile("di");
@@ -42,6 +42,11 @@ int ReceiveMessage(int *source, char *message, int block){
         
         out = message_list.out;
         size = message_list.messages[out].size;
+        
+        /* If the buffer has no enough size the message is truncaded. */
+        if (size>bufsz){
+            size=bufsz;
+        }
 
         memcpy(message, message_list.messages[out].message, size);
         *source = message_list.messages[out].source_id;
