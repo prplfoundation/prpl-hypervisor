@@ -117,7 +117,7 @@ int32_t HypercallHandler(){
 			vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
 			
 			/* generate virtual interrupt to guest */
-			vcpu->guestclt2 |= (2<<GUESTCLT2_GRIPL_SHIFT);
+			vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
 				
 			/* Return success to sender */
 			MoveToPreviousGuestGPR(REG_V0, message_size);
