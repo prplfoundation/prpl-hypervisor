@@ -196,6 +196,7 @@ return_t QK_GetAuthenticationResponse(
 
 /*@}*/
 
+
 #ifdef __cplusplus
 }
 #endif

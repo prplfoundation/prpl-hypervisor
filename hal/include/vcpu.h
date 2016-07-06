@@ -134,7 +134,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define MESSAGE_EMPTY		 0
 
 #define MESSAGELIST_SZ	5
-#define MESSAGE_SZ 	128
+#define MESSAGE_SZ 	255
 
 #define NETWORK_VINTERRUPT	14
 

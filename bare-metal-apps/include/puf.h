@@ -11,10 +11,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 */
 
-#ifndef IIDQUIDDIKEY_HYPERCALLS_H_
-#define IIDQUIDDIKEY_HYPERCALLS_H_
+#ifndef PUF_H_
+#define PUF_H_
 
-//#include <stdint.h> // pic32mz.h already defines all the types
+//#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -27,35 +27,45 @@ extern "C"
 typedef uint8_t return_t;
 
 
-#define MAX_KEY_SIZE                     88
-#define MAX_KEYCODE_SIZE                 128
-#define MAX_CHALLENGE_SIZE               64
+#define PUF_INVALID_COMMAND                    0x00
+#define PUF_GETSOFTWAREVERSION                 0x01
+#define PUF_STOP                               0x02
+#define PUF_WRAPKEY                            0x03
+#define PUF_UNWRAPKEY                          0x04
+#define PUF_GETAUTHRESPONSE                    0x05
 
 
 /*! \brief Indicates a key without special key properties.
     \details This define indicates that the key that will be wrapped has no special properties.
 */
-#define KEY_PROP_NONE                           0x0000
+#define KEY_PROP_NONE               			0x0000
 
 /*! \brief Indicates a key that will be used as an authentication key.
     \details This define indicates that the key that will be wrapped is an authentication key.
     This kind of key can only be used in authentication functions and cannot be unwrapped separately.
 */
-#define KEY_PROP_AUTHENTICATION                 0x0001
+#define KEY_PROP_AUTHENTICATION    				0x0001
 
 
 /*! \brief Get the software version.
-    \details Get the software version of this Quiddikey module.
+    \details Get the software version of the PUF module.
     \param[out] majorVersion Pointer to a byte for holding the major software version.
     \param[out] minorVersion Pointer to a byte for holding the minor software version.
     \returns \ref IID_SUCCESS
 */
-extern return_t QK_GetSoftwareVersion(uint8_t * const majorVersion, uint8_t * const minorVersion);
+extern return_t PUF_GetSoftwareVersion(uint8_t * const majorVersion, uint8_t * const minorVersion);
+
+/*! \brief Delete the Intrinsic Key from Memory.
+    \details The previously reconstructed Intrinsic Key is erased from memory.
+	\pre \ref PUF_Init has to be called before \ref PUF_Stop may be called.
+    \returns \ref IID_SUCCESS.
+*/
+extern return_t PUF_Stop(void);
 
 /*! \brief Wrap the given key.
-    \details The function QK_WrapKey wraps the given key and returns it as a key code.
+    \details The function PUF_WrapKey wraps the given key and returns it as a key code.
     \par
-    A symmetric key is secured by Quiddikey using the Wrap functionality.
+    A symmetric key is secured by the PUF module using the Wrap functionality.
     \par
     IK has to be available in memory when calling Wrap.
 	\param[in] key A buffer that holds the key to wrap.
@@ -65,10 +75,10 @@ extern return_t QK_GetSoftwareVersion(uint8_t * const majorVersion, uint8_t * co
     \param[in] keyProperties The properties of the key (key type, protection, etc).
     \param[in] keyIndex The index of the key that will be wrapped.
     \param[out] keyCode A buffer that will hold the Key Code. This has to be aligned to 32 bits.
-	\pre \ref QK_Start has to be called before \ref QK_WrapKey may be called.
+	\pre \ref PUF_Start has to be called before \ref PUF_WrapKey may be called.
     \returns \ref IID_SUCCESS if success.
 */
-extern return_t QK_WrapKey(
+return_t PUF_WrapKey(
 	const uint8_t  * const key,
 	const uint8_t  * const label,
 	const uint8_t  * const context,
@@ -78,7 +88,7 @@ extern return_t QK_WrapKey(
 		  uint8_t  * const keyCode);
 
 /*! \brief Unwrap the given key code.
-    \details With QK_WrapKey, a previously wrapped key is retrieved from a key code.
+    \details With PUF_WrapKey, a previously wrapped key is retrieved from a key code.
     \par
     Keys that are stored securely can be retrieved from their key code using the Unwrap functionality.
     \par
@@ -89,12 +99,12 @@ extern return_t QK_WrapKey(
     \param[out] keySize A buffer that will hold the size of the unwrapped key.
     \param[out] keyIndex A buffer that will hold the index of the unwrapped key.
     \param[out] key A buffer that will hold the unwrapped key.
-	\pre \ref QK_Start has to be called before \ref QK_UnwrapKey may be called.
+	\pre \ref PUF_Start has to be called before \ref PUF_UnwrapKey may be called.
     \returns \ref IID_SUCCESS if success.
     \returns \ref IID_ERROR_INV_KEYCODE if keyCode is corrupted or manipulated.
 	\note Only non-authentication keys can be unwrapped.
 */
-extern return_t QK_UnwrapKey(
+return_t PUF_UnwrapKey(
 	const uint8_t  * const keyCode,
 	const uint8_t  * const label,
 	const uint8_t  * const context,
@@ -111,11 +121,11 @@ extern return_t QK_UnwrapKey(
     \param[in] challenge A buffer holding the challenge to calculate the response for.
     \param[in] challengeSize The size of the challenge in bytes. This must be a multiple of 16 bytes.
     \param[out] response A buffer for holding the response. This buffer has to be 16 bytes long and aligned to 32 bits.
-	\pre \ref QK_Start has to be called before \ref QK_GetAuthenticationResponse may be called.
+	\pre \ref PUF_Start has to be called before \ref PUF_GetAuthenticationResponse may be called.
 	\returns \ref IID_SUCCESS if success.
 	\returns \ref IID_ERROR_INV_KEYCODE if keyCode is corrupted or manipulated.
 */
-extern return_t QK_GetAuthenticationResponse(
+return_t PUF_GetAuthenticationResponse(
     const uint8_t  * const label,
     const uint8_t  * const context,
     const uint8_t  * const keyCode,
@@ -132,24 +142,24 @@ extern return_t QK_GetAuthenticationResponse(
 
 #ifdef _MSC_VER
 /*! \brief Macro to force memory alignment
-    \details Macro to force memory alignment.
+\details Macro to force memory alignment.
 */
 #define PRE_HIS_ALIGN           __declspec(align(4))
 
 /*! \brief Macro to force memory alignment
-    \details Macro to force memory alignment.
+\details Macro to force memory alignment.
 */
 #define POST_HIS_ALIGN
 
 #else
 
 /*! \brief Macro to force memory alignment
-    \details Macro to force memory alignment.
+\details Macro to force memory alignment.
 */
 #define PRE_HIS_ALIGN
 
 /*! \brief Macro to force memory alignment
-    \details Macro to force memory alignment.
+\details Macro to force memory alignment.
 */
 #define POST_HIS_ALIGN          __attribute__ ((aligned (4)))
 #endif /* _MSC_VER */
@@ -161,16 +171,16 @@ extern return_t QK_GetAuthenticationResponse(
 */
 /*@{*/
 
-// TODO: check the alignments. Should we align the union?
+#define MAX_KEY_SIZE                     88
+#define MAX_KEYCODE_SIZE                 128
+#define MAX_CHALLENGE_SIZE               64
 
-typedef struct qk_getsoftwareversion {
-		            return_t         retVal;
+typedef struct puf_getsoftwareversion {
 	                uint8_t          majorVersion;
 	                uint8_t          minorVersion;
-} qk_getsoftwareversion_t;
+} puf_getsoftwareversion_t;
 
-typedef struct qk_wrapkey {
-		            return_t         retVal;
+typedef struct puf_wrapkey {
 	                uint8_t          key[MAX_KEY_SIZE];
 	                uint8_t          label[6];
 	                uint8_t          context[6];
@@ -178,39 +188,46 @@ typedef struct qk_wrapkey {
 		            uint16_t		 keyProperties;
 		            uint8_t		     keyIndex;
 PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
-} qk_wrapkey_t;
+} puf_wrapkey_t;
 
-typedef struct qk_unwrapkey {
-		            return_t         retVal;
+typedef struct puf_unwrapkey {
 PRE_HIS_ALIGN       uint8_t          keyCode[128] POST_HIS_ALIGN;
 	                uint8_t          label[6];
 	                uint8_t          context[6];
 		            uint16_t	     keySize;
 		            uint8_t  	     keyIndex;
 		            uint8_t          key[MAX_KEY_SIZE];
-} qk_unwrapkey_t;
+} puf_unwrapkey_t;
 
-typedef struct qk_getauthresponse {
-		            return_t         retVal;
+typedef struct puf_getauthresponse {
 	                uint8_t          label[6];
 	                uint8_t          context[6];
 PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
 	                uint8_t          challenge[MAX_CHALLENGE_SIZE];
 	                uint16_t         challengeSize;
 PRE_HIS_ALIGN       uint8_t          response[16] POST_HIS_ALIGN;
-} qk_getauthresponse_t;
+} puf_getauthresponse_t;
 
-typedef union qk_union {
-	qk_getsoftwareversion_t qk_getsoftwareversion;
-	qk_wrapkey_t qk_wrapkey;
-	qk_unwrapkey_t qk_unwrapkey;
-	qk_getauthresponse_t qk_getauthresponse;
-} qk_union_t;
+typedef union puf_union {
+	puf_getsoftwareversion_t puf_getsoftwareversion;
+	puf_wrapkey_t puf_wrapkey;
+	puf_unwrapkey_t puf_unwrapkey;
+	puf_getauthresponse_t puf_getauthresponse;
+} puf_union_t;
+
+typedef struct puf_message {
+	puf_union_t puf_struct;
+	union {
+		uint8_t command;
+		uint8_t response;
+	};
+} puf_message_t;
 
 /*@}*/
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* IIDQUIDDIKEY_HYPERCALLS_H_ */
+#endif /* PUF_H_ */

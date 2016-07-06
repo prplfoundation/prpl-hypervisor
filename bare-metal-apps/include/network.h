@@ -23,7 +23,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 #define MESSAGELIST_SZ  5
-#define MESSAGE_SZ      128
+#define MESSAGE_SZ      255
 
 
 /** Return values for inter-vm communication hypercalls  */
@@ -53,7 +53,7 @@ struct message_list_t{
 
 void init_network();
 int ReceiveMessage(int *source, char *message, int block);
-int SendMessage(unsigned target_id, void* message, unsigned size);
+int SendMessage(unsigned target_id, void* message, uint32_t size);
 void network_int_handler();
 
 #endif
