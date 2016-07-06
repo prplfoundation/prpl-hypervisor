@@ -41,7 +41,7 @@ char resp[] = "pong!";
 int main() {
     uint32_t source;
     int32_t ret;
-    
+    serial_select(UART2);
     printf("\npong VM ID %d", hyp_get_guest_id());
     while (1){
         ret = ReceiveMessage(&source, buffer, sizeof(buffer), 1);

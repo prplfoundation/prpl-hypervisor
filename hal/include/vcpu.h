@@ -132,6 +132,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define MESSAGE_FULL		-2
 #define MESSAGE_TOO_BIG		-3
 #define MESSAGE_EMPTY		-4
+#define MESSAGE_VCPU_NOT_INIT -5
 
 #define MESSAGELIST_SZ	5
 #define MESSAGE_SZ 	128

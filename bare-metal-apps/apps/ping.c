@@ -42,7 +42,7 @@ char message_buffer[128];
 
 int main() {
     int32_t ret, source;
-    udelay(100000);
+    serial_select(UART2);
     printf("\nping VM ID %d", hyp_get_guest_id());
     while (1){
         sprintf(message_buffer, "%s %d", "ping?", t2);

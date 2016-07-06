@@ -97,6 +97,9 @@ void print_net_error(int32_t error){
         case MESSAGE_EMPTY:
             printf("\nReceiver queue empty.");
             break;
+        case MESSAGE_VCPU_NOT_INIT:
+            printf("\nTarget VCPU not initialized.");
+            break;
         default:
             printf("\nUnkown error 0x%x", error);
             break;
