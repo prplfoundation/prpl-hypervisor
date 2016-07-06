@@ -20,8 +20,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 
 static struct message_list_t message_list;
-static volatile mutex_t wait = 1;
-
 
 void init_network(){
        memset((void *)&message_list, 0, sizeof(message_list));
@@ -31,9 +29,12 @@ void init_network(){
 int ReceiveMessage(int *source, char *message, int block){
         unsigned int size, out;
         
+        asm volatile("di");
         if(message_list.num_messages == 0 && block){
-             spinlock(&wait);
+            asm volatile("ei");
+            while(!message_list.num_messages);
         }else if (message_list.num_messages == 0){
+            asm volatile("ei");
             return 0;
         }
         
@@ -59,24 +60,23 @@ int SendMessage(unsigned target_id, void* message, unsigned size){
 
 
 void irq_network(){
-        int ret = 1, in;
+        int ret = 1, in, flag=0;
         
         if(message_list.num_messages == MESSAGELIST_SZ){
-                unlock(&wait);
                 return;
         }
         in = message_list.in;
 
         while(ret && message_list.num_messages < MESSAGELIST_SZ){
                 ret = message_list.messages[in].size = hyp_ipc_receive_message(&message_list.messages[in].source_id, message_list.messages[in].message);
-                if(!ret){
-                    unlock(&wait);
+                if(ret==MESSAGE_EMPTY){
                     return;
                 }
                 in = message_list.in = (in + 1) % MESSAGELIST_SZ;
                 message_list.num_messages++;
         }
 }
+
 
 void print_net_error(int32_t error){
     switch (error){
@@ -97,3 +97,5 @@ void print_net_error(int32_t error){
             break;
         }
 }
+
+

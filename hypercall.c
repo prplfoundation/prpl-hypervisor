@@ -103,6 +103,7 @@ int32_t HypercallHandler(){
 			
 			/* message queue full */
 			if(vcpu->messages.num_messages == MESSAGELIST_SZ){
+                vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
 				MoveToPreviousGuestGPR(REG_V0, MESSAGE_FULL);
 				break;
 			}
