@@ -191,7 +191,7 @@ PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
 } puf_wrapkey_t;
 
 typedef struct puf_unwrapkey {
-PRE_HIS_ALIGN       uint8_t          keyCode[128] POST_HIS_ALIGN;
+PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
 	                uint8_t          label[6];
 	                uint8_t          context[6];
 		            uint16_t	     keySize;

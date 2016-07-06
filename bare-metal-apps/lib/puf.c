@@ -128,7 +128,7 @@ return_t PUF_UnwrapKey(
 
 	puf_message.command = PUF_UNWRAPKEY;
 
-	_keySize = GETUINT32(&keyCode[28]) / 4;
+	_keySize = GETUINT32(&keyCode[28]) / 8;
 
 	memcpy(puf_message.puf_struct.puf_unwrapkey.keyCode, keyCode, _keySize + 40);
 	memcpy(puf_message.puf_struct.puf_unwrapkey.label, label, 6);
@@ -142,11 +142,9 @@ return_t PUF_UnwrapKey(
 		ret = ReceiveMessage(&source, (char *)&puf_message, 1);
 
 		if (ret) {
-			memcpy(label, puf_message.puf_struct.puf_unwrapkey.label, 6);
-			memcpy(context, puf_message.puf_struct.puf_unwrapkey.context, 6);
 			*keySize = puf_message.puf_struct.puf_unwrapkey.keySize;
 			*keyIndex = puf_message.puf_struct.puf_unwrapkey.keyIndex;
-			memcpy(key, puf_message.puf_struct.puf_unwrapkey.key, puf_message.puf_struct.puf_unwrapkey.keySize);
+			memcpy(key, puf_message.puf_struct.puf_unwrapkey.key, _keySize);
 
 			retVal = puf_message.response;
 		}

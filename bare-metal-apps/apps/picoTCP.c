@@ -33,7 +33,7 @@ void irq_timer(){
 int main() {
 	return_t retVal;
 
-	//udelay(5000000);
+	udelay(5000000);
 
 #define KEYSIZE 16
     	uint16_t keySize = KEYSIZE;
@@ -54,8 +54,15 @@ int main() {
     	uint8_t keyCode[KEYSIZE + 40];
 
     while(1) {
-    	udelay(100000);
     	uint8_t i;
+    	udelay(100000);
+
+//    	// Test QK_GetSoftwareVersion
+//    	uint8_t majorVersion;
+//    	uint8_t minorVersion;
+//
+//    	retVal = PUF_GetSoftwareVersion(&majorVersion, &minorVersion);
+//    	printf("response [%x] - received version: %x.%x\n", retVal, majorVersion, minorVersion);
 
     	// Test QK_WrapKey
     	retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
@@ -77,6 +84,8 @@ int main() {
 		} else {
 			if (0 != memcmp(key, key_unwrapped, KEYSIZE)) {
 				printf("Error PUF_UnwrapKey: keys don't match. Robotic arm cannot be controlled.\n");
+			} else {
+				printf("Keys match!\n");
 			}
 		}
     }
