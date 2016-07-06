@@ -87,7 +87,7 @@ uint32_t HandleExceptionCause(){
 	/* TLB load, store or fetch exception */
 	case	0x3:						
 	case 	0x2:
-			Warning("TLB miss: VCPU: %d\n", curr_vcpu->id);
+			Warning("\nTLB miss: VCPU: %d EPC 0x%x", curr_vcpu->id, getEPC());
 			return ERROR;
         
         /*FIXME: The processors is with strange case code after bootloader initialization. 
