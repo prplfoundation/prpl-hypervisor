@@ -26,6 +26,8 @@ void irq_timer(){
  t2++;
 }
 
+int32_t start_sequence_flag = 0;
+
 /*
  * OWI arm definitions
  */
@@ -44,6 +46,15 @@ unsigned char owi_shoulder_down[] = { 0x80, 0x00, 0x00 };
 unsigned char owi_base_clockwise[] = { 0x00, 0x01, 0x00 };
 unsigned char owi_base_counter_clockwise[] = { 0x00, 0x02, 0x00 };
 
+unsigned char owi_arm_up[] = { 0x08 | 0x10 | 0x40, 0x02, 0x00 };
+unsigned char owi_arm_down[] = { 0x04 | 0x20 | 0x80, 0x00, 0x00 };
+
+unsigned char owi_wrist_shoulder_up[] = { 0x08 | 0x10, 0x00, 0x00 };
+unsigned char owi_wrist_shoulder_down[] = { 0x04 | 0x20, 0x00, 0x00 };
+
+unsigned char owi_shoulder_elbow_up[] = { 0x10 | 0x40, 0x00, 0x00 };
+unsigned char owi_shoulder_elbow_down[] = { 0x20 | 0x80, 0x00, 0x00 };
+
 unsigned char owi_light_on[] = { 0x00, 0x00, 0x01 };
 
 unsigned char owi_stop[] = { 0x00, 0x00, 0x00 };
@@ -54,37 +65,116 @@ struct owi_command
 	uint32_t duration_us;
 };
 
-struct owi_command action_light_on [] = {
-	{ .command = owi_light_on, .duration_us = 2000000 },
-	{ .command = owi_stop, .duration_us = 2000000 }
-};
-
 struct owi_command left_right [] = {
 	{ .command = owi_base_counter_clockwise, .duration_us = 2000000 },
 	{ .command = owi_base_clockwise, .duration_us = 2000000 }
 };
 
+//struct owi_command sequence1 [] = {
+//	{ .command = owi_shoulder_down, .duration_us = 1000000 },
+//	{ .command = owi_wrist_up, .duration_us = 1000000 },
+//
+//	{ .command = owi_shoulder_down, .duration_us = 1000000 },
+//	{ .command = owi_wrist_up, .duration_us = 1000000 },
+//
+//	{ .command = owi_shoulder_up, .duration_us = 2000000 },
+//	{ .command = owi_base_counter_clockwise, .duration_us = 2000000 },
+//	{ .command = owi_base_clockwise, .duration_us = 4000000 },
+//
+//	{ .command = owi_shoulder_down, .duration_us = 2000000 },
+//
+//	{ .command = owi_shoulder_up, .duration_us = 1000000 },
+//	{ .command = owi_wrist_down, .duration_us = 2500000 },
+//	{ .command = owi_shoulder_up, .duration_us = 2250000 },
+//
+//	{ .command = owi_base_counter_clockwise, .duration_us = 1750000 },
+//};
+
+
+struct owi_command sequence1 [] = {
+	{ .command = owi_shoulder_down, .duration_us = 1000000 },
+
+	{ .command = owi_wrist_shoulder_down, .duration_us = 2000000 },
+
+	{ .command = owi_wrist_up, .duration_us = 1000000 },
+
+	{ .command = owi_base_clockwise, .duration_us = 3000000 },
+
+	{ .command = owi_arm_up, .duration_us = 1500000 },
+
+	{ .command = owi_wrist_shoulder_up, .duration_us = 1000000 },
+
+	{ .command = owi_base_counter_clockwise, .duration_us = 1550000 },
+
+	{ .command = owi_wrist_down, .duration_us = 500000 },
+
+	{ .command = owi_elbow_down, .duration_us = 150000 }
+};
+
+/**
+ * return:
+ *   0:   no message received
+ *   >= 1:   message received
+ *   < 0: error
+ */
+int get_message(unsigned char *message)
+{
+    uint32_t source;
+
+	return ReceiveMessage(&source, message, 0);
+}
+
+int process_message()
+{
+	unsigned char message;
+
+	if (get_message(&message))
+	{
+		switch (message)
+		{
+		// start/resume the sequence
+		case '1':
+			start_sequence_flag = 1;
+			break;
+
+		// stop the sequence
+		case '2':
+			start_sequence_flag = 0;
+			break;
+
+		// return to 0;
+		case '3':
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return 0;
+}
+
 int8_t counter = 0;
 
-void send_owi_command(unsigned char *command)
+void send_owi_command(unsigned char byte1, unsigned char byte2, unsigned char byte3)
 {
 	counter++;
 
-	putchar(command[0]);
-	putchar(command[1]);
-	putchar(command[2]);
+	putchar(byte1);
+	putchar(byte2);
+	putchar((unsigned char)start_sequence_flag);
 	putchar(counter);
 }
 
-void process_owi_command(struct owi_command *command)
+void process_owi_command(unsigned char byte1, unsigned char byte2, unsigned char byte3, uint32_t duration_us)
 {
-	send_owi_command(command->command);
-	udelay(command->duration_us);
+	send_owi_command(byte1, byte2, byte3);
+	udelay(duration_us);
 }
 
 void stop_sequence()
 {
-	send_owi_command(owi_stop);
+	send_owi_command(owi_stop[0], owi_stop[1], owi_stop[2]);
 }
 
 void start_sequence(struct owi_command *commands, int num_commands)
@@ -93,28 +183,44 @@ void start_sequence(struct owi_command *commands, int num_commands)
 
 	for (index = 0; index < num_commands; index++)
 	{
-		process_owi_command(&commands[index]);
-	}
+		struct owi_command *command = &commands[index];
 
-	stop_sequence();
+		process_owi_command(command->command[0],
+				command->command[1],
+				command->command[2],
+				command->duration_us);
+
+		stop_sequence();
+		udelay(500000);
+
+		process_message();
+	}
 }
 
 /*
  * main
  */
 int main() {
+    int32_t ret;
+    char message;
 
-	serial_select(4);
+	serial_select(UART6);
+
+	init_network();
 
 	stop_sequence();
 
     while(1) {
 
-    	send_owi_command(owi_light_on);
+    	process_message();
 
-    	start_sequence(left_right, sizeof(left_right) / sizeof(struct owi_command));
+		if (start_sequence_flag == 1) {
+			start_sequence(sequence1, sizeof(sequence1) / sizeof(struct owi_command));
 
-    	udelay(2000000);
+			// pause for 5 seconds after the cycle completes to allow the user to
+			// stop the cycle
+			udelay(5000000);
+		}
     }
     
     return 0;
