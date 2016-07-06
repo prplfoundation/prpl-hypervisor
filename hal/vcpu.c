@@ -451,6 +451,7 @@ void contextRestore(){
 	/* config interrupt pass-through (PIP) */
 	//MoveToGuestCP0(12, 6, (MoveFromGuestCP0(12, 6) | currentVCPU->pip));
 	//MoveToGuestCP0(10, 5, (MoveFromGuestCP0(10, 5) & ~(0xff << 10)) | pending);
+    
 	if(currentVCPU->guestclt2){
 		setGuestCTL2(currentVCPU->guestclt2);
 		currentVCPU->guestclt2 = 0;

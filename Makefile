@@ -15,9 +15,8 @@
 
 #List of bare-metal applications 
 # APP_LIST=  ping pong
+
 APP_LIST = picoTCP iidquiddikey
-# APP_LIST = iidquiddikey
-#APP_LIST=  shared-buffer
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES#

@@ -47,9 +47,11 @@ int main() {
     serial_select(UART6);
     printf("\n\routputUART Guest ID %d. Waiting message.");
     while (1){
-        ret = ReceiveMessage(&source, buffer, 1);
-        printf("\n\routputUART Guest ID %d - size %d ", guestid, ret);
-        printf_buffer(buffer, ret);
+        ret = ReceiveMessage(&source, buffer, sizeof(buffer), 0);
+        if (ret>0){
+            printf("\n\routputUART Guest ID %d - size %d ", guestid, ret);
+            printf_buffer(buffer, ret);
+        }
    }
     
     return 0;

@@ -22,6 +22,7 @@ This code was written by Pierpaolo Bagnasco at Intrinsic-ID.
 #include <quiddikey/iid_errors.h>
 #include <quiddikey/iidquiddikey.h>
 #include <puf.h>
+#include <network.h>
 
 
 volatile int32_t t2 = 0;
@@ -101,7 +102,7 @@ int main() {
 	}
 
 	while(1) {
-		ret = ReceiveMessage(&source, (char *)&puf_message, 1);
+		ret = ReceiveMessage(&source, (char *)&puf_message, sizeof(puf_message_t), 1);
 
 		if (ret) {
 			switch(puf_message.command) {

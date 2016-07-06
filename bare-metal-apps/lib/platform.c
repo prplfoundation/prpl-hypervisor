@@ -17,6 +17,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <pic32mz.h>
 
+
 #define TIMER 1 
 #define NETWORK 2
 
@@ -24,9 +25,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 void _irq_handler(uint32_t status, uint32_t cause)
 {
     /* extract ripl field */
-    uint32_t ripl = (cause & 0x3FC00) >> 10;
-    
-   // printf("\nripl 0x%x", ripl);
+    uint32_t ripl = (cause & 0x3FC00) >> 10 >> 1;
     
     if (ripl & TIMER){
         irq_timer();

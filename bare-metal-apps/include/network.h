@@ -30,7 +30,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define MESSAGE_VCPU_NOT_FOUND  -1
 #define MESSAGE_FULL            -2
 #define MESSAGE_TOO_BIG         -3
-#define MESSAGE_EMPTY            0
+#define MESSAGE_EMPTY           -4
+#define MESSAGE_VCPU_NOT_INIT   -5
+
 
 
 /** Struct for message exchange 
@@ -46,14 +48,14 @@ struct message_t{
 struct message_list_t{
         uint32_t in;
         uint32_t out;
-        uint32_t num_messages;
+        volatile uint32_t num_messages;
         struct message_t messages[MESSAGELIST_SZ];
 };
 
 
 void init_network();
-int ReceiveMessage(int *source, char *message, int block);
-int SendMessage(unsigned target_id, void* message, uint32_t size);
+int ReceiveMessage(int *source, char *message, int bufsz, int block);
+int SendMessage(unsigned target_id, void* message, unsigned size);
 void network_int_handler();
 
 #endif

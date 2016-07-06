@@ -55,7 +55,7 @@ int main() {
 
     while(1) {
     	uint8_t i;
-    	udelay(100000);
+    	//udelay(100000);
 
 //    	// Test QK_GetSoftwareVersion
 //    	uint8_t majorVersion;
@@ -71,7 +71,7 @@ int main() {
     		printf("Error QK_WrapKey: %x\n", retVal);
     	} else {
     		for (i = 0; i < 40 + 16; ++i) {
-    			printf("%02x", keyCode[i]);
+    			printf("%x", keyCode[i]);
     		}
     		printf("\n");
     	}

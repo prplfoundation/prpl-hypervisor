@@ -101,8 +101,14 @@ int32_t HypercallHandler(){
 				break;
 			}
 			
+			if (vcpu->init){
+                MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_INIT);
+                break;
+            }
+			
 			/* message queue full */
 			if(vcpu->messages.num_messages == MESSAGELIST_SZ){
+                vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
 				MoveToPreviousGuestGPR(REG_V0, MESSAGE_FULL);
 				break;
 			}
@@ -117,15 +123,11 @@ int32_t HypercallHandler(){
 			vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
 			
 			/* generate virtual interrupt to guest */
-			vcpu->guestclt2 |= (2<<GUESTCLT2_GRIPL_SHIFT);
+			vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
 				
 			/* Return success to sender */
 			MoveToPreviousGuestGPR(REG_V0, message_size);
 			
-			/* Set next vcpu to the target vcpu*/
-			target_vcpu = vcpu;
-			ret = CHANGE_TO_TARGET_VCPU;
-												
 			break;
 		}
 		case HCALL_IPC_RECV_MSG:{

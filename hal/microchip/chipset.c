@@ -39,6 +39,11 @@ PIC32MZ_DEVCFG (
 void hardware_config(){
     TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
     CNPUB =     (1 << 12);     /* enable pull-up */
+    
+    /* SPI1 pin map */
+    RPF4R = 5; /*SPI TX */
+    SDI1R = 2; /* SPI RX */
+    RPD1R = 0xc;
 }
 
 uint32_t tick_count = 0;
@@ -106,7 +111,7 @@ uint32_t timer_int_handler(){
     if (IFS(0) & 0x00004000){
         IFSCLR(0) = 0x00004000;
         /* insert timer interrupt on guest*/
-        curr_vcpu->guestclt2 = curr_vcpu->guestclt2 | (1 << GUESTCLT2_GRIPL_SHIFT);
+        curr_vcpu->guestclt2 = curr_vcpu->guestclt2 | (3 << GUESTCLT2_GRIPL_SHIFT);
         if ((tick_count++)%10==0){
             ret = RESCHEDULE;
         }

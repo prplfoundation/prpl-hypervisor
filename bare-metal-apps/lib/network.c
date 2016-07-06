@@ -20,20 +20,21 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 
 static struct message_list_t message_list;
-static volatile mutex_t wait = 1;
-
 
 void init_network(){
        memset((void *)&message_list, 0, sizeof(message_list));
 }
 
 
-int ReceiveMessage(int *source, char *message, int block){
+int ReceiveMessage(int *source, char *message, int bufsz, int block){
         unsigned int size, out;
         
+        asm volatile("di");
         if(message_list.num_messages == 0 && block){
-             spinlock(&wait);
+            asm volatile("ei");
+            while(!message_list.num_messages);
         }else if (message_list.num_messages == 0){
+            asm volatile("ei");
             return 0;
         }
         
@@ -41,6 +42,11 @@ int ReceiveMessage(int *source, char *message, int block){
         
         out = message_list.out;
         size = message_list.messages[out].size;
+        
+        /* If the buffer has no enough size the message is truncaded. */
+        if (size>bufsz){
+            size=bufsz;
+        }
 
         memcpy(message, message_list.messages[out].message, size);
         *source = message_list.messages[out].source_id;
@@ -59,24 +65,23 @@ int SendMessage(unsigned target_id, void* message, unsigned size){
 
 
 void irq_network(){
-        int ret = 1, in;
+        int ret = 1, in, flag=0;
         
         if(message_list.num_messages == MESSAGELIST_SZ){
-                unlock(&wait);
                 return;
         }
         in = message_list.in;
 
         while(ret && message_list.num_messages < MESSAGELIST_SZ){
                 ret = message_list.messages[in].size = hyp_ipc_receive_message(&message_list.messages[in].source_id, message_list.messages[in].message);
-                if(!ret){
-                    unlock(&wait);
+                if(ret==MESSAGE_EMPTY){
                     return;
                 }
                 in = message_list.in = (in + 1) % MESSAGELIST_SZ;
                 message_list.num_messages++;
         }
 }
+
 
 void print_net_error(int32_t error){
     switch (error){
@@ -92,8 +97,13 @@ void print_net_error(int32_t error){
         case MESSAGE_EMPTY:
             printf("\nReceiver queue empty.");
             break;
+        case MESSAGE_VCPU_NOT_INIT:
+            printf("\nTarget VCPU not initialized.");
+            break;
         default:
             printf("\nUnkown error 0x%x", error);
             break;
         }
 }
+
+
