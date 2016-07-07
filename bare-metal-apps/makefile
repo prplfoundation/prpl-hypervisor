@@ -13,7 +13,7 @@ OBJ_MIPS = mips-mti-elf-objcopy
 SIZE_MIPS = mips-mti-elf-size
 
 ifeq ($(APP_NAME),spi)
-LIBS=build/libpicotcp.a
+LIBS=build/pico_dev_pic32.o build/libpicotcp.a
 endif
 
 all: $(LIBS)
@@ -33,6 +33,9 @@ all: $(LIBS)
 # Assumes the picotcp repository is a sibling to the prpl-hypervisor repository, and that you've built that part independently.
 build/libpicotcp.a:
 	cp ../../picotcp/build/lib/libpicotcp.a $@
+
+build/pico_dev_pic32.o: pico_dev_pic32.c pico_dev_pic32.h
+	$(GCC_MIPS) -o $@ $< -I ../../picotcp/build/include/
 
 clean:
 	-rm -rf *~ *.o *.axf *.map *.lst *.sec *.cnt *.txt *.bin *.srec *.hex *.elf
