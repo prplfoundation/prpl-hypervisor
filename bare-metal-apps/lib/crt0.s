@@ -125,6 +125,8 @@ $COPY_DATA:
 	bnez	$v1, $COPY_DATA
 	nop
 
+	jal     init_mem
+	nop
 	jal     init_proc
 	nop
 	jal     init_network
