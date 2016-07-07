@@ -8,13 +8,14 @@ INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHA
 FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
+
+This code was written by Pierpaolo Bagnasco at Intrinsic-ID.
 */
 
 #ifndef PUF_H_
 #define PUF_H_
 
-//#include <stdint.h>
+#include "iidprplpuf/iid_errors.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -33,6 +34,11 @@ typedef uint8_t return_t;
 #define PUF_WRAPKEY                            0x03
 #define PUF_UNWRAPKEY                          0x04
 #define PUF_GETAUTHRESPONSE                    0x05
+
+#define LABEL_SIZE                             6
+#define CONTEXT_SIZE                           6
+
+#define KEYCODE_OVERHEAD                       40
 
 
 /*! \brief Indicates a key without special key properties.
@@ -182,8 +188,8 @@ typedef struct puf_getsoftwareversion {
 
 typedef struct puf_wrapkey {
 	                uint8_t          key[MAX_KEY_SIZE];
-	                uint8_t          label[6];
-	                uint8_t          context[6];
+	                uint8_t          label[LABEL_SIZE];
+	                uint8_t          context[CONTEXT_SIZE];
 		            uint16_t		 keySize;
 		            uint16_t		 keyProperties;
 		            uint8_t		     keyIndex;
@@ -192,16 +198,16 @@ PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
 
 typedef struct puf_unwrapkey {
 PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
-	                uint8_t          label[6];
-	                uint8_t          context[6];
+	                uint8_t          label[LABEL_SIZE];
+	                uint8_t          context[CONTEXT_SIZE];
 		            uint16_t	     keySize;
 		            uint8_t  	     keyIndex;
 		            uint8_t          key[MAX_KEY_SIZE];
 } puf_unwrapkey_t;
 
 typedef struct puf_getauthresponse {
-	                uint8_t          label[6];
-	                uint8_t          context[6];
+	                uint8_t          label[LABEL_SIZE];
+	                uint8_t          context[CONTEXT_SIZE];
 PRE_HIS_ALIGN       uint8_t          keyCode[MAX_KEYCODE_SIZE] POST_HIS_ALIGN;
 	                uint8_t          challenge[MAX_CHALLENGE_SIZE];
 	                uint16_t         challengeSize;

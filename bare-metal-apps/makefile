@@ -19,7 +19,7 @@ all: clean
 	$(GCC_MIPS) -o build/puf.o lib/puf.c
 	$(GCC_MIPS) -o build/network.o lib/network.c	
 	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c
-	$(LD_MIPS) build/crt0.o build/libc.o build/platform.o build/puf.o build/$(APP_NAME).o build/network.o -o build/bin/$(APP_NAME).elf -Tlib/pic32mz.ld -Llib/ -liidquiddikey -Map build/$(APP_NAME).map -N
+	$(LD_MIPS) build/crt0.o build/libc.o build/platform.o build/puf.o build/$(APP_NAME).o build/network.o -o build/bin/$(APP_NAME).elf -Tlib/pic32mz.ld -Llib/ -liidprplpuf -Map build/$(APP_NAME).map -N
 	$(DUMP_MIPS) --disassemble --reloc build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).lst
 	$(DUMP_MIPS) -h build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).sec
 	$(DUMP_MIPS) -s build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).cnt

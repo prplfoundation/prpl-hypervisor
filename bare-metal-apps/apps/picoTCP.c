@@ -11,15 +11,10 @@ FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATS
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-This code was written by Pierpaolo Bagnasco at Intrinsic-ID.
-
 */
-
-/* IID Quiddikey test */
 
 #include <pic32mz.h>
 #include <libc.h>
-#include <quiddikey/iid_errors.h>
 #include <puf.h>
 #include <network.h>
 
@@ -34,67 +29,58 @@ void irq_timer(){
 int main() {
 	return_t retVal;
 
-        while(guest_is_up(2) == MESSAGE_VCPU_NOT_INIT){
-            printf("\nWaiting guest to be ready!");
-        }
-
+	/* Key configuration */
 #define KEYSIZE 16
-    	uint16_t keySize = KEYSIZE;
 
-    	uint8_t key[KEYSIZE];
-    	memset(key, 0xFE, KEYSIZE); // Set the key that has to be wrapped to a fixed value
+	uint16_t keySize = KEYSIZE;
+	uint8_t key[KEYSIZE] = { // This is the key that has to be wrapped using PUF
+							 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+							 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+						   };
 
-    	uint8_t key_unwrapped[KEYSIZE];
+	uint8_t key_unwrapped[KEYSIZE]; // This will contain the unwrapped key
+	uint8_t label[LABEL_SIZE] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+	uint8_t context[CONTEXT_SIZE] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 };
+	uint16_t keyProperties = KEY_PROP_NONE;
+	uint8_t keyIndex = 0;
+	uint8_t keyCode[KEYSIZE + KEYCODE_OVERHEAD]; // This will contain the wrapped key
 
-    	uint8_t label[6];
-    	memset(label, 0x12, 6);
 
-    	uint8_t context[6];
-    	memset(context, 0x23, 6);
+	while (guest_is_up(2) == MESSAGE_VCPU_NOT_INIT) {
+		printf("\nWaiting guest to be ready!");
+	}
 
-    	uint16_t keyProperties = KEY_PROP_NONE;
-    	uint8_t keyIndex = 0;
-    	uint8_t keyCode[KEYSIZE + 40];
-        
-        uint32_t count = 0;
 
-    while(1) {
-    	uint8_t i;
-    	//udelay(100000);
+	while (1) {
+		uint8_t i;
+		udelay(1000000);
 
-   	// Test QK_GetSoftwareVersion
-    	uint8_t majorVersion;
-    	uint8_t minorVersion;
+		// Test PUF_WrapKey
+		retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
 
-    	//retVal = PUF_GetSoftwareVersion(&majorVersion, &minorVersion);
-    	//printf("response [%x] - received version: %x.%x\n", retVal, majorVersion, minorVersion);
+		if (IID_PRPL_SUCCESS != retVal) {
+			printf("Error PUF_WrapKey: %x\n", retVal);
+		} else {
+			printf("keyCode: ");
+			for (i = 0; i < KEYSIZE + KEYCODE_OVERHEAD; ++i) {
+				printf("%02x", keyCode[i]);
+			}
+			printf("\n");
+		}
 
-    	// Test QK_WrapKey
-    	retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
+		// Test PUF_UnwrapKey
+		retVal = PUF_UnwrapKey(keyCode, label, context, &keySize, &keyIndex, key_unwrapped);
 
-    	if (IID_SUCCESS != retVal) {
-    		printf("Error QK_WrapKey: %x\n", retVal);
-    	} else {
-    		for (i = 0; i < 40 + 16; ++i) {
-    			printf("%x", keyCode[i]);
-    		}
-    		printf("\n");
-                
-    	}
-
-    	// Test QK_UnwrapKey
-    	retVal = PUF_UnwrapKey(keyCode, label, context, &keySize, &keyIndex, key_unwrapped);
-
-		if (IID_SUCCESS != retVal) {
+		if (IID_PRPL_SUCCESS != retVal) {
 			printf("Error PUF_UnwrapKey: %x\n", retVal);
 		} else {
 			if (0 != memcmp(key, key_unwrapped, KEYSIZE)) {
-				printf("Error PUF_UnwrapKey: keys don't match. Robotic arm cannot be controlled.\n");
+				printf("Keys don't match! Robotic arm cannot be controlled.\n");
 			} else {
-				printf("Keys match!\n");
+				printf("Keys match! Robotic arm control is enabled.\n");
 			}
 		}
-    }
+	}
 
     return 0;
 }

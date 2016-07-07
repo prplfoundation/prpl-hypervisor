@@ -8,18 +8,19 @@ INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHA
 FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
+
+This code was written by Pierpaolo Bagnasco at Intrinsic-ID.
 */
 
-#ifndef IIDQUIDDIKEY_H_
-#define IIDQUIDDIKEY_H_
-
-//#include <stdint.h>
+#ifndef IID_PRPL_PUF_H_
+#define IID_PRPL_PUF_H_
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+//#include <stdint.h>
 
 /*! \brief The function return type
 \details
@@ -27,11 +28,11 @@ extern "C"
 typedef uint8_t return_t;
 
 
-/*! \addtogroup Quiddikey
+/*! \addtogroup IID_PRPL
 
 /*! \brief Indicates the size in bytes of the Activation Code.
 */
-#define QK_AC_SIZE_BYTES						800
+#define IID_PRPL_AC_SIZE_BYTES						800
 
 /*! \brief Indicates a key without special key properties.
     \details This define indicates that the key that will be wrapped has no special properties.
@@ -46,56 +47,56 @@ typedef uint8_t return_t;
 
 
 /*! \brief Get the software version.
-    \details Get the software version of this Quiddikey module.
+    \details Get the software version of the IID_PRPL_PUF module.
     \param[out] majorVersion Pointer to a byte for holding the major software version.
     \param[out] minorVersion Pointer to a byte for holding the minor software version.
     \returns \ref IID_SUCCESS
 */
-extern return_t QK_GetSoftwareVersion(uint8_t * const majorVersion, uint8_t * const minorVersion);
+extern return_t IID_PRPL_GetSoftwareVersion(uint8_t * const majorVersion, uint8_t * const minorVersion);
 
-/*! \brief Initialize Quiddikey.
-    \details This function is used to initialize the Quiddikey module. It must be called before any
+/*! \brief Initialize IID_PRPL_PUF.
+    \details This function is used to initialize the IID_PRPL_PUF module. It must be called before any
     of the other module functions may be called.
-    \param[in] physicalSramAddress Pointer to physical SRAM used by Quiddikey.
+    \param[in] physicalSramAddress Pointer to physical SRAM used by IID_PRPL_PUF.
     This has to be aligned to 32 bits, and it should be of at least 1024 bytes.
-    \param[in] physicalSramSize The size of available SRAM that can be used by Quiddikey.
-    \pre \ref QK_Init may only be called once after a device reset.
+    \param[in] physicalSramSize The size of available SRAM that can be used by IID_PRPL_PUF.
+    \pre \ref IID_PRPL_Init may only be called once after a device reset.
     \returns \ref IID_SUCCESS.
     \note The size of the SRAM must be a minimum of 1024 bytes.
 */
-extern return_t QK_Init(uint8_t * const physicalSramAddress, uint16_t physicalSramSize);
+extern return_t IID_PRPL_Init(uint8_t * const physicalSramAddress, uint16_t physicalSramSize);
 
 /*! \brief Enroll the Intrinsic Key.
     \details Enroll the Intrinsic Key by using the SRAM as PUF. It should be called only once
 	during the lifetime of the target.
     \param[out] activationCode Pointer to a buffer for holding the calculated activation code.
 	This has to be aligned to 32 bits.
-	\pre \ref QK_Init has to be called before \ref QK_Enroll may be called.
+	\pre \ref IID_PRPL_Init has to be called before \ref IID_PRPL_Enroll may be called.
     \returns \ref IID_SUCCESS if success.
 */
-extern return_t QK_Enroll(uint8_t * const activationCode);
+extern return_t IID_PRPL_Enroll(uint8_t * const activationCode);
 
 /*! \brief Reconstruct the Intrinsic Key.
     \details Reconstruct the Intrinsic Key using the SRAM as PUF and the activation code.
     \param[in] activationCode Pointer to a buffer that holds the calculated activation code.
     This has to be aligned to 32 bits.
-	\pre \ref QK_Init has to be called before \ref QK_Start may be called.
+	\pre \ref IID_PRPL_Init has to be called before \ref IID_PRPL_Start may be called.
     \returns \ref IID_SUCCESS if success.
 	\returns \ref IID_ERROR_INVALID_AC if activationCode is corrupted or manipulated.
 */
-extern return_t QK_Start(const uint8_t * const activationCode);
+extern return_t IID_PRPL_Start(const uint8_t * const activationCode);
 
 /*! \brief Delete the Intrinsic Key from Memory.
     \details The previously reconstructed Intrinsic Key is erased from memory.
-	\pre \ref QK_Init has to be called before \ref QK_Stop may be called.
+	\pre \ref IID_PRPL_Init has to be called before \ref IID_PRPL_Stop may be called.
     \returns \ref IID_SUCCESS.
 */
-extern return_t QK_Stop(void);
+extern return_t IID_PRPL_Stop(void);
 
 /*! \brief Wrap the given key.
-    \details The function QK_WrapKey wraps the given key and returns it as a key code.
+    \details The function IID_PRPL_WrapKey wraps the given key and returns it as a key code.
     \par
-    A symmetric key is secured by Quiddikey using the Wrap functionality.
+    A symmetric key is secured by IID_PRPL_PUF using the Wrap functionality.
     \par
     IK has to be available in memory when calling Wrap.
 	\param[in] key A buffer that holds the key to wrap.
@@ -105,10 +106,10 @@ extern return_t QK_Stop(void);
     \param[in] keyProperties The properties of the key (key type, protection, etc).
     \param[in] keyIndex The index of the key that will be wrapped.
     \param[out] keyCode A buffer that will hold the Key Code. This has to be aligned to 32 bits.
-	\pre \ref QK_Start has to be called before \ref QK_WrapKey may be called.
+	\pre \ref IID_PRPL_Start has to be called before \ref IID_PRPL_WrapKey may be called.
     \returns \ref IID_SUCCESS if success.
 */
-return_t QK_WrapKey(
+return_t IID_PRPL_WrapKey(
 	const uint8_t  * const key,
 	const uint8_t  * const label,
 	const uint8_t  * const context,
@@ -118,7 +119,7 @@ return_t QK_WrapKey(
 		  uint8_t  * const keyCode);
 
 /*! \brief Unwrap the given key code.
-    \details With QK_WrapKey, a previously wrapped key is retrieved from a key code.
+    \details With IID_PRPL_WrapKey, a previously wrapped key is retrieved from a key code.
     \par
     Keys that are stored securely can be retrieved from their key code using the Unwrap functionality.
     \par
@@ -129,12 +130,12 @@ return_t QK_WrapKey(
     \param[out] keySize A buffer that will hold the size of the unwrapped key.
     \param[out] keyIndex A buffer that will hold the index of the unwrapped key.
     \param[out] key A buffer that will hold the unwrapped key.
-	\pre \ref QK_Start has to be called before \ref QK_UnwrapKey may be called.
+	\pre \ref IID_PRPL_Start has to be called before \ref IID_PRPL_UnwrapKey may be called.
     \returns \ref IID_SUCCESS if success.
     \returns \ref IID_ERROR_INV_KEYCODE if keyCode is corrupted or manipulated.
 	\note Only non-authentication keys can be unwrapped.
 */
-return_t QK_UnwrapKey(
+return_t IID_PRPL_UnwrapKey(
 	const uint8_t  * const keyCode,
 	const uint8_t  * const label,
 	const uint8_t  * const context,
@@ -151,11 +152,11 @@ return_t QK_UnwrapKey(
     \param[in] challenge A buffer holding the challenge to calculate the response for.
     \param[in] challengeSize The size of the challenge in bytes. This must be a multiple of 16 bytes.
     \param[out] response A buffer for holding the response. This buffer has to be 16 bytes long and aligned to 32 bits.
-	\pre \ref QK_Start has to be called before \ref QK_GetAuthenticationResponse may be called.
+	\pre \ref IID_PRPL_Start has to be called before \ref IID_PRPL_GetAuthenticationResponse may be called.
 	\returns \ref IID_SUCCESS if success.
 	\returns \ref IID_ERROR_INV_KEYCODE if keyCode is corrupted or manipulated.
 */
-return_t QK_GetAuthenticationResponse(
+return_t IID_PRPL_GetAuthenticationResponse(
     const uint8_t  * const label,
     const uint8_t  * const context,
     const uint8_t  * const keyCode,
@@ -201,4 +202,4 @@ return_t QK_GetAuthenticationResponse(
 }
 #endif
 
-#endif /* IIDQUIDDIKEY_H_ */
+#endif /* IID_PRPL_PUF_H */

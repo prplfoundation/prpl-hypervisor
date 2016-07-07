@@ -19,9 +19,9 @@ This code was written by Pierpaolo Bagnasco at Intrinsic-ID.
 
 #include <pic32mz.h>
 #include <libc.h>
-#include <quiddikey/iid_errors.h>
 #include <puf.h>
 #include <network.h>
+#include "iidprplpuf/iid_errors.h"
 
 #define GETUINT32(address)          (((uint32_t)(address)[0] << 24) ^ ((uint32_t)(address)[1] << 16) ^ ((uint32_t)(address)[2] << 8) ^ ((uint32_t)(address)[3]))
 
@@ -90,8 +90,8 @@ return_t PUF_WrapKey(
 	puf_message.command = PUF_WRAPKEY;
 
 	memcpy(puf_message.puf_struct.puf_wrapkey.key, key, keySize);
-	memcpy(puf_message.puf_struct.puf_wrapkey.label, label, 6);
-	memcpy(puf_message.puf_struct.puf_wrapkey.context, context, 6);
+	memcpy(puf_message.puf_struct.puf_wrapkey.label, label, LABEL_SIZE);
+	memcpy(puf_message.puf_struct.puf_wrapkey.context, context, CONTEXT_SIZE);
 	puf_message.puf_struct.puf_wrapkey.keySize = keySize;
 	puf_message.puf_struct.puf_wrapkey.keyProperties = keyProperties;
 	puf_message.puf_struct.puf_wrapkey.keyIndex = keyIndex;
@@ -103,8 +103,8 @@ return_t PUF_WrapKey(
 	} else {
 		ret = ReceiveMessage(&source, (char *)&puf_message, sizeof(puf_message_t), 1);
 
-		if (ret>0) {
-			memcpy(keyCode, puf_message.puf_struct.puf_wrapkey.keyCode, keySize + 40);
+		if (ret > 0) {
+			memcpy(keyCode, puf_message.puf_struct.puf_wrapkey.keyCode, keySize + KEYCODE_OVERHEAD);
 
 			retVal = puf_message.response;
 		}
@@ -131,9 +131,9 @@ return_t PUF_UnwrapKey(
 
 	_keySize = GETUINT32(&keyCode[28]) / 8;
 
-	memcpy(puf_message.puf_struct.puf_unwrapkey.keyCode, keyCode, _keySize + 40);
-	memcpy(puf_message.puf_struct.puf_unwrapkey.label, label, 6);
-	memcpy(puf_message.puf_struct.puf_unwrapkey.context, context, 6);
+	memcpy(puf_message.puf_struct.puf_unwrapkey.keyCode, keyCode, _keySize + KEYCODE_OVERHEAD);
+	memcpy(puf_message.puf_struct.puf_unwrapkey.label, label, LABEL_SIZE);
+	memcpy(puf_message.puf_struct.puf_unwrapkey.context, context, CONTEXT_SIZE);
 
 	ret = SendMessage(2, (void *)&puf_message, sizeof(puf_message_t));
 
@@ -142,7 +142,7 @@ return_t PUF_UnwrapKey(
 	} else {
 		ret = ReceiveMessage(&source, (char *)&puf_message, sizeof(puf_message_t), 1);
 
-		if (ret>0) {
+		if (ret > 0) {
 			*keySize = puf_message.puf_struct.puf_unwrapkey.keySize;
 			*keyIndex = puf_message.puf_struct.puf_unwrapkey.keyIndex;
 			memcpy(key, puf_message.puf_struct.puf_unwrapkey.key, _keySize);
