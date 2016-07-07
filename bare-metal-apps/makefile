@@ -12,19 +12,27 @@ READ_MIPS = mips-mti-elf-readelf
 OBJ_MIPS = mips-mti-elf-objcopy
 SIZE_MIPS = mips-mti-elf-size
 
-all:
+ifeq ($(APP_NAME),spi)
+LIBS=build/libpicotcp.a
+endif
+
+all: $(LIBS)
 	$(AS_MIPS) -o build/crt0.o lib/crt0.s
 	$(GCC_MIPS) -o build/libc.o lib/libc.c
 	$(GCC_MIPS) -o build/platform.o lib/platform.c
 	$(GCC_MIPS) -o build/network.o lib/network.c	
 	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c
 	$(LD_MIPS) -Tlib/pic32mz.ld -Map build/$(APP_NAME).map -N -o build/bin/$(APP_NAME).elf \
-		build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o
+		build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o $(LIBS)
 	$(DUMP_MIPS) --disassemble --reloc build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).lst
 	$(DUMP_MIPS) -h build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).sec
 	$(DUMP_MIPS) -s build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).cnt
 	$(OBJ_MIPS) -O binary build/bin/$(APP_NAME).elf build/bin/$(APP_NAME).bin
 	$(SIZE_MIPS) build/bin/$(APP_NAME).elf
+
+# Assumes the picotcp repository is a sibling to the prpl-hypervisor repository, and that you've built that part independently.
+build/libpicotcp.a:
+	cp ../../picotcp/build/lib/libpicotcp.a $@
 
 clean:
 	-rm -rf *~ *.o *.axf *.map *.lst *.sec *.cnt *.txt *.bin *.srec *.hex *.elf
