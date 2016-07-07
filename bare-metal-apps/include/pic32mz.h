@@ -16,6 +16,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 /* C type extensions */
+#include <stdint.h>
+#if 0
 typedef unsigned char			uint8_t;
 typedef char				int8_t;
 typedef unsigned short int		uint16_t;
@@ -24,9 +26,9 @@ typedef unsigned int			uint32_t;
 typedef int				int32_t;
 typedef unsigned long long		uint64_t;
 typedef long long			int64_t;
+#endif
 
 typedef void				(*funcptr)();
-
 /* CP0 registers */
 #define CP0_INDEX		0
 #define CP0_RANDOM		1

@@ -18,6 +18,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <libc.h>
 
+extern void putchar(int32_t value);
+extern uint32_t getchar(void);
+
 static uint32_t serial_port = UART2;
 
 int32_t serial_select(uint32_t serial_number){
