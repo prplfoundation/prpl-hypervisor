@@ -209,6 +209,15 @@ hyp_get_guest_id:
         .set reorder        
 .end hyp_get_guest_id
         
+        .global guest_is_up
+        .ent guest_is_up        
+guest_is_up:
+        .set noreorder 
+        hypcall 0x003
+        jr $ra
+        nop
+        .set reorder        
+.end guest_is_up
         
         
         .global spinlock

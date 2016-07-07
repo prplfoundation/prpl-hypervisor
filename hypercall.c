@@ -204,6 +204,18 @@ int32_t HypercallHandler(){
                     register_timer(interval);
                     break;
                 }
+                /* Check if the guest is UP */
+                case HCALL_GUEST_UP:{
+                    vcpu_t* vcpu;
+                    uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
+                    vcpu = (vcpu_t*)get_vcpu_from_id(target_id,&be_vcpu_list);
+                    if(!vcpu){
+                        MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
+                    }else{
+                        MoveToPreviousGuestGPR(REG_V0, vcpu->init? MESSAGE_VCPU_NOT_INIT : 1);
+                    }
+                    break;
+                }
                     
 		case HCALL_FLASH_READ:{
 			vcpu_t* vcpu = curr_vcpu;
