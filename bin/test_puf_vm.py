@@ -42,7 +42,7 @@ ser.flush()
 
 print 'Board response: %s' % readSerial()
 
-#sleep(2)
+sleep(2)
 
 print 'Sending the correct keyCode to the board (%d bytes)' % len(binary_keyCode)
 
