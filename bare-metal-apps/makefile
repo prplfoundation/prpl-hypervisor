@@ -37,7 +37,7 @@ all: $(LIBS)
 build/libpicotcp.a:
 	cp ../../picotcp/build/lib/libpicotcp.a $@
 
-build/pico_dev_pic32.o: pico_dev_pic32.c pico_dev_pic32.h
+build/pico_dev_pic32.o: lib/pico_dev_pic32.c include/pico_dev_pic32.h
 	$(GCC_MIPS) -o $@ $< $(INC)
 
 clean:

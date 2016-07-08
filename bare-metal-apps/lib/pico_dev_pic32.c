@@ -62,9 +62,6 @@ uint16_t next_packet_pointer = 0x0000;
 volatile uint32_t tick_counter = 0;
 volatile uint32_t us_counter = 0;
 
-unsigned int exc_code;
-unsigned int exc_addr;
-
 /******************************************************************************/
 /* Main Functions                                                               */
 /******************************************************************************/
@@ -109,6 +106,7 @@ struct pico_device *pico_eth_create(const char *name, const uint8_t *mac)
   dev->overhead = 0;
   dev->send = pico_pic32_send;
   dev->poll = pico_pic32_poll;
+
 
   SPI_DESEL();
 
