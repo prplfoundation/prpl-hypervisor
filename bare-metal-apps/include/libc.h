@@ -36,7 +36,7 @@ constants, tests and transformations
 /*
 custom C library
 */
-#if 0
+#ifndef PICOTCP
 extern void putchar(int32_t value);
 extern int32_t kbhit(void);
 extern uint32_t getchar(void);

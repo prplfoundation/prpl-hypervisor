@@ -17,13 +17,9 @@
 /* Defines                                                                    */
 /******************************************************************************/
 
-#define USEC_TICK_COUNT 20000000/1000000
-
 /* Use pin RB3 for CS */
 #define SPI_SEL()       PORTBSET = 0x0008;
 #define SPI_DESEL()     PORTBCLR = 0x0008;
-#define DELAY_1_US()    for(tick_counter = 0; tick_counter < USEC_TICK_COUNT; tick_counter++);
-#define DELAY_US(x)     for(us_counter = 0; us_counter < x; us_counter++) DELAY_1_US();
 #define LOWER_BYTE(x)   ((x) & 0xFF)
 #define UPPER_BYTE(x)   ((x) >> 8)
 
@@ -65,9 +61,6 @@ uint16_t next_packet_pointer = 0x0000;
 
 volatile uint32_t tick_counter = 0;
 volatile uint32_t us_counter = 0;
-
-unsigned int exc_code;
-unsigned int exc_addr;
 
 /******************************************************************************/
 /* Main Functions                                                               */
@@ -118,7 +111,7 @@ struct pico_device *pico_eth_create(const char *name, const uint8_t *mac)
   SPI_DESEL();
 
   spiSoftReset();
-  DELAY_US(50);
+  udelay(50);
   while(spiReadPhyControl(PHCON1) & PHCON1_PRST);
 
   // Initialize ENC28J60
@@ -231,7 +224,7 @@ static uint8_t spiReadEthControl(uint8_t address)
 static uint8_t spiReadMacMiiControl(uint8_t address)
 {
   SPI_SEL();
-  DELAY_US(1);
+  udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_RCR; // address with opcode mask
   while (!SPI1_Rx_Buf_Full); // wait till start of transmission
   address = SPI1BUF; // Read dummy byte
@@ -241,7 +234,7 @@ static uint8_t spiReadMacMiiControl(uint8_t address)
   SPI1BUF = 0x00; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
-  DELAY_US(1);
+  udelay(1);
   SPI_DESEL();
   return address;
 }
@@ -249,14 +242,14 @@ static uint8_t spiReadMacMiiControl(uint8_t address)
 static uint8_t spiWriteControl(uint8_t address, uint8_t data)
 {
   SPI_SEL();
-  DELAY_US(1);
+  udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_WCR;
   while (!SPI1_Rx_Buf_Full); // wait till start of transmission
   address = SPI1BUF; // Read dummy byte
   SPI1BUF = data; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
-  DELAY_US(1);
+  udelay(1);
   SPI_DESEL();
   return address;
 }
@@ -345,7 +338,7 @@ static uint16_t spiReadPhyControl(uint8_t address)
   spiWriteControl(MIREGADR, address);
 
   spiWriteControl(MICMD, MICMD_MIIRD);
-  DELAY_US(11);
+  udelay(11);
   spiSelectBank(SPI_BANK3);
   while(spiReadMacMiiControl(MISTAT) & MISTAT_BUSY);
 
@@ -367,7 +360,7 @@ static void spiWritePhyControl(uint8_t address, uint16_t data)
   // Write the data
   spiWriteControl(MIWRL, LOWER_BYTE(data));
   spiWriteControl(MIWRH, UPPER_BYTE(data));
-  DELAY_US(11);
+  udelay(11);
   spiSelectBank(SPI_BANK3);
   while(spiReadMacMiiControl(MISTAT) & MISTAT_BUSY);
 }

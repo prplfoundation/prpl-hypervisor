@@ -13,6 +13,7 @@ OBJ_MIPS = mips-mti-elf-objcopy
 SIZE_MIPS = mips-mti-elf-size
 
 ifeq ($(APP_NAME),spi)
+GCC_MIPS+=-DPICOTCP
 LIBS=build/pico_dev_pic32.o build/libpicotcp.a
 INC=-I ../../picotcp/build/include/
 endif
@@ -37,7 +38,7 @@ all: $(LIBS)
 build/libpicotcp.a:
 	cp ../../picotcp/build/lib/libpicotcp.a $@
 
-build/pico_dev_pic32.o: pico_dev_pic32.c pico_dev_pic32.h
+build/pico_dev_pic32.o: lib/pico_dev_pic32.c include/pico_dev_pic32.h
 	$(GCC_MIPS) -o $@ $< $(INC)
 
 clean:
