@@ -16,8 +16,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 /* C type extensions */
+#ifdef PICOTCP
 #include <stdint.h>
-#if 0
+#else
 typedef unsigned char			uint8_t;
 typedef char				int8_t;
 typedef unsigned short int		uint16_t;
