@@ -121,7 +121,7 @@ int get_message(unsigned char *message)
 {
     uint32_t source;
 
-	return ReceiveMessage(&source, message, 0);
+	return ReceiveMessage(&source, message, 1, 0);
 }
 
 int process_message()
