@@ -71,7 +71,7 @@ int main() {
 	if (IID_PRPL_SUCCESS == retVal) {
 		retVal = readAndCheckAC(activationCode_buffer);
 
-		if (IID_PRPL_SUCCESS != retVal) { /* If the AC doesn't exist, generate and create it */
+		//if (IID_PRPL_SUCCESS != retVal) { /* If the AC doesn't exist, generate and create it */
 			retVal = IID_PRPL_Enroll(activationCode_buffer);
 			printf("IID_PRPL Enroll executed\n");
 
@@ -84,7 +84,7 @@ int main() {
 			} else {
 				printf("IID_PRPL Enroll failed with error: %02X\n", retVal);
 			}
-		}
+		//}
 
 		if (IID_PRPL_SUCCESS == retVal) {
 			retVal = IID_PRPL_Start(activationCode_buffer);

@@ -72,7 +72,7 @@ int main() {
 	}
 
 	while (1) {
-		for (i = 0; i < BUFFER_RX_SIZE; ++i) {
+		for (i = 0; i < 57; ++i) {
 			buffer[i] = getchar();
 
 			if (buffer[i] == '\n' || buffer[i] == '\r') {
