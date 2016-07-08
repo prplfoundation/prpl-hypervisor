@@ -23,7 +23,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 #define MESSAGELIST_SZ  5
-#define MESSAGE_SZ      128
+#define MESSAGE_SZ      255
 
 
 /** Return values for inter-vm communication hypercalls  */
