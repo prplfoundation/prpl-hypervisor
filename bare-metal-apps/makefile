@@ -14,6 +14,7 @@ SIZE_MIPS = mips-mti-elf-size
 
 ifeq ($(APP_NAME),spi)
 LIBS=build/pico_dev_pic32.o build/libpicotcp.a
+INC=-I ../../picotcp/build/include/
 endif
 
 all: $(LIBS)
@@ -21,10 +22,11 @@ all: $(LIBS)
 	$(GCC_MIPS) -o build/libc.o lib/libc.c
 	$(GCC_MIPS) -o build/platform.o lib/platform.c
 	$(GCC_MIPS) -o build/network.o lib/network.c
-	$(GCC_MIPS) -o build/malloc.o lib/malloc.c	
-	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c
+	$(GCC_MIPS) -o build/malloc.o lib/malloc.c
+	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c $(INC)
 	$(LD_MIPS) -Tlib/pic32mz.ld -Map build/$(APP_NAME).map -N -o build/bin/$(APP_NAME).elf \
-		build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o build/malloc.o 
+		build/crt0.o build/libc.o build/platform.o build/$(APP_NAME).o build/network.o build/malloc.o \
+	$(LIBS)
 	$(DUMP_MIPS) --disassemble --reloc build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).lst
 	$(DUMP_MIPS) -h build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).sec
 	$(DUMP_MIPS) -s build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).cnt
@@ -36,7 +38,7 @@ build/libpicotcp.a:
 	cp ../../picotcp/build/lib/libpicotcp.a $@
 
 build/pico_dev_pic32.o: pico_dev_pic32.c pico_dev_pic32.h
-	$(GCC_MIPS) -o $@ $< -I ../../picotcp/build/include/
+	$(GCC_MIPS) -o $@ $< $(INC)
 
 clean:
 	-rm -rf *~ *.o *.axf *.map *.lst *.sec *.cnt *.txt *.bin *.srec *.hex *.elf
