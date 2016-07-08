@@ -18,8 +18,8 @@
 /******************************************************************************/
 
 /* Use pin RB3 for CS */
-#define SPI_SEL()       PORTBSET = 0x0008;
-#define SPI_DESEL()     PORTBCLR = 0x0008;
+#define SPI_SEL()       PORTBCLR = 0x0008;
+#define SPI_DESEL()     PORTBSET = 0x0008;
 #define LOWER_BYTE(x)   ((x) & 0xFF)
 #define UPPER_BYTE(x)   ((x) >> 8)
 
@@ -107,9 +107,22 @@ struct pico_device *pico_eth_create(const char *name, const uint8_t *mac)
   dev->send = pico_pic32_send;
   dev->poll = pico_pic32_poll;
 
+#if 0
+  while (1)
+  {
+  spiBitClear(0xbf, 0x00);
+//  udelay(100);
+  spiBitClear(0xbf, 0x01);
+  udelay(100);
+  spiBitClear(0xbf, 0x02);
+  udelay(100);
+  spiBitClear(0xbf, 0x03);
+  udelay(100);
+  }
 
+  while(1);
+#endif
   SPI_DESEL();
-
   spiSoftReset();
   udelay(50);
   while(spiReadPhyControl(PHCON1) & PHCON1_PRST);
@@ -123,7 +136,6 @@ struct pico_device *pico_eth_create(const char *name, const uint8_t *mac)
   spiSelectBank(SPI_BANK2);
   uint8_t macon3 = spiReadMacMiiControl(MACON3);
   uint8_t econ1 = spiReadEthControl(SPI_ECON1);
-
   return dev;
 }
 
@@ -202,21 +214,27 @@ static void spiInit(const uint8_t * mac_address)
 static void spiSoftReset()
 {
   SPI_SEL();
+//  udelay(1);
   SPI1BUF = SPI_OPCODE_RES; // address with opcode mask
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   volatile uint8_t tmp = SPI1BUF;
+  udelay(1);
   SPI_DESEL();
 }
 
 static uint8_t spiReadEthControl(uint8_t address)
 {
   SPI_SEL();
+//  udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_RCR; // address with opcode mask
   while (!SPI1_Rx_Buf_Full); // wait till start of transmission
   address = SPI1BUF;
+//  udelay(1);
+  udelay(1);
   SPI1BUF = 0x00; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
+  udelay(1);
   SPI_DESEL();
   return address;
 }
@@ -224,16 +242,22 @@ static uint8_t spiReadEthControl(uint8_t address)
 static uint8_t spiReadMacMiiControl(uint8_t address)
 {
   SPI_SEL();
+//  udelay(1);
   udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_RCR; // address with opcode mask
   while (!SPI1_Rx_Buf_Full); // wait till start of transmission
   address = SPI1BUF; // Read dummy byte
+//  udelay(1);
+  udelay(1);
   SPI1BUF = 0x00; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
+//  udelay(1);
+  udelay(1);
   SPI1BUF = 0x00; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
+  udelay(1);
   udelay(1);
   SPI_DESEL();
   return address;
@@ -242,13 +266,17 @@ static uint8_t spiReadMacMiiControl(uint8_t address)
 static uint8_t spiWriteControl(uint8_t address, uint8_t data)
 {
   SPI_SEL();
+//  udelay(1);
   udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_WCR;
   while (!SPI1_Rx_Buf_Full); // wait till start of transmission
   address = SPI1BUF; // Read dummy byte
+//  udelay(1);
+  udelay(1);
   SPI1BUF = data; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
+  udelay(1);
   udelay(1);
   SPI_DESEL();
   return address;
@@ -260,12 +288,16 @@ static uint8_t spiWriteControl(uint8_t address, uint8_t data)
 static uint8_t spiBitSet(uint8_t address, uint8_t mask)
 {
   SPI_SEL();
+//  udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_BFS;
   while (!SPI1_Rx_Buf_Full); // wait till start of transmission
   address = SPI1BUF; // Read dummy byte
+//  udelay(1);
+  udelay(1);
   SPI1BUF = mask; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF;
+  udelay(1);
   SPI_DESEL();
   return address;
 }
@@ -276,12 +308,16 @@ static uint8_t spiBitSet(uint8_t address, uint8_t mask)
 static uint8_t spiBitClear(uint8_t address, uint8_t mask)
 {
   SPI_SEL();
+//  udelay(1);
   SPI1BUF = (address & SPI_ADDR_MASK) | SPI_OPCODE_BFC;
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF; // Read dummy byte
+//  udelay(1);
+  udelay(1);
   SPI1BUF = mask; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   address = SPI1BUF; // read actual address
+  udelay(1);
   SPI_DESEL();
   return address;
 }
@@ -298,12 +334,16 @@ static uint8_t spiReadBuffer()
 {
   uint8_t value;
   SPI_SEL();
+//  udelay(1);
   SPI1BUF = (0b011010 & SPI_ADDR_MASK) | SPI_OPCODE_RBM; // Read Buffer Mem
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   value = SPI1BUF; // Read dummy byte
+  udelay(1);
+//  udelay(1);
   SPI1BUF = 0x00; // Send dummy byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   value = SPI1BUF;
+  udelay(1);
   SPI_DESEL();
   return value;
 }
@@ -313,16 +353,22 @@ static uint8_t spiReadFullBuffer(uint8_t* pBuffer, uint16_t len)
   uint16_t cur_pos = 0;
   uint8_t value;
   SPI_SEL();
+//  udelay(1);
 
   SPI1BUF = (0b011010 & SPI_ADDR_MASK) | SPI_OPCODE_RBM; // Read Buffer Mem
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   value = SPI1BUF; // Read dummy byte
+//  udelay(1);
+  udelay(1);
 
   for (cur_pos = 0; cur_pos < len; cur_pos++) {
+//  udelay(1);
     SPI1BUF = 0x00; // Send dummy byte
     while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
     pBuffer[cur_pos] = SPI1BUF;
+    udelay(1);
   }
+//  udelay(1);
 
   SPI_DESEL();
   return 1;
@@ -417,17 +463,23 @@ static uint16_t writeBuffer(uint8_t* pBuffer, uint16_t size)
 
   // Send the control byte and payload
   SPI_SEL();
+//  udelay(1);
   SPI1BUF = (0b011010 & SPI_ADDR_MASK) | SPI_OPCODE_WBM; // Write Buffer Mem
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   value = SPI1BUF;
+//  udelay(1);
+  udelay(1);
   SPI1BUF = 0x00; // Send control byte
   while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
   value = SPI1BUF;
+//  udelay(1);
 
   for (cur_pos = 0; cur_pos < size; cur_pos++) {
+//    udelay(1);
     SPI1BUF = pBuffer[cur_pos];
     while (!SPI1_Rx_Buf_Full); // wait till completion of transmission
     value = SPI1BUF;
+    udelay(1);
   }
   SPI_DESEL();
 

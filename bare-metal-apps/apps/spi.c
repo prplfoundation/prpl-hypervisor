@@ -45,7 +45,7 @@ int main() {
     
     printf("\nConfiguring SPI.");
     
-    setupSPI1();
+//    setupSPI1();
     
     while (1){
         printf("\nInt count: %d", t2);
