@@ -28,7 +28,7 @@ extern "C"
 typedef uint8_t return_t;
 
 
-#define PUF_INVALID_COMMAND                    0x00
+#define PUF_INVALID_COMMAND                    0xEE
 #define PUF_GETSOFTWAREVERSION                 0x01
 #define PUF_STOP                               0x02
 #define PUF_WRAPKEY                            0x03

@@ -25,8 +25,12 @@ void irq_timer(){
  t2++;
 }
 
+#define BUFFER_RX_SIZE        255 /* This has to be greater than (MAX_KEY_SIZE + KEYCODE_OVERHEAD = 128) */
+
+uint8_t buffer[BUFFER_RX_SIZE];
 
 int main() {
+	uint8_t i;
 	return_t retVal;
 
 	/* Key configuration */
@@ -46,39 +50,42 @@ int main() {
 	uint8_t keyCode[KEYSIZE + KEYCODE_OVERHEAD]; // This will contain the wrapped key
 
 
+	serial_select(UART2);
+
+
 	while (guest_is_up(2) == MESSAGE_VCPU_NOT_INIT) {
-		printf("\nWaiting guest to be ready!");
+		printf("\nWaiting guest to be ready!\n");
 	}
 
+	udelay(2000000);
+
+	retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
+
+	if (IID_PRPL_SUCCESS != retVal) {
+		printf("Error PUF_WrapKey: %x\n", retVal);
+	} else {
+		printf("keyCode: ");
+		for (i = 0; i < KEYSIZE + KEYCODE_OVERHEAD; ++i) {
+			printf("%02x", keyCode[i]);
+		}
+		printf("\n");
+	}
 
 	while (1) {
-		uint8_t i;
-		udelay(1000000);
+		for (i = 0; i < BUFFER_RX_SIZE; ++i) {
+			buffer[i] = getchar();
 
-		// Test PUF_WrapKey
-		retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
-
-		if (IID_PRPL_SUCCESS != retVal) {
-			printf("Error PUF_WrapKey: %x\n", retVal);
-		} else {
-			printf("keyCode: ");
-			for (i = 0; i < KEYSIZE + KEYCODE_OVERHEAD; ++i) {
-				printf("%02x", keyCode[i]);
+			if (buffer[i] == '\n' || buffer[i] == '\r') {
+				break;
 			}
-			printf("\n");
 		}
 
-		// Test PUF_UnwrapKey
-		retVal = PUF_UnwrapKey(keyCode, label, context, &keySize, &keyIndex, key_unwrapped);
+		retVal = PUF_UnwrapKey(buffer, label, context, &keySize, &keyIndex, key_unwrapped);
 
 		if (IID_PRPL_SUCCESS != retVal) {
-			printf("Error PUF_UnwrapKey: %x\n", retVal);
+			printf("Invalid key! Robotic arm cannot be controlled.\n");
 		} else {
-			if (0 != memcmp(key, key_unwrapped, KEYSIZE)) {
-				printf("Keys don't match! Robotic arm cannot be controlled.\n");
-			} else {
-				printf("Keys match! Robotic arm control is enabled.\n");
-			}
+			printf("Valid key! Robotic arm control is enabled.\n");
 		}
 	}
 

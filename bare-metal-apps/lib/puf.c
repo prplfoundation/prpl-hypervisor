@@ -131,6 +131,10 @@ return_t PUF_UnwrapKey(
 
 	_keySize = GETUINT32(&keyCode[28]) / 8;
 
+	if (_keySize > MAX_KEY_SIZE) {
+		return IID_PRPL_ERROR_INV_KEYCODE;
+	}
+
 	memcpy(puf_message.puf_struct.puf_unwrapkey.keyCode, keyCode, _keySize + KEYCODE_OVERHEAD);
 	memcpy(puf_message.puf_struct.puf_unwrapkey.label, label, LABEL_SIZE);
 	memcpy(puf_message.puf_struct.puf_unwrapkey.context, context, CONTEXT_SIZE);
