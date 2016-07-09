@@ -20,6 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <libc.h>
 #include <network.h>
+#include <puf.h>
 
 #include "pico_defines.h"
 #include "pico_stack.h"
@@ -29,12 +30,29 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define LISTENING_PORT 80
 #define MAX_CONNECTIONS 1
-#define RX_BUF_SIZE 1536
+#define ETH_RX_BUF_SIZE 1536
 
-static char rx_buf[RX_BUF_SIZE] = {0};
+#define KEYSIZE 16
+
+static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 static struct pico_socket *s = NULL;
-static struct pico_ip4 my_eth_addr, netmask, inaddr_any = { };
+static struct pico_ip4 my_eth_addr, netmask;
 static struct pico_device *pico_dev_eth;
+
+uint16_t keySize = KEYSIZE;
+uint8_t key[KEYSIZE] = { // This is the key that has to be wrapped using PUF
+							 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+							 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+						};
+
+uint8_t key_unwrapped[KEYSIZE]; // This will contain the unwrapped key
+uint8_t label[LABEL_SIZE] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+uint8_t context[CONTEXT_SIZE] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 };
+uint16_t keyProperties = KEY_PROP_NONE;
+uint8_t keyIndex = 0;
+uint8_t keyCode[KEYSIZE + KEYCODE_OVERHEAD]; // This will contain the wrapped key
+uint8_t key_wrapped = 0;
+return_t retVal;
 
 
 volatile unsigned int pico_ms_tick = 0;
@@ -105,7 +123,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
     int ret = 0;
 
     if (ev & PICO_SOCK_EV_RD) {
-        r = pico_socket_read(s, rx_buf, RX_BUF_SIZE);
+        r = pico_socket_read(s, rx_buf, ETH_RX_BUF_SIZE);
         if (r < 0)
             printf("Error while reading from socket!\n");
         int i;
@@ -114,13 +132,31 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
             printf("%02x ", rx_buf[i]);
         printf("\n");
 
-        ret = SendMessage()
+
+	    retVal = PUF_UnwrapKey(rx_buf, label, context, &keySize, &keyIndex, key_unwrapped);
+	    if (IID_PRPL_SUCCESS != retVal) {
+			printf("Invalid key! Robotic arm cannot be controlled.\n");
+		} else {
+			printf("Valid key! Robotic arm control is enabled.\n");
+			//TODO send command to arm_control VM
+		}
+
     }
 
     if (ev == PICO_SOCK_EV_CONN)
     {
         s = pico_socket_accept(s, &peer, &port);
-        ret = pico_socket_wri
+        printf("Accepted connection\n");
+	    if (key_wrapped == 0)
+	    printf("Key not ready yet\n");
+	    else
+	    {
+            ret = pico_socket_write(s, keyCode, KEYSIZE + KEYCODE_OVERHEAD);
+	        if (ret < 0)
+	            printf("Failed to send wrapped key\n");
+            else
+                printf("Sent wrapped key\n");
+	    }
     }
 
     /* process error event, socket error occured */
@@ -133,6 +169,7 @@ int main()
     uint8_t mac[6] = {0x00,0x00,0x00,0x12,0x34,0x56};
     const char *ipaddr="192.168.43.42";
     uint16_t port_be = 0;
+    int i = 0;
 
     /* Select output serial 2 = UART2, 6 = UART6 */
     serial_select(UART2);
@@ -143,6 +180,9 @@ int main()
 
     printf("Configured SPI1\n");
 #endif
+
+    init_network();
+
     printf("Initializing pico stack\n");
     pico_stack_init();
 
@@ -171,6 +211,26 @@ int main()
     while (1)
     {
 	    pico_stack_tick();
+
+	    /* Only wrap key when VM 2 is up and only do it once */
+	    if (guest_is_up(2) != MESSAGE_VCPU_NOT_INIT && key_wrapped == 0)
+	    {
+            retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
+
+            if (IID_PRPL_SUCCESS != retVal) {
+                printf("Error PUF_WrapKey: %x\n", retVal);
+            } else {
+                printf("keyCode: ");
+                for (i = 0; i < KEYSIZE + KEYCODE_OVERHEAD; ++i) {
+                    printf("%02x", keyCode[i]);
+                }
+                printf("\n");
+
+            }
+
+            key_wrapped = 1;
+	    }
+
     }
 
     return 0;
