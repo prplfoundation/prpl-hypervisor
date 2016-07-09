@@ -19,10 +19,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <pic32mz.h>
 #include <libc.h>
+#include <network.h>
 
 #include "pico_defines.h"
 #include "pico_stack.h"
 #include "pico_ipv4.h"
+#include "pico_tcp.h"
 #include "pico_socket.h"
 
 #define LISTENING_PORT 80
@@ -100,6 +102,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
     int r = 0;
     uint16_t port;
     uint16_t peer;
+    int ret = 0;
 
     if (ev & PICO_SOCK_EV_RD) {
         r = pico_socket_read(s, rx_buf, RX_BUF_SIZE);
@@ -110,11 +113,14 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
         for (i = 0; i < r; i++)
             printf("%02x ", rx_buf[i]);
         printf("\n");
+
+        ret = SendMessage()
     }
 
     if (ev == PICO_SOCK_EV_CONN)
     {
         s = pico_socket_accept(s, &peer, &port);
+        ret = pico_socket_wri
     }
 
     /* process error event, socket error occured */
@@ -130,20 +136,13 @@ int main()
 
     /* Select output serial 2 = UART2, 6 = UART6 */
     serial_select(UART2);
-//    setupSPI1();
 #if 0
-    while(1)
-    {
-        printf("pico_ms_tick = %u\n", pico_ms_tick);
-        udelay(1000000);
-    }
-#endif
     printf("Configuring SPI1\n");
 
     setupSPI1();
 
     printf("Configured SPI1\n");
-
+#endif
     printf("Initializing pico stack\n");
     pico_stack_init();
 
@@ -158,12 +157,12 @@ int main()
 
     port_be = short_be(LISTENING_PORT);
 
-    printf("Openeing socket\n");
+    printf("Opening socket\n");
     s = pico_socket_open(PICO_PROTO_IPV4, PICO_PROTO_TCP, &cb_tcp);
     if (!s)
         printf("Failed to open socket!\n");
 
-    if (pico_socket_bind(s, &inaddr_any, &port_be) != 0)
+    if (pico_socket_bind(s, &my_eth_addr.addr, &port_be) != 0)
         printf("Failed to bind socket!\n");
 
     if (pico_socket_listen(s, MAX_CONNECTIONS) != 0)
