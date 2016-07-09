@@ -5,7 +5,7 @@ MEMORY
 {
 flash		(rx)   : ORIGIN = 0x9d000000, LENGTH = 128K	/* Flash area*/
 ram		(rw!x) : ORIGIN = 0x80000000, LENGTH = 127K	/* RAM area. */
-puf		(rw!x) : ORIGIN = 0x8000FC00, LENGTH = 1K	/* PUF area. */
+puf		(rw!x) : ORIGIN = 0x8001FC00, LENGTH = 1K	/* PUF area. */
 }
 
 /* define a global symbol _stack  */
