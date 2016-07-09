@@ -42,7 +42,13 @@ static void print_config(void)
 
 /** C code entry. Called from hal/$(BOARD)/boot.S */
 int32_t main(char * _edata, char* _data, char* _erodata){
-    
+	// This is for delaying the output, otherwise it gets lost
+	volatile uint32_t x;
+	for (x = 0; x < 10000000; ++x);
+	for (x = 0; x < 10000000; ++x);
+	for (x = 0; x < 10000000; ++x);
+	for (x = 0; x < 10000000; ++x);
+	for (x = 0; x < 10000000; ++x);
 
     /* Specific hardware configuration. */
     hardware_config();

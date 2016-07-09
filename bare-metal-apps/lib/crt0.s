@@ -180,6 +180,26 @@ hyp_puf_shared_memory:
         nop
         .set reorder
 .end hyp_puf_shared_memory
+
+        .global hyp_flash_read
+        .ent hyp_flash_read
+hyp_flash_read:
+        .set noreorder
+        hypcall 0x151
+        jr $ra
+        nop
+        .set reorder
+.end hyp_flash_read
+
+        .global hyp_flash_write
+        .ent hyp_flash_write
+hyp_flash_write:
+        .set noreorder
+        hypcall 0x152
+        jr $ra
+        nop
+        .set reorder
+.end hyp_flash_write
         
         .global hyp_get_guest_id
         .ent hyp_get_guest_id        
@@ -191,6 +211,15 @@ hyp_get_guest_id:
         .set reorder        
 .end hyp_get_guest_id
         
+        .global guest_is_up
+        .ent guest_is_up        
+guest_is_up:
+        .set noreorder 
+        hypcall 0x003
+        jr $ra
+        nop
+        .set reorder        
+.end guest_is_up
         
         
         .global spinlock

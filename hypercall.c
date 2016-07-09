@@ -204,7 +204,54 @@ int32_t HypercallHandler(){
                     register_timer(interval);
                     break;
                 }
+                /* Check if the guest is UP */
+                case HCALL_GUEST_UP:{
+                    vcpu_t* vcpu;
+                    uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
+                    vcpu = (vcpu_t*)get_vcpu_from_id(target_id,&be_vcpu_list);
+                    if(!vcpu){
+                        MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
+                    }else{
+                        MoveToPreviousGuestGPR(REG_V0, vcpu->init? MESSAGE_VCPU_NOT_INIT : 1);
+                    }
+                    break;
+                }
                     
+		case HCALL_FLASH_READ:{
+			vcpu_t* vcpu = curr_vcpu;
+
+			uint8_t * dest = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 1024, 0xf);
+
+			flash_read1Kbuffer(dest);
+
+			break;
+		}
+
+		case HCALL_FLASH_WRITE:{
+			vcpu_t* vcpu = curr_vcpu;
+
+			uint8_t * source = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 1024, 0xf);
+
+			flash_write1Kbuffer(source);
+
+		break;
+		}
+
+		case HCALL_GET_MAC:{
+			vcpu_t* vcpu = curr_vcpu;
+
+			uint8_t * mac = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 6, 0xf);
+
+			mac[0] = *((uint8_t *) 0xBF882320);
+			mac[1] = *((uint8_t *) 0xBF882321);
+			mac[2] = *((uint8_t *) 0xBF882310);
+			mac[3] = *((uint8_t *) 0xBF882311);
+			mac[4] = *((uint8_t *) 0xBF882300);
+			mac[5] = *((uint8_t *) 0xBF882301);
+
+		break;
+		}
+
 		default:
 			break;
 		
