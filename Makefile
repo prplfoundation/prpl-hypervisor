@@ -16,7 +16,7 @@
 #List of bare-metal applications 
 # APP_LIST=  ping pong
 
-APP_LIST = picoTCP iidprpl
+APP_LIST = listener-uart iidprpl arm-control
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES#
