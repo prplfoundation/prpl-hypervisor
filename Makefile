@@ -28,6 +28,7 @@ BAUDRATE=115200
 F_CLK=200000000
 SERIAL_DEV=/dev/ttyACM0
 
+VERSION:=$(shell ./scripts/genversion.sh)
 
 BASE=./
 HAL=$(BASE)hal
@@ -37,7 +38,7 @@ CFLAGS_STRIP = -fdata-sections -ffunction-sections
 LDFLAGS_STRIP = --gc-sections 
 LDFLAGS = -Thal/microchip/pic32mz.ld 
 #CFLAGS = -EL -O2 -c -mtune=m14k  -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
-CFLAGS = -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK}
+CFLAGS = -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} -DHYPVERSION=${VERSION}
          
 
 AS_MIPS = mips-mti-elf-as -EL
