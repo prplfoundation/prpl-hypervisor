@@ -206,8 +206,6 @@ int main() {
 
 	serial_select(UART6);
 
-	init_network();
-
 	stop_sequence();
 
     while(1) {
