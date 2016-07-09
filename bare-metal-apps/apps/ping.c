@@ -46,7 +46,7 @@ int main() {
     printf("\nping VM ID %d", hyp_get_guest_id());
     while (1){
         sprintf(message_buffer, "%s %d", "ping?", t2);
-        ret = SendMessage(2, message_buffer, strlen(message_buffer)+1);
+        ret = SendMessage(3, message_buffer, strlen(message_buffer)+1);
         if (ret<0){
             print_net_error(ret);
         }else{
