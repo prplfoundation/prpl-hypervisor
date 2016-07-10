@@ -36,6 +36,7 @@ constants, tests and transformations
 /*
 custom C library
 */
+#ifndef PICOTCP
 extern void putchar(int32_t value);
 extern int32_t kbhit(void);
 extern uint32_t getchar(void);
@@ -66,7 +67,7 @@ extern int32_t random(void);
 extern void srand(uint32_t seed);
 extern int32_t printf(const int8_t *fmt, ...);
 extern int32_t sprintf(int8_t *out, const int8_t *fmt, ...);
-
+#endif
 typedef volatile unsigned int mutex_t;
 
 void lock(mutex_t *mutex);
