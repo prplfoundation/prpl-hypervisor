@@ -11,8 +11,6 @@ FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATS
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
 */
 
 /* Simple UART Bare-metal application sample */
@@ -70,28 +68,10 @@ struct owi_command left_right [] = {
 	{ .command = owi_base_clockwise, .duration_us = 2000000 }
 };
 
-//struct owi_command sequence1 [] = {
-//	{ .command = owi_shoulder_down, .duration_us = 1000000 },
-//	{ .command = owi_wrist_up, .duration_us = 1000000 },
-//
-//	{ .command = owi_shoulder_down, .duration_us = 1000000 },
-//	{ .command = owi_wrist_up, .duration_us = 1000000 },
-//
-//	{ .command = owi_shoulder_up, .duration_us = 2000000 },
-//	{ .command = owi_base_counter_clockwise, .duration_us = 2000000 },
-//	{ .command = owi_base_clockwise, .duration_us = 4000000 },
-//
-//	{ .command = owi_shoulder_down, .duration_us = 2000000 },
-//
-//	{ .command = owi_shoulder_up, .duration_us = 1000000 },
-//	{ .command = owi_wrist_down, .duration_us = 2500000 },
-//	{ .command = owi_shoulder_up, .duration_us = 2250000 },
-//
-//	{ .command = owi_base_counter_clockwise, .duration_us = 1750000 },
-//};
-
-
 struct owi_command sequence1 [] = {
+
+	{ .command = owi_pincher_close, .duration_us = 1500000 },
+
 	{ .command = owi_shoulder_down, .duration_us = 1000000 },
 
 	{ .command = owi_wrist_shoulder_down, .duration_us = 2000000 },
@@ -104,11 +84,12 @@ struct owi_command sequence1 [] = {
 
 	{ .command = owi_wrist_shoulder_up, .duration_us = 1000000 },
 
-	{ .command = owi_base_counter_clockwise, .duration_us = 1550000 },
+	{ .command = owi_base_counter_clockwise, .duration_us = 1485000 },
 
 	{ .command = owi_wrist_down, .duration_us = 500000 },
 
-	{ .command = owi_elbow_down, .duration_us = 150000 }
+	{ .command = owi_pincher_open, .duration_us = 1500000 }
+
 };
 
 /**
@@ -191,7 +172,7 @@ void start_sequence(struct owi_command *commands, int num_commands)
 				command->duration_us);
 
 		stop_sequence();
-		udelay(500000);
+		udelay(25000);
 
 		process_message();
 	}
@@ -206,6 +187,8 @@ int main() {
 
 	serial_select(UART6);
 
+	init_network();
+
 	stop_sequence();
 
     while(1) {
@@ -215,9 +198,9 @@ int main() {
 		if (start_sequence_flag == 1) {
 			start_sequence(sequence1, sizeof(sequence1) / sizeof(struct owi_command));
 
-			// pause for 5 seconds after the cycle completes to allow the user to
+			// pause for 3 seconds after the cycle completes to allow the user to
 			// stop the cycle
-			udelay(5000000);
+			udelay(2000000);
 		}
     }
     

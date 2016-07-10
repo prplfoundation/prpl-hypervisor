@@ -121,25 +121,45 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
     uint16_t port;
     uint16_t peer;
     int ret = 0;
+    int i,j;
+    char c;
 
     if (ev & PICO_SOCK_EV_RD) {
+
         r = pico_socket_read(s, rx_buf, ETH_RX_BUF_SIZE);
         if (r < 0)
             printf("Error while reading from socket!\n");
-        int i;
+ 
         printf("Data received(%d bytes):\n", r);
         for (i = 0; i < r; i++)
             printf("%02x ", rx_buf[i]);
         printf("\n");
 
+	// ---------------------------------------------------------------------------------------------------
+	// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+	// and the arm command as a '1' or '2' ascii. Remove if you send key+command in binary. 
+	// ---------------------------------------------------------------------------------------------------
+	char key_buf[KEYSIZE + KEYCODE_OVERHEAD];
+	
+	for (i=0,j=0; i < r-1; i+=2,j+=1) {
+                char hn = rx_buf[i] >='0' && rx_buf[i] <='9' ? rx_buf[i] - '0' : rx_buf[i] - 'a' +10;
+                char ln = rx_buf[i+1] >='0' && rx_buf[i+1] <='9' ? rx_buf[i+1] - '0' : rx_buf[i+1] - 'a' +10;
+                key_buf[j] = (hn << 4 ) | ln;
+        }
 
-	    retVal = PUF_UnwrapKey(rx_buf, label, context, &keySize, &keyIndex, key_unwrapped);
-	    if (IID_PRPL_SUCCESS != retVal) {
-			printf("Invalid key! Robotic arm cannot be controlled.\n");
-		} else {
-			printf("Valid key! Robotic arm control is enabled.\n");
-			//TODO send command to arm_control VM
+	// ---------------------------------------------------------------------------------------------------	
+
+	//retVal = PUF_UnwrapKey(rx_buf, label, context, &keySize, &keyIndex, key_unwrapped);
+	retVal = PUF_UnwrapKey(key_buf, label, context, &keySize, &keyIndex, key_unwrapped);
+
+	if (IID_PRPL_SUCCESS != retVal) {
+		printf("Invalid key!\n");
+	} else {
+		printf("Valid key! Command relayed to robotic arm controller.\n");
+		if (rx_buf[r-3]=='1' || rx_buf[r-3]=='2'){
+			SendMessage(3, &rx_buf[r-3], 1);
 		}
+	}
 
     }
 
@@ -151,7 +171,29 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 	    printf("Key not ready yet\n");
 	    else
 	    {
-            ret = pico_socket_write(s, keyCode, KEYSIZE + KEYCODE_OVERHEAD);
+
+	// ---------------------------------------------------------------------------------------------------
+	// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+	// Remove if you send key in binary
+	// ---------------------------------------------------------------------------------------------------
+	char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
+
+	for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
+
+		c = keyCode[i] >>4;
+		c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
+		keyAscii[j++] = c;
+
+		c = keyCode[i] & 0x0F;
+		c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
+		keyAscii[j++] = c;
+		
+	}
+
+	// ---------------------------------------------------------------------------------------------------
+
+	    //ret = pico_socket_write(s, keyCode, KEYSIZE + KEYCODE_OVERHEAD);
+            ret = pico_socket_write(s, keyAscii, j);
 	        if (ret < 0)
 	            printf("Failed to send wrapped key\n");
             else
@@ -167,7 +209,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 int main()
 {
     uint8_t mac[6] = {0x00,0x00,0x00,0x12,0x34,0x56};
-    const char *ipaddr="192.168.43.42";
+    const char *ipaddr="192.168.0.2";
     uint16_t port_be = 0;
     int i = 0;
 

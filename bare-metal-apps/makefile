@@ -12,7 +12,7 @@ READ_MIPS = mips-mti-elf-readelf
 OBJ_MIPS = mips-mti-elf-objcopy
 SIZE_MIPS = mips-mti-elf-size
 
-ifeq ($(APP_NAME),spi)
+ifeq ($(APP_NAME),tcp-listener)
 GCC_MIPS+=-DPICOTCP
 LIBS=build/pico_dev_pic32.o build/libpicotcp.a
 INC=-I ../../picotcp/build/include/
