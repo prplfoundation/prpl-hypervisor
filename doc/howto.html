@@ -226,7 +226,7 @@ hypervisor and the VM's code.
 To develop new applications move to the ~/prplHypervisor/bare-metal-apps/apps directory and see the uart.c, blink.c, ping.c among others examples. This is the code that is virtualized and executed when the file firmware.hex is flashed to the board.
 </P>
 <P>
-The hypervisor can on for up to 3 bare-metal applications (virtual machines). Each virtual machine has 64Kb of SRAM and 32Kb of flash code. Virtual machines with more hardware capacity can be added. But, this requires a different configuration file (config.h). Contact the PUCRS team for support. 
+The hypervisor can on for up to 3 bare-metal applications (virtual machines). Each virtual machine has 64Kb of SRAM and 32Kb of flash code. Virtual machines with more hardware capacity can be added: this requires changes to the configuration file (config.h). 
 </P>
 <P>
 To configure the environment to generate a system configuration with a different number of VMs is necessary a minor modification at the main Makefile. Thus,
