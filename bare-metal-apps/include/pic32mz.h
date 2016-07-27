@@ -2389,6 +2389,87 @@ typedef union {
 } EMAC1IPGTbits_t;
 #define EMAC1IPGTbits (*((volatile EMAC1IPGTbits_t *) 0xbf882220))
 
+typedef union {
+  struct {
+    unsigned PMPIE:1;
+    unsigned PMPEIE:1;
+    unsigned CMP1IE:1;
+    unsigned CMP2IE:1;
+    unsigned USBIE:1;
+    unsigned USBDMAIE:1;
+    unsigned DMA0IE:1;
+    unsigned DMA1IE:1;
+    unsigned DMA2IE:1;
+    unsigned DMA3IE:1;
+    unsigned DMA4IE:1;
+    unsigned DMA5IE:1;
+    unsigned DMA6IE:1;
+    unsigned DMA7IE:1;
+    unsigned SPI2EIE:1;
+    unsigned SPI2RXIE:1;
+    unsigned SPI2TXIE:1;
+    unsigned U2EIE:1;
+    unsigned U2RXIE:1;
+    unsigned U2TXIE:1;
+    unsigned I2C2BIE:1;
+    unsigned I2C2SIE:1;
+    unsigned I2C2MIE:1;
+    unsigned CAN1IE:1;
+    unsigned CAN2IE:1;
+    unsigned ETHIE:1;
+    unsigned SPI3EIE:1;
+    unsigned SPI3RXIE:1;
+    unsigned SPI3TXIE:1;
+    unsigned U3EIE:1;
+    unsigned U3RXIE:1;
+    unsigned U3TXIE:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} IEC4bits_t;
+#define IEC4bits (*((volatile IEC4bits_t *) 0xbf810100))
+
+typedef union {
+  struct {
+    unsigned PMPIF:1;
+    unsigned PMPEIF:1;
+    unsigned CMP1IF:1;
+    unsigned CMP2IF:1;
+    unsigned USBIF:1;
+    unsigned USBDMAIF:1;
+    unsigned DMA0IF:1;
+    unsigned DMA1IF:1;
+    unsigned DMA2IF:1;
+    unsigned DMA3IF:1;
+    unsigned DMA4IF:1;
+    unsigned DMA5IF:1;
+    unsigned DMA6IF:1;
+    unsigned DMA7IF:1;
+    unsigned SPI2EIF:1;
+    unsigned SPI2RXIF:1;
+    unsigned SPI2TXIF:1;
+    unsigned U2EIF:1;
+    unsigned U2RXIF:1;
+    unsigned U2TXIF:1;
+    unsigned I2C2BIF:1;
+    unsigned I2C2SIF:1;
+    unsigned I2C2MIF:1;
+    unsigned CAN1IF:1;
+    unsigned CAN2IF:1;
+    unsigned ETHIF:1;
+    unsigned SPI3EIF:1;
+    unsigned SPI3RXIF:1;
+    unsigned SPI3TXIF:1;
+    unsigned U3EIF:1;
+    unsigned U3RXIF:1;
+    unsigned U3TXIF:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} IFS4bits_t;
+#define IFS4bits (*((volatile IFS4bits_t *) 0xbf810080))
 
 
 #endif 
