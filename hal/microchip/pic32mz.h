@@ -11,6 +11,8 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OT
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.*/
+#ifndef _PIC32MZ_
+#define _PIC32MZ_
 
 /* CP0 registers */
 #define CP0_INDEX               0
@@ -1305,12 +1307,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define ETHTXST         PIC32MZ_PBASE (0x82020)
 #define ETHRXST         PIC32MZ_PBASE (0x82030)
 #define ETHHT0          PIC32MZ_PBASE (0x82040)
+#define ETHHT0CLR       PIC32MZ_PBASE (0x82044)
 #define ETHHT1          PIC32MZ_PBASE (0x82050)
+#define ETHHT1CLR       PIC32MZ_PBASE (0x82054)
 #define ETHPMM0         PIC32MZ_PBASE (0x82060)
 #define ETHPMM1         PIC32MZ_PBASE (0x82070)
+#define ETHPMM1CLR      PIC32MZ_PBASE (0x82074)
 #define ETHPMCS         PIC32MZ_PBASE (0x82080)
 #define ETHPMO          PIC32MZ_PBASE (0x82090)
 #define ETHRXFC         PIC32MZ_PBASE (0x820a0)
+#define ETHRXFCCLR      PIC32MZ_PBASE (0x820a4)
 #define ETHRXWM         PIC32MZ_PBASE (0x820b0)
 #define ETHIEN          PIC32MZ_PBASE (0x820c0)
 #define ETHIENCLR       PIC32MZ_PBASE (0x820c4)
@@ -2006,3 +2012,366 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define _DEVCFG3_PMDL1WAY        0x10000000
 #define _DEVCFG3_IOL1WAY         0x20000000
 #define _DEVCFG3_FUSBIDIO        0x40000000
+
+typedef union {
+  struct {
+    unsigned MIIMBUSY:1;
+    unsigned SCAN:1;
+    unsigned NOTVALID:1;
+    unsigned LINKFAIL:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MINDbits_t;
+#define EMAC1MINDbits (*((volatile EMAC1MINDbits_t *) 0xbf8822d0))
+
+typedef union {
+  struct {
+    unsigned REGADDR:5;
+    unsigned :3;
+    unsigned PHYADDR:5;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MADRbits_t;
+#define EMAC1MADRbits (*((volatile EMAC1MADRbits_t *) 0xbf8822a0))
+
+typedef union {
+  struct {
+    unsigned READ:1;
+    unsigned SCAN:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MCMDbits_t;
+#define EMAC1MCMDbits (*((volatile EMAC1MCMDbits_t *) 0xbf882290))
+
+typedef union {
+  struct {
+    unsigned MRDD:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MRDDbits_t;
+#define EMAC1MRDDbits (*((volatile EMAC1MRDDbits_t *) 0xbf8822c0))
+
+typedef union {
+  struct {
+    unsigned MWTD:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MWTDbits_t;
+#define EMAC1MWTDbits (*((volatile EMAC1MWTDbits_t *) 0xbf8822b0))
+
+typedef union {
+  struct {
+    unsigned T7IE:1;
+    unsigned IC7EIE:1;
+    unsigned IC7IE:1;
+    unsigned OC7IE:1;
+    unsigned T8IE:1;
+    unsigned IC8EIE:1;
+    unsigned IC8IE:1;
+    unsigned OC8IE:1;
+    unsigned T9IE:1;
+    unsigned IC9EIE:1;
+    unsigned IC9IE:1;
+    unsigned OC9IE:1;
+    unsigned ADCIE:1;
+    unsigned ADCFIFOIE:1;
+    unsigned ADCDC1IE:1;
+    unsigned ADCDC2IE:1;
+    unsigned ADCDC3IE:1;
+    unsigned ADCDC4IE:1;
+    unsigned ADCDC5IE:1;
+    unsigned ADCDC6IE:1;
+    unsigned ADCDF1IE:1;
+    unsigned ADCDF2IE:1;
+    unsigned ADCDF3IE:1;
+    unsigned ADCDF4IE:1;
+    unsigned ADCDF5IE:1;
+    unsigned ADCDF6IE:1;
+    unsigned ADCFLTIE:1;
+    unsigned ADCD0IE:1;
+    unsigned ADCD1IE:1;
+    unsigned ADCD2IE:1;
+    unsigned ADCD3IE:1;
+    unsigned ADCD4IE:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} IEC1bits_t;
+#define IEC1bits (*((volatile IEC1bits_t *) 0xbf8100d0))
+
+typedef union {
+  struct {
+    unsigned BUFCDEC:1;
+    unsigned :3;
+    unsigned MANFC:1;
+    unsigned :2;
+    unsigned AUTOFC:1;
+    unsigned RXEN:1;
+    unsigned TXRTS:1;
+    unsigned :3;
+    unsigned SIDL:1;
+    unsigned :1;
+    unsigned ON:1;
+    unsigned PTV:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHCON1bits_t;
+#define ETHCON1bits (*((volatile ETHCON1bits_t *) 0xbf882000))
+
+typedef union {
+  struct {
+    unsigned T7IF:1;
+    unsigned IC7EIF:1;
+    unsigned IC7IF:1;
+    unsigned OC7IF:1;
+    unsigned T8IF:1;
+    unsigned IC8EIF:1;
+    unsigned IC8IF:1;
+    unsigned OC8IF:1;
+    unsigned T9IF:1;
+    unsigned IC9EIF:1;
+    unsigned IC9IF:1;
+    unsigned OC9IF:1;
+    unsigned ADCIF:1;
+    unsigned ADCFIFOIF:1;
+    unsigned ADCDC1IF:1;
+    unsigned ADCDC2IF:1;
+    unsigned ADCDC3IF:1;
+    unsigned ADCDC4IF:1;
+    unsigned ADCDC5IF:1;
+    unsigned ADCDC6IF:1;
+    unsigned ADCDF1IF:1;
+    unsigned ADCDF2IF:1;
+    unsigned ADCDF3IF:1;
+    unsigned ADCDF4IF:1;
+    unsigned ADCDF5IF:1;
+    unsigned ADCDF6IF:1;
+    unsigned ADCFLTIF:1;
+    unsigned ADCD0IF:1;
+    unsigned ADCD1IF:1;
+    unsigned ADCD2IF:1;
+    unsigned ADCD3IF:1;
+    unsigned ADCD4IF:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} IFS1bits_t;
+#define IFS1bits (*((volatile IFS1bits_t *) 0xbf810050))
+
+typedef union {
+  struct {
+    unsigned RXEWM:8;
+    unsigned :8;
+    unsigned RXFWM:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHRXWMbits_t;
+#define ETHRXWMbits (*((volatile ETHRXWMbits_t *) 0xbf8820b0))
+
+typedef union {
+  struct {
+    unsigned :4;
+    unsigned RXBUF_SZ:7;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHCON2bits_t;
+#define ETHCON2bits (*((volatile ETHCON2bits_t *) 0xbf882010))
+
+typedef union {
+  struct {
+    unsigned BCEN:1;
+    unsigned MCEN:1;
+    unsigned NOTMEEN:1;
+    unsigned UCEN:1;
+    unsigned RUNTEN:1;
+    unsigned RUNTERREN:1;
+    unsigned CRCOKEN:1;
+    unsigned CRCERREN:1;
+    unsigned EPMMODE:4;
+    unsigned NOTPM:1;
+    unsigned :1;
+    unsigned MPEN:1;
+    unsigned HTEN:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHRXFCbits_t;
+#define ETHRXFCbits (*((volatile ETHRXFCbits_t *) 0xbf8820a0))
+
+typedef union {
+  struct {
+    unsigned PMCS:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHPMCSbits_t;
+#define ETHPMCSbits (*((volatile ETHPMCSbits_t *) 0xbf882080))
+
+typedef union {
+  struct {
+    unsigned RXENABLE:1;
+    unsigned PASSALL:1;
+    unsigned RXPAUSE:1;
+    unsigned TXPAUSE:1;
+    unsigned LOOPBACK:1;
+    unsigned :3;
+    unsigned RESETTFUN:1;
+    unsigned RESETTMCS:1;
+    unsigned RESETRFUN:1;
+    unsigned RESETRMCS:1;
+    unsigned :2;
+    unsigned SIMRESET:1;
+    unsigned SOFTRESET:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1CFG1bits_t;
+#define EMAC1CFG1bits (*((volatile EMAC1CFG1bits_t *) 0xbf882200))
+
+typedef union {
+  struct {
+    unsigned FULLDPLX:1;
+    unsigned LENGTHCK:1;
+    unsigned HUGEFRM:1;
+    unsigned DELAYCRC:1;
+    unsigned CRCENABLE:1;
+    unsigned PADENABLE:1;
+    unsigned VLANPAD:1;
+    unsigned AUTOPAD:1;
+    unsigned PUREPRE:1;
+    unsigned LONGPRE:1;
+    unsigned :2;
+    unsigned NOBKOFF:1;
+    unsigned BPNOBKOFF:1;
+    unsigned EXCESSDFR:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1CFG2bits_t;
+#define EMAC1CFG2bits (*((volatile EMAC1CFG2bits_t *) 0xbf882210))
+
+typedef union {
+  struct {
+    unsigned NB2BIPKTGP2:7;
+    unsigned :1;
+    unsigned NB2BIPKTGP1:7;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1IPGRbits_t;
+#define EMAC1IPGRbits (*((volatile EMAC1IPGRbits_t *) 0xbf882230))
+
+typedef union {
+  struct {
+    unsigned STNADDR1:8;
+    unsigned STNADDR2:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SA2bits_t;
+#define EMAC1SA2bits (*((volatile EMAC1SA2bits_t *) 0xbf882320))
+
+typedef union {
+  struct {
+    unsigned STNADDR3:8;
+    unsigned STNADDR4:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SA1bits_t;
+#define EMAC1SA1bits (*((volatile EMAC1SA1bits_t *) 0xbf882310))
+
+typedef union {
+  struct {
+    unsigned STNADDR5:8;
+    unsigned STNADDR6:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SA0bits_t;
+#define EMAC1SA0bits (*((volatile EMAC1SA0bits_t *) 0xbf882300))
+
+typedef union {
+  struct {
+    unsigned :8;
+    unsigned SPEEDRMII:1;
+    unsigned :2;
+    unsigned RESETRMII:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SUPPbits_t;
+#define EMAC1SUPPbits (*((volatile EMAC1SUPPbits_t *) 0xbf882260))
+
+typedef union {
+  struct {
+    unsigned SCANINC:1;
+    unsigned NOPRE:1;
+    unsigned CLKSEL:4;
+    unsigned :9;
+    unsigned RESETMGMT:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MCFGbits_t;
+#define EMAC1MCFGbits (*((volatile EMAC1MCFGbits_t *) 0xbf882280))
+
+typedef union {
+  struct {
+    unsigned USERID:16;
+    unsigned :8;
+    unsigned FMIIEN:1;
+    unsigned FETHIO:1;
+    unsigned :1;
+    unsigned PGL1WAY:1;
+    unsigned PMDL1WAY:1;
+    unsigned IOL1WAY:1;
+    unsigned FUSBIDIO:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} DEVCFG3bits_t;
+#define DEVCFG3bits (*((volatile DEVCFG3bits_t *) 0xbfc0ffc0))
+
+typedef union {
+  struct {
+    unsigned B2BIPKTGP:7;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1IPGTbits_t;
+#define EMAC1IPGTbits (*((volatile EMAC1IPGTbits_t *) 0xbf882220))
+
+
+
+#endif 

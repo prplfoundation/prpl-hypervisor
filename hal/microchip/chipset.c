@@ -125,7 +125,7 @@ uint32_t timer_int_handler(){
         IFSCLR(0) = 0x00004000;
         /* insert timer interrupt on guest*/
         curr_vcpu->guestclt2 = curr_vcpu->guestclt2 | (3 << GUESTCLT2_GRIPL_SHIFT);
-        if ((tick_count++)%10==0){
+        if ((tick_count++)%5==0){
             ret = RESCHEDULE;
         }
     }

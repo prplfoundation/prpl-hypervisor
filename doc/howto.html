@@ -26,11 +26,25 @@ pre {
   <OL>
   <LI><A HREF="#toc1">Introduction</A>
   <LI><A HREF="#toc2">Pre-Requisits</A>
-  <LI><A HREF="#toc3">Thrid part software and tools</A>
-  <LI><A HREF="#toc4">Deployment</A>
-  <LI><A HREF="#toc5">Bare-metal application development</A>
-  <LI><A HREF="#toc6">Inter-VM Communication</A>
-  <LI><A HREF="#toc7">Considerations</A>
+    <UL>
+    <LI><A HREF="#toc3">2.1. Ubuntu tools requirements</A>
+    </UL>
+  <LI><A HREF="#toc4">Thrid part software and tools</A>
+    <UL>
+    <LI><A HREF="#toc5">3.1. pic32prog download</A>
+    <LI><A HREF="#toc6">3.2. Remove ModemManager software package</A>
+    </UL>
+  <LI><A HREF="#toc7">Deployment</A>
+  <LI><A HREF="#toc8">Bare-metal application development</A>
+    <UL>
+    <LI><A HREF="#toc9">5.1. Timer</A>
+    </UL>
+  <LI><A HREF="#toc10">Inter-VM Communication</A>
+    <UL>
+    <LI><A HREF="#toc11">6.1. Overall API available to VMs</A>
+    <LI><A HREF="#toc12">6.2. UART access</A>
+    </UL>
+  <LI><A HREF="#toc13">Considerations</A>
   </OL>
 
 <P></P>
@@ -53,27 +67,61 @@ This how-to is intended to show how to compile the hypervisor with a virtualized
  </UL>
 
 <A NAME="toc3"></A>
-<H1>3. Thrid part software and tools</H1>
+<H2>2.1. Ubuntu tools requirements</H2>
 
- <UL>
- <LI>MPLABX IPE already installed (used to flash the bootloader for the first time).
-    <UL>
-    <LI>You don't need the MPLABX IDE installed, just the IPE. 
-    </UL>
- <LI>MIPS-MTI toolchain already installed. (Download page: <A HREF="https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/">https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/</A>)
- <LI>pic32prog to flash the hypervisor and VMs (Source code: <A HREF="https://github.com/sergev/pic32prog">https://github.com/sergev/pic32prog</A>)
- <LI>git client installed. 
- <LI>Installed srecord software package.
-    <UL>
-    <LI>sudo apt-get install srecord
-    </UL>
- </UL>
+<P>
+Install the following software packages on Ubuntu 14.04 LTS.
+</P>
+
+<PRE>
+  sudo dpkg --add-architecture i386
+  sudo apt-get update
+  sudo apt-get install gcc-multilib
+  sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
+  sudo apt-get install libexpat1-dev:i386
+  sudo apt-get install libX11-dev:i386
+  sudo apt-get install libXext-dev:i386
+</PRE>
 
 <A NAME="toc4"></A>
+<H1>3. Thrid part software and tools</H1>
+
+<UL>
+<LI>MPLABX IPE already installed (used to flash the bootloader for the first time). You don't need the MPLABX IDE installed, just the IPE. (<A HREF="http://microchip.wikidot.com/ipe:installation">http://microchip.wikidot.com/ipe:installation</A>)
+<LI>MIPS-MTI toolchain already installed. (Download page: <A HREF="https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/">https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/</A>)
+<LI>pic32prog to flash the hypervisor and VMs (Source code: <A HREF="https://github.com/sergev/pic32prog">https://github.com/sergev/pic32prog</A>)
+<LI>git client installed (sudo apt-get install git). 
+<LI>Installed srecord software package (sudo apt-get install srecord)
+</UL>
+
+<A NAME="toc5"></A>
+<H2>3.1. pic32prog download</H2>
+
+<PRE>
+  Linux64: https://github.com/sergev/pic32prog/blob/master/linux64/pic32prog
+  Linux32: https://github.com/sergev/pic32prog/blob/master/linux32/pic32prog
+</PRE>
+
+<P>
+Download and copy the pic32prog to the prplHypervisor directory that will be created at step 4.1.
+</P>
+
+<A NAME="toc6"></A>
+<H2>3.2. Remove ModemManager software package</H2>
+
+<P>
+The ModemManager software package scans for modems on individual serial ports when they are plugged, e.g. ttyACM ports. This keeps the port busy for several seconds. To avoid this inconvenience uninstall it from your system:
+</P>
+
+<PRE>
+  sudo apt-get purge modemmanager.
+</PRE>
+
+<A NAME="toc7"></A>
 <H1>4. Deployment</H1>
 
 <P>
-1) Clone the git repositori of the the prplHypervisor and make sure you are at master branch:
+1) Clone the git repository of the prplHypervisor and make sure you are at master branch:
 </P>
 
 <PRE>
@@ -143,36 +191,46 @@ hypervisor and the VM's code.
 </P>
 
 <PRE>
-  ~/prplHypervisor#: cat /dev/ttyACM0 
-  Int count: 156115
-  Int count: 157116
-  Int count: 158117
-  Int count: 159117
-  Int count: 160118
-  Int count: 161119
-  Int count: 162120
-  Int count: 163121
-  Int count: 164121
-  Int count: 165122
-  Int count: 166123
-  Int count: 167124
-  ...
+  ===========================================================
+  prplHypervsior v0.0.3 (gbf3f35d) [Jul 10 2016, 11:52:12]
+  Copyright (c) 2016, prpl Foundation
+  ===========================================================
+  CPU ID:        M5150
+  ARCH:          Microchip Starter Kit
+  SYSCLK:        200MHz
+  Heap size:     32Kbytes
+  Scheduler      1ms
+  VMs:           2
+  Initializing Physical Processor.
+  Initializing Virtual Machines
+  Creating VCPUs
+  Creating VCPUs
+  Configuring Timer
+  Starting Hypervisor Execution
+  
+  ping VM ID 1
+  Target VCPU not initialized.
+  Targe
+  pong VM ID 2t VCPU not initialized.
+  pong VM: message from VM ID 1: "ping? 6" (8 bytes)
+  ping VM: message from VM ID 2: "pong!" (6 bytes)
+  pong VM: message from VM ID 1: "ping? 13" (9 bytes)
+  ping VM: message from VM ID 2: "pong!" (6 bytes)
+  pong VM: message from VM ID 1: "ping? 18" (9 bytes)
 </PRE>
 
-<A NAME="toc5"></A>
+<A NAME="toc8"></A>
 <H1>5. Bare-metal application development</H1>
 
 <P>
-To develop new applications move to the ~/prplHypervisor/bare-metal-apps/apps directory and see the arm-control.c, uart.c and blink.c examples. This is the code that is virtualized and executed when the file firmware.hex is flashed to the board.
+To develop new applications move to the ~/prplHypervisor/bare-metal-apps/apps directory and see the uart.c, blink.c, ping.c among others examples. This is the code that is virtualized and executed when the file firmware.hex is flashed to the board.
 </P>
 <P>
-The hypervisor can be configured for up to 3 bare-metal applications (virtual machines). Each virtual machine has 64Kb of SRAM and 32Kb of flash code. Virtual machines with more hardware 
-capacity can be added. But, this requires a different configuration file (config.h). Contact the PUCRS team for support. 
+The hypervisor can on for up to 3 bare-metal applications (virtual machines). Each virtual machine has 64Kb of SRAM and 32Kb of flash code. Virtual machines with more hardware capacity can be added: this requires changes to the configuration file (config.h). 
 </P>
 <P>
-To configure the enviroment to generate a system configuration with a different number of VMs is necessary a minor modification at the main Makefile. Thus,
-open the file ~/prplHypervisor/Makefile and modify the variable APP_LIST. This variable must contain the names of the desired bare-metal applications. The following 
-example generates a virtualized system with the applications uart, arm-control and blink. 
+To configure the environment to generate a system configuration with a different number of VMs is necessary a minor modification at the main Makefile. Thus,
+open the file ~/prplHypervisor/Makefile and modify the variable APP_LIST. This variable must contain the names of the desired bare-metal applications. The following example generates a virtualized system with the applications uart, arm-control, and blink. 
 </P>
 
 <PRE>
@@ -180,7 +238,17 @@ example generates a virtualized system with the applications uart, arm-control a
   APP_LIST= uart arm-control blink
 </PRE>
 
-<A NAME="toc6"></A>
+<A NAME="toc9"></A>
+<H2>5.1. Timer</H2>
+
+<P>
+The default hypervisor scheduler quantum is ten milliseconds. Thus, each VM will perform during ten milliseconds before to be preempted to the next VM execution. During its execution, the VM will receive timer interrupts each one millisecond.  
+</P>
+<P>
+The implementation of the timer handler at the VM is done in the irq_timer() function. 
+</P>
+
+<A NAME="toc10"></A>
 <H1>6. Inter-VM Communication</H1>
 
 <P>
@@ -188,37 +256,89 @@ The prplHypervisor supports Inter-VM communication through message copies from o
 </P>
 
 <PRE>
-  int32_t ReceiveMessage(uint32_t *source, char* buffer, uint32_t block);
+  int32_t ReceiveMessage(uint32_t *source, char* buffer, uint32_t bufsz, uint32_t block);
   uint32_t SendMessage(uint32_t target, char* buffer, uint32_t size);
 </PRE>
 
 <P>
-Each VM has an identification number (ID) generated by the hypervisor during its initialization. The ID is attributed using the VMs initialization order. The first initialized VM has ID equal 1, the second one ID 2 and so on. 
-The VM IDs are used to identify the destination and source VMs during communication. A VM can discovers its on ID calling the hypercall hyp_get_guest_id(). 
+Each VM has an identification number (ID) generated by the hypervisor during its initialization. The ID is attributed following the VM's initialization order. The first initialized VM has ID equal to 1, the second one has ID 2 and so on. 
+The ID is used to identify the VMs during communication. A VM can discovers its on ID calling the hypercall hyp_get_guest_id(). 
 </P>
 <P>
-The ReiceveMessage() hypercall returns greater than 0 if a message was received. The data is copied to the buffer. Zero means no data was received. Less than 0 means error. The SendMessage() hypercall returns the number of bytes sent. Zero or less means error.
+The ReiceveMessage() hypercall returns greater than 0 if a message was received. The data is copied to the buffer limited to bufsz bytes. Zero means no data was received.  The SendMessage() hypercall returns the number of bytes sent. Zero or less means error. The possible errors are:
+MESSAGE_VCPU_NOT_FOUND (destination not found), MESSAGE_FULL (destination queue full), MSSAGE_TOO_BIG (message to big), MESSAGE_VCPU_NOT_INIT (the target VPCU is not ready for communication).
 </P>
 <P>
 If nonblocking receive is desired, use block equal to zero when calling ReceiveMessage(), otherwise, it will block the application until a message is received. 
 </P>
 <P>
-The application Ping-Pong is an example for inter-VM communication. A message is sent from VM ID 1 to VM ID 2 and back. To compile the Ping-Pong example,  modify the APP_LIST variable in the main makefile (prplHypervisor/Makefile) to:
+The application Ping-Pong is an example for inter-VM communication. A message is sent from ping (VM ID 1) to pong (VM ID 2) and back. To compile the Ping-Pong example, it is needed to modify the APP_LIST variable in the main makefile (prplHypervisor/Makefile) to:
 </P>
 
 <PRE>
   APP_LIST=  ping pong
 </PRE>
 
-<A NAME="toc7"></A>
+<A NAME="toc11"></A>
+<H2>6.1. Overall API available to VMs</H2>
+
+<P>
+The bare-metal application's execution enviroment supports a minimal Unix-like API. The available functions are listeb below: 
+</P>
+
+<PRE>
+  int8_t *strcpy(int8_t *dst, const int8_t *src);
+  int8_t *strncpy(int8_t *s1, int8_t *s2, int32_t n);
+  int8_t *strcat(int8_t *dst, const int8_t *src);
+  int8_t *strncat(int8_t *s1, int8_t *s2, int32_t n);
+  int32_t strcmp(const int8_t *s1, const int8_t *s2);
+  int32_t strncmp(int8_t *s1, int8_t *s2, int32_t n);
+  int8_t *strstr(const int8_t *string, const int8_t *find);
+  int32_t strlen(const int8_t *s);
+  int8_t *strchr(const int8_t *s, int32_t c);
+  int8_t *strpbrk(int8_t *str, int8_t *set);
+  int8_t *strsep(int8_t **pp, int8_t *delim);
+  int8_t *strtok(int8_t *s, const int8_t *delim);
+  void *memcpy(void *dst, const void *src, uint32_t n);
+  void *memmove(void *dst, const void *src, uint32_t n);
+  int32_t memcmp(const void *cs, const void *ct, uint32_t n);
+  void *memset(void *s, int32_t c, uint32_t n);
+  int32_t strtol(const int8_t *s, int8_t **end, int32_t base);
+  int32_t atoi(const int8_t *s);
+  int8_t *itoa(int32_t i, int8_t *s, int32_t base);
+  int32_t puts(const int8_t *str);
+  int8_t *gets(int8_t *s);
+  int32_t abs(int32_t n);
+  int32_t random(void);
+  void srand(uint32_t seed);
+  int printf(const int8_t *fmt, ...);
+  int sprintf(int8_t *out, const int8_t *fmt, ...);
+  void udelay(uint32_t usec);
+  void putchar(int32_t value);
+  uint32_t getchar(void);
+</PRE>
+
+<A NAME="toc12"></A>
+<H2>6.2. UART access</H2>
+
+<P>
+I/O calls, like printf() or getchar() will assume by default the UART2 port (J11 connector). However, the application on a VM can choose to write to the UART6 (PIN 12 TX and PIN 11 RX of the 40 pin connector ). To this use the following call:
+</P>
+
+<PRE>
+  int32_t serial_select(uint32_t serial_number);
+</PRE>
+
+<P>
+Use the defined parameters UART2 and UART6 to select each one of the UARTS. 
+</P>
+
+<A NAME="toc13"></A>
 <H1>7. Considerations</H1>
 
 <UL>
-<LI>Upload a new firmware to the board requires turn off the board. 
-<LI>On power on, the board will always stop at the bootloader waiting for upload an application. 
-    <UL>
-    <LI>This is for debugging purposes only. 
-    </UL>
+<LI>If the hypervisor is executing, it is possible to reset the board to upload a new firmware without turn off the board. To do this, just press the button SW1 on the board. However, if the hypervisor is not in execution to flash a new software will require turning off the board.
+<LI>On power on, the board will wait for 5 seconds before automatically load the application. During this time it is possible to flash a new firmware. 
 </UL>
 
 <!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->

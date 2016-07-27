@@ -22,13 +22,17 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "kernel.h"
 #include<globals.h>
 
+#define STR(x) #x
+#define STR_VALUE(x) STR(x)
+
+
 void* exceptionHandler_addr = exceptionHandler;
 
 
 static void print_config(void)
 {
         printf("\n===========================================================");
-        printf("\nprplHypervsior %s [%s, %s]", KERNEL_VER, __DATE__, __TIME__);
+        printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
         printf("\nCopyright (c) 2016, prpl Foundation");
         printf("\n===========================================================");
         printf("\nCPU ID:        %s", CPU_ID);

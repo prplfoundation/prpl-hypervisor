@@ -15,6 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+#ifndef _PIC32MZ_
+#define _PIC32MZ_
+
 /* C type extensions */
 #ifdef PICOTCP
 #include <stdint.h>
@@ -30,6 +33,8 @@ typedef long long			int64_t;
 #endif
 
 typedef void				(*funcptr)();
+
+
 /* CP0 registers */
 #define CP0_INDEX		0
 #define CP0_RANDOM		1
@@ -1323,12 +1328,16 @@ typedef void				(*funcptr)();
 #define ETHTXST         PIC32MZ_PBASE (0x82020)
 #define ETHRXST         PIC32MZ_PBASE (0x82030)
 #define ETHHT0          PIC32MZ_PBASE (0x82040)
+#define ETHHT0CLR       PIC32MZ_PBASE (0x82044)
 #define ETHHT1          PIC32MZ_PBASE (0x82050)
+#define ETHHT1CLR       PIC32MZ_PBASE (0x82054)
 #define ETHPMM0         PIC32MZ_PBASE (0x82060)
 #define ETHPMM1         PIC32MZ_PBASE (0x82070)
+#define ETHPMM1CLR      PIC32MZ_PBASE (0x82074)
 #define ETHPMCS         PIC32MZ_PBASE (0x82080)
 #define ETHPMO          PIC32MZ_PBASE (0x82090)
 #define ETHRXFC         PIC32MZ_PBASE (0x820a0)
+#define ETHRXFCCLR      PIC32MZ_PBASE (0x820a4)
 #define ETHRXWM         PIC32MZ_PBASE (0x820b0)
 #define ETHIEN          PIC32MZ_PBASE (0x820c0)
 #define ETHIENCLR       PIC32MZ_PBASE (0x820c4)
@@ -1373,70 +1382,224 @@ typedef void				(*funcptr)();
 #define EMAC1SA1        PIC32MZ_PBASE (0x82310)
 #define EMAC1SA2        PIC32MZ_PBASE (0x82320)
 
+/*
+ * Ethernet Control register 1.
+ */
+#define PIC32_ETHCON1_PTV(n)    ((n)<<16)   /* Pause timer value */
+#define PIC32_ETHCON1_ON            0x8000  /* Ethernet module enabled */
+#define PIC32_ETHCON1_SIDL          0x2000  /* Stop in idle mode */
+#define PIC32_ETHCON1_TXRTS         0x0200  /* Transmit request to send */
+#define PIC32_ETHCON1_RXEN          0x0100  /* Receive enable */
+#define PIC32_ETHCON1_AUTOFC        0x0080  /* Automatic flow control */
+#define PIC32_ETHCON1_MANFC         0x0010  /* Manual flow control */
+#define PIC32_ETHCON1_BUFCDEC       0x0001  /* Descriptor buffer count decrement */
+
+/*
+ * Ethernet Receive Filter Configuration register.
+ */
+#define PIC32_ETHRXFC_HTEN          0x8000  /* Enable hash table filtering */
+#define PIC32_ETHRXFC_MPEN          0x4000  /* Enable Magic Packet filtering */
+#define PIC32_ETHRXFC_NOTPM         0x1000  /* Pattern match inversion */
+#define PIC32_ETHRXFC_PMMODE_MAGIC  0x0900  /* Packet = magic */
+#define PIC32_ETHRXFC_PMMODE_HT     0x0800  /* Hash table filter match */
+#define PIC32_ETHRXFC_PMMODE_BCAST  0x0600  /* Destination = broadcast address */
+#define PIC32_ETHRXFC_PMMODE_UCAST  0x0400  /* Destination = unicast address */
+#define PIC32_ETHRXFC_PMMODE_STN    0x0200  /* Destination = station address */
+#define PIC32_ETHRXFC_PMMODE_CSUM   0x0100  /* Successful if checksum matches */
+#define PIC32_ETHRXFC_CRCERREN      0x0080  /* CRC error collection enable */
+#define PIC32_ETHRXFC_CRCOKEN       0x0040  /* CRC OK enable */
+#define PIC32_ETHRXFC_RUNTERREN     0x0020  /* Runt error collection enable */
+#define PIC32_ETHRXFC_RUNTEN        0x0010  /* Runt filter enable */
+#define PIC32_ETHRXFC_UCEN          0x0008  /* Unicast filter enable */
+#define PIC32_ETHRXFC_NOTMEEN       0x0004  /* Not Me unicast enable */
+#define PIC32_ETHRXFC_MCEN          0x0002  /* Multicast filter enable */
+#define PIC32_ETHRXFC_BCEN          0x0001  /* Broadcast filter enable */
+
+/*
+ * Ethernet Receive Watermarks register.
+ */
+#define PIC32_ETHRXWM_FWM(n)    ((n)<<16)   /* Receive Full Watermark */
+#define PIC32_ETHRXWM_EWM(n)    (n)         /* Receive Empty Watermark */
+
+/*
+ * Ethernet Interrupt Request register.
+ */
+#define PIC32_ETHIRQ_TXBUSE         0x4000  /* Transmit Bus Error */
+#define PIC32_ETHIRQ_RXBUSE         0x2000  /* Receive Bus Error */
+#define PIC32_ETHIRQ_EWMARK         0x0200  /* Empty Watermark */
+#define PIC32_ETHIRQ_FWMARK         0x0100  /* Full Watermark */
+#define PIC32_ETHIRQ_RXDONE         0x0080  /* Receive Done */
+#define PIC32_ETHIRQ_PKTPEND        0x0040  /* Packet Pending */
+#define PIC32_ETHIRQ_RXACT          0x0020  /* Receive Activity */
+#define PIC32_ETHIRQ_TXDONE         0x0008  /* Transmit Done */
+#define PIC32_ETHIRQ_TXABORT        0x0004  /* Transmitter Abort */
+#define PIC32_ETHIRQ_RXBUFNA        0x0002  /* Receive Buffer Not Available */
+#define PIC32_ETHIRQ_RXOVFLW        0x0001  /* Receive FIFO Overflow */
+
+/*
+ * Ethernet Status register.
+ */
+#define PIC32_ETHSTAT_BUFCNT    0x00ff0000  /* Packet buffer count */
+#define PIC32_ETHSTAT_ETHBUSY       0x0080  /* Ethernet logic is busy */
+#define PIC32_ETHSTAT_TXBUSY        0x0040  /* TX logic is receiving data */
+#define PIC32_ETHSTAT_RXBUSY        0x0020  /* RX logic is receiving data */
+
+/*
+ * Ethernet MAC configuration register 1.
+ */
+#define PIC32_EMAC1CFG1_SOFTRESET   0x8000  /* Soft reset */
+#define PIC32_EMAC1CFG1_SIMRESET    0x4000  /* Reset TX random number generator */
+#define PIC32_EMAC1CFG1_RESETRMCS   0x0800  /* Reset MCS/RX logic */
+#define PIC32_EMAC1CFG1_RESETRFUN   0x0400  /* Reset RX function */
+#define PIC32_EMAC1CFG1_RESETTMCS   0x0200  /* Reset MCS/TX logic */
+#define PIC32_EMAC1CFG1_RESETTFUN   0x0100  /* Reset TX function */
+#define PIC32_EMAC1CFG1_LOOPBACK    0x0010  /* MAC Loopback mode */
+#define PIC32_EMAC1CFG1_TXPAUSE     0x0008  /* MAC TX flow control */
+#define PIC32_EMAC1CFG1_RXPAUSE     0x0004  /* MAC RX flow control */
+#define PIC32_EMAC1CFG1_PASSALL     0x0002  /* MAC accept control frames as well */
+#define PIC32_EMAC1CFG1_RXENABLE    0x0001  /* MAC Receive Enable */
+
+/*
+ * Ethernet MAC configuration register 2.
+ */
+#define PIC32_EMAC1CFG2_EXCESSDER   0x4000  /* Defer to carrier indefinitely */
+#define PIC32_EMAC1CFG2_BPNOBKOFF   0x2000  /* Backpressure/No Backoff */
+#define PIC32_EMAC1CFG2_NOBKOFF     0x1000  /* No Backoff */
+#define PIC32_EMAC1CFG2_LONGPRE     0x0200  /* Long preamble enforcement */
+#define PIC32_EMAC1CFG2_PUREPRE     0x0100  /* Pure preamble enforcement */
+#define PIC32_EMAC1CFG2_AUTOPAD     0x0080  /* Automatic detect pad enable */
+#define PIC32_EMAC1CFG2_VLANPAD     0x0040  /* VLAN pad enable */
+#define PIC32_EMAC1CFG2_PADENABLE   0x0020  /* Pad/CRC enable */
+#define PIC32_EMAC1CFG2_CRCENABLE   0x0010  /* CRC enable */
+#define PIC32_EMAC1CFG2_DELAYCRC    0x0008  /* Delayed CRC */
+#define PIC32_EMAC1CFG2_HUGEFRM     0x0004  /* Huge frame enable */
+#define PIC32_EMAC1CFG2_LENGTHCK    0x0002  /* Frame length checking */
+#define PIC32_EMAC1CFG2_FULLDPLX    0x0001  /* Full-duplex operation */
+
+/*
+ * Ethernet MAC non-back-to-back interpacket gap register.
+ */
+#define PIC32_EMAC1IPGR(p1, p2)     ((p1)<<8 | (p2))
+
+/*
+ * Ethernet MAC collision window/retry limit register.
+ */
+#define PIC32_EMAC1CLRT(w, r)       ((w)<<8 | (r))
+
+/*
+ * Ethernet PHY support register.
+ */
+#define PIC32_EMAC1SUPP_RESETRMII   0x0800  /* Reset the RMII module */
+#define PIC32_EMAC1SUPP_SPEEDRMII   0x0100  /* RMII speed: 1=100Mbps, 0=10Mbps */
+
+/*
+ * Ethernet MAC test register.
+ */
+#define PIC32_EMAC1TEST_TESTBP      0x0004  /* Test backpressure */
+#define PIC32_EMAC1TEST_TESTPAUSE   0x0002  /* Test pause */
+#define PIC32_EMAC1TEST_SHRTQNTA    0x0001  /* Shortcut pause quanta */
+
+/*
+ * Ethernet MII configuration register.
+ */
+#define PIC32_EMAC1MCFG_RESETMGMT   0x8000  /* Reset the MII module */
+#define PIC32_EMAC1MCFG_CLKSEL_4    0x0000  /* Clock divide by 4 */
+#define PIC32_EMAC1MCFG_CLKSEL_6    0x0008  /* Clock divide by 6 */
+#define PIC32_EMAC1MCFG_CLKSEL_8    0x000c  /* Clock divide by 8 */
+#define PIC32_EMAC1MCFG_CLKSEL_10   0x0010  /* Clock divide by 10 */
+#define PIC32_EMAC1MCFG_CLKSEL_14   0x0014  /* Clock divide by 14 */
+#define PIC32_EMAC1MCFG_CLKSEL_20   0x0018  /* Clock divide by 20 */
+#define PIC32_EMAC1MCFG_CLKSEL_28   0x001c  /* Clock divide by 28 */
+#define PIC32_EMAC1MCFG_CLKSEL_40   0x0020  /* Clock divide by 40 */
+#define PIC32_EMAC1MCFG_CLKSEL_48   0x0024  /* Clock divide by 48 */
+#define PIC32_EMAC1MCFG_CLKSEL_50   0x0028  /* Clock divide by 50 */
+#define PIC32_EMAC1MCFG_NOPRE       0x0002  /* Suppress preamble */
+#define PIC32_EMAC1MCFG_SCANINC     0x0001  /* Scan increment */
+
+/*
+ * Ethernet MII command register.
+ */
+#define PIC32_EMAC1MCMD_SCAN        0x0002  /* Continuous scan mode */
+#define PIC32_EMAC1MCMD_READ        0x0001  /* Single read cycle */
+
+/*
+ * Ethernet MII address register.
+ */
+#define PIC32_EMAC1MADR(p, r)       ((p)<<8 | (r))
+
+/*
+ * Ethernet MII indicators register.
+ */
+#define PIC32_EMAC1MIND_LINKFAIL    0x0008  /* Link fail */
+#define PIC32_EMAC1MIND_NOTVALID    0x0004  /* Read data not valid */
+#define PIC32_EMAC1MIND_SCAN        0x0002  /* Scanning in progress */
+#define PIC32_EMAC1MIND_MIIMBUSY    0x0001  /* Read/write cycle in progress */
+
+
 /* Timer registers */
-#define T2CON		PIC32MZ_PBASE (0x40200)
-#define TMR2		PIC32MZ_PBASE (0x40210)
-#define PR2		PIC32MZ_PBASE (0x40220)
-#define T3CON		PIC32MZ_PBASE (0x40400)
-#define TMR3		PIC32MZ_PBASE (0x40410)
-#define PR3		PIC32MZ_PBASE (0x40420)
-#define T4CON		PIC32MZ_PBASE (0x40600)
-#define TMR4		PIC32MZ_PBASE (0x40610)
-#define PR4		PIC32MZ_PBASE (0x40620)
-#define T5CON		PIC32MZ_PBASE (0x40800)
-#define TMR5		PIC32MZ_PBASE (0x40810)
-#define PR5		PIC32MZ_PBASE (0x40820)
-#define T6CON		PIC32MZ_PBASE (0x40A00)
-#define TMR6		PIC32MZ_PBASE (0x40A10)
-#define PR6		PIC32MZ_PBASE (0x40A20)
-#define T7CON		PIC32MZ_PBASE (0x40C00)
-#define TMR7		PIC32MZ_PBASE (0x40C10)
-#define PR7		PIC32MZ_PBASE (0x40C20)
-#define T8CON		PIC32MZ_PBASE (0x40E00)
-#define TMR8		PIC32MZ_PBASE (0x40E10)
-#define PR8		PIC32MZ_PBASE (0x40E20)
-#define T9CON		PIC32MZ_PBASE (0x41000)
-#define TMR9		PIC32MZ_PBASE (0x41010)
-#define PR9		PIC32MZ_PBASE (0x41020)
+#define T2CON           PIC32MZ_PBASE (0x40200)
+#define TMR2            PIC32MZ_PBASE (0x40210)
+#define PR2             PIC32MZ_PBASE (0x40220)
+#define T3CON           PIC32MZ_PBASE (0x40400)
+#define TMR3            PIC32MZ_PBASE (0x40410)
+#define PR3             PIC32MZ_PBASE (0x40420)
+#define T4CON           PIC32MZ_PBASE (0x40600)
+#define TMR4            PIC32MZ_PBASE (0x40610)
+#define PR4             PIC32MZ_PBASE (0x40620)
+#define T5CON           PIC32MZ_PBASE (0x40800)
+#define TMR5            PIC32MZ_PBASE (0x40810)
+#define PR5             PIC32MZ_PBASE (0x40820)
+#define T6CON           PIC32MZ_PBASE (0x40A00)
+#define TMR6            PIC32MZ_PBASE (0x40A10)
+#define PR6             PIC32MZ_PBASE (0x40A20)
+#define T7CON           PIC32MZ_PBASE (0x40C00)
+#define TMR7            PIC32MZ_PBASE (0x40C10)
+#define PR7             PIC32MZ_PBASE (0x40C20)
+#define T8CON           PIC32MZ_PBASE (0x40E00)
+#define TMR8            PIC32MZ_PBASE (0x40E10)
+#define PR8             PIC32MZ_PBASE (0x40E20)
+#define T9CON           PIC32MZ_PBASE (0x41000)
+#define TMR9            PIC32MZ_PBASE (0x41010)
+#define PR9             PIC32MZ_PBASE (0x41020)
 
 /* Interrupt controller registers */
-#define INTCON		PIC32MZ_PBASE (0x10000)
-#define INTCONCLR	PIC32MZ_PBASE (0x10004)
-#define INTCONSET	PIC32MZ_PBASE (0x10008)
-#define INTCONINV	PIC32MZ_PBASE (0x1000C)
-#define PRISS		PIC32MZ_PBASE (0x10010)
-#define PRISSCLR	PIC32MZ_PBASE (0x10014)
-#define PRISSSET	PIC32MZ_PBASE (0x10018)
-#define PRISSINV	PIC32MZ_PBASE (0x1001C)
-#define INTSTAT		PIC32MZ_PBASE (0x10020)
-#define IPTMR		PIC32MZ_PBASE (0x10030)
-#define IPTMRCLR	PIC32MZ_PBASE (0x10034)
-#define IPTMRSET	PIC32MZ_PBASE (0x10038)
-#define IPTMRINV	PIC32MZ_PBASE (0x1003C)
-#define IFS(n)		PIC32MZ_PBASE (0x10040+((n)<<4))
-#define IFSCLR(n)	PIC32MZ_PBASE (0x10044+((n)<<4))
-#define IFSSET(n)	PIC32MZ_PBASE (0x10048+((n)<<4))
-#define IFSINV(n)	PIC32MZ_PBASE (0x1004C+((n)<<4))
+#define INTCON          PIC32MZ_PBASE (0x10000)
+#define INTCONCLR       PIC32MZ_PBASE (0x10004)
+#define INTCONSET       PIC32MZ_PBASE (0x10008)
+#define INTCONINV       PIC32MZ_PBASE (0x1000C)
+#define PRISS           PIC32MZ_PBASE (0x10010)
+#define PRISSCLR        PIC32MZ_PBASE (0x10014)
+#define PRISSSET        PIC32MZ_PBASE (0x10018)
+#define PRISSINV        PIC32MZ_PBASE (0x1001C)
+#define INTSTAT         PIC32MZ_PBASE (0x10020)
+#define IPTMR           PIC32MZ_PBASE (0x10030)
+#define IPTMRCLR        PIC32MZ_PBASE (0x10034)
+#define IPTMRSET        PIC32MZ_PBASE (0x10038)
+#define IPTMRINV        PIC32MZ_PBASE (0x1003C)
+#define IFS(n)          PIC32MZ_PBASE (0x10040+((n)<<4))
+#define IFSCLR(n)       PIC32MZ_PBASE (0x10044+((n)<<4))
+#define IFSSET(n)       PIC32MZ_PBASE (0x10048+((n)<<4))
+#define IFSINV(n)       PIC32MZ_PBASE (0x1004C+((n)<<4))
 #define IFS0            IFS(0)
 #define IFS1            IFS(1)
 #define IFS2            IFS(2)
 #define IFS3            IFS(3)
 #define IFS4            IFS(4)
 #define IFS5            IFS(5)
-#define IEC(n)		PIC32MZ_PBASE (0x100c0+((n)<<4))
-#define IECCLR(n)	PIC32MZ_PBASE (0x100c4+((n)<<4))
-#define IECSET(n)	PIC32MZ_PBASE (0x100c8+((n)<<4))
-#define IECINV(n)	PIC32MZ_PBASE (0x100cC+((n)<<4))
+#define IEC(n)          PIC32MZ_PBASE (0x100c0+((n)<<4))
+#define IECCLR(n)       PIC32MZ_PBASE (0x100c4+((n)<<4))
+#define IECSET(n)       PIC32MZ_PBASE (0x100c8+((n)<<4))
+#define IECINV(n)       PIC32MZ_PBASE (0x100cC+((n)<<4))
 #define IEC0            IEC(0)
 #define IEC1            IEC(1)
 #define IEC2            IEC(2)
 #define IEC3            IEC(3)
 #define IEC4            IEC(4)
 #define IEC5            IEC(5)
-#define IPC(n)		PIC32MZ_PBASE (0x10140+((n)<<4))
-#define IPCCLR(n)	PIC32MZ_PBASE (0x10144+((n)<<4))
-#define IPCSET(n)	PIC32MZ_PBASE (0x10148+((n)<<4))
-#define IPCINV(n)	PIC32MZ_PBASE (0x1014C+((n)<<4))
+#define IPC(n)          PIC32MZ_PBASE (0x10140+((n)<<4))
+#define IPCCLR(n)       PIC32MZ_PBASE (0x10144+((n)<<4))
+#define IPCSET(n)       PIC32MZ_PBASE (0x10148+((n)<<4))
+#define IPCINV(n)       PIC32MZ_PBASE (0x1014C+((n)<<4))
 #define IPC0            IPC(0)
 #define IPC1            IPC(1)
 #define IPC2            IPC(2)
@@ -1485,33 +1648,33 @@ typedef void				(*funcptr)();
 #define IPC45           IPC(45)
 #define IPC46           IPC(46)
 #define IPC47           IPC(47)
-#define OFF(n)		PIC32MZ_PBASE (0x10540+((n)<<2))
+#define OFF(n)          PIC32MZ_PBASE (0x10540+((n)<<2))
 
 /* Interrupt control register */
-#define INTCON_INT0EP		0x00000001
-#define INTCON_INT1EP		0x00000002
-#define INTCON_INT2EP		0x00000004
-#define INTCON_INT3EP		0x00000008
-#define INTCON_INT4EP		0x00000010
-#define INTCON_TPC(x)		((x)<<8)
-#define INTCON_MVEC		0x00001000
-#define INTCON_SS0		0x00010000
-#define INTCON_VS(x)		((x)<<16)
+#define INTCON_INT0EP           0x00000001
+#define INTCON_INT1EP           0x00000002
+#define INTCON_INT2EP           0x00000004
+#define INTCON_INT3EP           0x00000008
+#define INTCON_INT4EP           0x00000010
+#define INTCON_TPC(x)           ((x)<<8)
+#define INTCON_MVEC             0x00001000
+#define INTCON_SS0              0x00010000
+#define INTCON_VS(x)            ((x)<<16)
 
 /* Interrupt status register */
-#define INTSTAT_VEC(s)		((s) & 0x3f)
-#define INTSTAT_SRIPL(s)	((s) >> 8 & 7)
-#define INTSTAT_SRIPL_MASK	0x0700
+#define INTSTAT_VEC(s)          ((s) & 0x3f)
+#define INTSTAT_SRIPL(s)        ((s) >> 8 & 7)
+#define INTSTAT_SRIPL_MASK      0x0700
 
 /* Interrupt priority control register */
-#define IPC_IS0(x)	(x)
-#define IPC_IP0(x)	((x)<<2)
-#define IPC_IS1(x)	((x)<<8)
-#define IPC_IP1(x)	((x)<<10)
-#define IPC_IS2(x)	((x)<<16)
-#define IPC_IP2(x)	((x)<<18)
-#define IPC_IS3(x)	((x)<<24)
-#define IPC_IP3(x)	((x)<<26)
+#define IPC_IS0(x)      (x)
+#define IPC_IP0(x)      ((x)<<2)
+#define IPC_IS1(x)      ((x)<<8)
+#define IPC_IP1(x)      ((x)<<10)
+#define IPC_IS2(x)      ((x)<<16)
+#define IPC_IP2(x)      ((x)<<18)
+#define IPC_IS3(x)      ((x)<<24)
+#define IPC_IP3(x)      ((x)<<26)
 
 /* IRQs for PIC32MZ */
 #define IRQ_CT        0
@@ -1703,23 +1866,54 @@ typedef void				(*funcptr)();
 #define IRQ_U6RX      189
 #define IRQ_U6TX      190
 
+/* 
+ * Flash controller registers
+ */
+ 
+#define NVMCON          PIC32MZ_PBASE (0x0600)
+#define NVMCONCLR       PIC32MZ_PBASE (0x0604)
+#define NVMCONSET       PIC32MZ_PBASE (0x0608)
+#define NVMCONINV       PIC32MZ_PBASE (0x060C)
+#define NVMKEY          PIC32MZ_PBASE (0x0610)
+#define NVMADDR         PIC32MZ_PBASE (0x0620)
+#define NVMADDRCLR      PIC32MZ_PBASE (0x0624)
+#define NVMADDRSET      PIC32MZ_PBASE (0x0628)
+#define NVMADDRINV      PIC32MZ_PBASE (0x062C)
+#define NVMDATA0        PIC32MZ_PBASE (0x0630)
+#define NVMDATA1        PIC32MZ_PBASE (0x0640)
+#define NVMDATA2        PIC32MZ_PBASE (0x0650)
+#define NVMDATA3        PIC32MZ_PBASE (0x0660)
+#define NVMSRCADDR      PIC32MZ_PBASE (0x0670)
+#define NVMPWP          PIC32MZ_PBASE (0x0680)
+#define NVMPWPCLR       PIC32MZ_PBASE (0x0684)
+#define NVMPWPSET       PIC32MZ_PBASE (0x0688)
+#define NVMPWPINV       PIC32MZ_PBASE (0x068C)
+#define NVMBWP          PIC32MZ_PBASE (0x0690)
+#define NVMBWPCLR       PIC32MZ_PBASE (0x0694)
+#define NVMBWPSET       PIC32MZ_PBASE (0x0698)
+#define NVMBWPINV       PIC32MZ_PBASE (0x069C)
+#define NVMCON2         PIC32MZ_PBASE (0x06A0)
+#define NVMCON2CLR      PIC32MZ_PBASE (0x06A4)
+#define NVMCON2SET      PIC32MZ_PBASE (0x06A8)
+#define NVMCON2INV      PIC32MZ_PBASE (0x06AC)
+
 /* Read from CP0 */
-#define mfc0(reg, sel) ({ int32_t __value;			\
-	asm volatile (						\
-	"mfc0	%0, $%1, %2"					\
-	: "=r" (__value) : "K" (reg), "K" (sel));		\
-	__value; })
+#define mfc0(reg, sel) ({ int32_t __value;                      \
+        asm volatile (                                          \
+        "mfc0   %0, $%1, %2"                                    \
+        : "=r" (__value) : "K" (reg), "K" (sel));               \
+        __value; })
 
 /* Write to CP0 */
 #define mtc0(reg, sel, value) asm volatile (                    \
-	"mtc0	%z0, $%1, %2"                                   \
-	: : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
+        "mtc0   %z0, $%1, %2"                                   \
+        : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
 
 /* Device configuration registers */
-#define _DEVCFG0		*(volatile uint32_t *) 0xbfc0ffcc
-#define _DEVCFG1		*(volatile uint32_t *) 0xbfc0ffc8
-#define _DEVCFG2		*(volatile uint32_t *) 0xbfc0ffc4
-#define _DEVCFG3		*(volatile uint32_t *) 0xbfc0ffc0
+#define _DEVCFG0                *(volatile uint32_t *) 0xbfc0ffcc
+#define _DEVCFG1                *(volatile uint32_t *) 0xbfc0ffc8
+#define _DEVCFG2                *(volatile uint32_t *) 0xbfc0ffc4
+#define _DEVCFG3                *(volatile uint32_t *) 0xbfc0ffc0
 
 #define PIC32MZ_DEVCFG(cfg0, cfg1, cfg2, cfg3) \
     uint32_t ___DEVCFG0 __attribute__ ((section (".config0"))) = (cfg0) ^ 0x7fffffff; \
@@ -1839,3 +2033,366 @@ typedef void				(*funcptr)();
 #define _DEVCFG3_PMDL1WAY        0x10000000
 #define _DEVCFG3_IOL1WAY         0x20000000
 #define _DEVCFG3_FUSBIDIO        0x40000000
+
+typedef union {
+  struct {
+    unsigned MIIMBUSY:1;
+    unsigned SCAN:1;
+    unsigned NOTVALID:1;
+    unsigned LINKFAIL:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MINDbits_t;
+#define EMAC1MINDbits (*((volatile EMAC1MINDbits_t *) 0xbf8822d0))
+
+typedef union {
+  struct {
+    unsigned REGADDR:5;
+    unsigned :3;
+    unsigned PHYADDR:5;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MADRbits_t;
+#define EMAC1MADRbits (*((volatile EMAC1MADRbits_t *) 0xbf8822a0))
+
+typedef union {
+  struct {
+    unsigned READ:1;
+    unsigned SCAN:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MCMDbits_t;
+#define EMAC1MCMDbits (*((volatile EMAC1MCMDbits_t *) 0xbf882290))
+
+typedef union {
+  struct {
+    unsigned MRDD:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MRDDbits_t;
+#define EMAC1MRDDbits (*((volatile EMAC1MRDDbits_t *) 0xbf8822c0))
+
+typedef union {
+  struct {
+    unsigned MWTD:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MWTDbits_t;
+#define EMAC1MWTDbits (*((volatile EMAC1MWTDbits_t *) 0xbf8822b0))
+
+typedef union {
+  struct {
+    unsigned T7IE:1;
+    unsigned IC7EIE:1;
+    unsigned IC7IE:1;
+    unsigned OC7IE:1;
+    unsigned T8IE:1;
+    unsigned IC8EIE:1;
+    unsigned IC8IE:1;
+    unsigned OC8IE:1;
+    unsigned T9IE:1;
+    unsigned IC9EIE:1;
+    unsigned IC9IE:1;
+    unsigned OC9IE:1;
+    unsigned ADCIE:1;
+    unsigned ADCFIFOIE:1;
+    unsigned ADCDC1IE:1;
+    unsigned ADCDC2IE:1;
+    unsigned ADCDC3IE:1;
+    unsigned ADCDC4IE:1;
+    unsigned ADCDC5IE:1;
+    unsigned ADCDC6IE:1;
+    unsigned ADCDF1IE:1;
+    unsigned ADCDF2IE:1;
+    unsigned ADCDF3IE:1;
+    unsigned ADCDF4IE:1;
+    unsigned ADCDF5IE:1;
+    unsigned ADCDF6IE:1;
+    unsigned ADCFLTIE:1;
+    unsigned ADCD0IE:1;
+    unsigned ADCD1IE:1;
+    unsigned ADCD2IE:1;
+    unsigned ADCD3IE:1;
+    unsigned ADCD4IE:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} IEC1bits_t;
+#define IEC1bits (*((volatile IEC1bits_t *) 0xbf8100d0))
+
+typedef union {
+  struct {
+    unsigned BUFCDEC:1;
+    unsigned :3;
+    unsigned MANFC:1;
+    unsigned :2;
+    unsigned AUTOFC:1;
+    unsigned RXEN:1;
+    unsigned TXRTS:1;
+    unsigned :3;
+    unsigned SIDL:1;
+    unsigned :1;
+    unsigned ON:1;
+    unsigned PTV:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHCON1bits_t;
+#define ETHCON1bits (*((volatile ETHCON1bits_t *) 0xbf882000))
+
+typedef union {
+  struct {
+    unsigned T7IF:1;
+    unsigned IC7EIF:1;
+    unsigned IC7IF:1;
+    unsigned OC7IF:1;
+    unsigned T8IF:1;
+    unsigned IC8EIF:1;
+    unsigned IC8IF:1;
+    unsigned OC8IF:1;
+    unsigned T9IF:1;
+    unsigned IC9EIF:1;
+    unsigned IC9IF:1;
+    unsigned OC9IF:1;
+    unsigned ADCIF:1;
+    unsigned ADCFIFOIF:1;
+    unsigned ADCDC1IF:1;
+    unsigned ADCDC2IF:1;
+    unsigned ADCDC3IF:1;
+    unsigned ADCDC4IF:1;
+    unsigned ADCDC5IF:1;
+    unsigned ADCDC6IF:1;
+    unsigned ADCDF1IF:1;
+    unsigned ADCDF2IF:1;
+    unsigned ADCDF3IF:1;
+    unsigned ADCDF4IF:1;
+    unsigned ADCDF5IF:1;
+    unsigned ADCDF6IF:1;
+    unsigned ADCFLTIF:1;
+    unsigned ADCD0IF:1;
+    unsigned ADCD1IF:1;
+    unsigned ADCD2IF:1;
+    unsigned ADCD3IF:1;
+    unsigned ADCD4IF:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} IFS1bits_t;
+#define IFS1bits (*((volatile IFS1bits_t *) 0xbf810050))
+
+typedef union {
+  struct {
+    unsigned RXEWM:8;
+    unsigned :8;
+    unsigned RXFWM:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHRXWMbits_t;
+#define ETHRXWMbits (*((volatile ETHRXWMbits_t *) 0xbf8820b0))
+
+typedef union {
+  struct {
+    unsigned :4;
+    unsigned RXBUF_SZ:7;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHCON2bits_t;
+#define ETHCON2bits (*((volatile ETHCON2bits_t *) 0xbf882010))
+
+typedef union {
+  struct {
+    unsigned BCEN:1;
+    unsigned MCEN:1;
+    unsigned NOTMEEN:1;
+    unsigned UCEN:1;
+    unsigned RUNTEN:1;
+    unsigned RUNTERREN:1;
+    unsigned CRCOKEN:1;
+    unsigned CRCERREN:1;
+    unsigned EPMMODE:4;
+    unsigned NOTPM:1;
+    unsigned :1;
+    unsigned MPEN:1;
+    unsigned HTEN:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHRXFCbits_t;
+#define ETHRXFCbits (*((volatile ETHRXFCbits_t *) 0xbf8820a0))
+
+typedef union {
+  struct {
+    unsigned PMCS:16;
+  };
+  struct {
+    unsigned w:32;
+  };
+} ETHPMCSbits_t;
+#define ETHPMCSbits (*((volatile ETHPMCSbits_t *) 0xbf882080))
+
+typedef union {
+  struct {
+    unsigned RXENABLE:1;
+    unsigned PASSALL:1;
+    unsigned RXPAUSE:1;
+    unsigned TXPAUSE:1;
+    unsigned LOOPBACK:1;
+    unsigned :3;
+    unsigned RESETTFUN:1;
+    unsigned RESETTMCS:1;
+    unsigned RESETRFUN:1;
+    unsigned RESETRMCS:1;
+    unsigned :2;
+    unsigned SIMRESET:1;
+    unsigned SOFTRESET:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1CFG1bits_t;
+#define EMAC1CFG1bits (*((volatile EMAC1CFG1bits_t *) 0xbf882200))
+
+typedef union {
+  struct {
+    unsigned FULLDPLX:1;
+    unsigned LENGTHCK:1;
+    unsigned HUGEFRM:1;
+    unsigned DELAYCRC:1;
+    unsigned CRCENABLE:1;
+    unsigned PADENABLE:1;
+    unsigned VLANPAD:1;
+    unsigned AUTOPAD:1;
+    unsigned PUREPRE:1;
+    unsigned LONGPRE:1;
+    unsigned :2;
+    unsigned NOBKOFF:1;
+    unsigned BPNOBKOFF:1;
+    unsigned EXCESSDFR:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1CFG2bits_t;
+#define EMAC1CFG2bits (*((volatile EMAC1CFG2bits_t *) 0xbf882210))
+
+typedef union {
+  struct {
+    unsigned NB2BIPKTGP2:7;
+    unsigned :1;
+    unsigned NB2BIPKTGP1:7;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1IPGRbits_t;
+#define EMAC1IPGRbits (*((volatile EMAC1IPGRbits_t *) 0xbf882230))
+
+typedef union {
+  struct {
+    unsigned STNADDR1:8;
+    unsigned STNADDR2:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SA2bits_t;
+#define EMAC1SA2bits (*((volatile EMAC1SA2bits_t *) 0xbf882320))
+
+typedef union {
+  struct {
+    unsigned STNADDR3:8;
+    unsigned STNADDR4:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SA1bits_t;
+#define EMAC1SA1bits (*((volatile EMAC1SA1bits_t *) 0xbf882310))
+
+typedef union {
+  struct {
+    unsigned STNADDR5:8;
+    unsigned STNADDR6:8;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SA0bits_t;
+#define EMAC1SA0bits (*((volatile EMAC1SA0bits_t *) 0xbf882300))
+
+typedef union {
+  struct {
+    unsigned :8;
+    unsigned SPEEDRMII:1;
+    unsigned :2;
+    unsigned RESETRMII:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1SUPPbits_t;
+#define EMAC1SUPPbits (*((volatile EMAC1SUPPbits_t *) 0xbf882260))
+
+typedef union {
+  struct {
+    unsigned SCANINC:1;
+    unsigned NOPRE:1;
+    unsigned CLKSEL:4;
+    unsigned :9;
+    unsigned RESETMGMT:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1MCFGbits_t;
+#define EMAC1MCFGbits (*((volatile EMAC1MCFGbits_t *) 0xbf882280))
+
+typedef union {
+  struct {
+    unsigned USERID:16;
+    unsigned :8;
+    unsigned FMIIEN:1;
+    unsigned FETHIO:1;
+    unsigned :1;
+    unsigned PGL1WAY:1;
+    unsigned PMDL1WAY:1;
+    unsigned IOL1WAY:1;
+    unsigned FUSBIDIO:1;
+  };
+  struct {
+    unsigned w:32;
+  };
+} DEVCFG3bits_t;
+#define DEVCFG3bits (*((volatile DEVCFG3bits_t *) 0xbfc0ffc0))
+
+typedef union {
+  struct {
+    unsigned B2BIPKTGP:7;
+  };
+  struct {
+    unsigned w:32;
+  };
+} EMAC1IPGTbits_t;
+#define EMAC1IPGTbits (*((volatile EMAC1IPGTbits_t *) 0xbf882220))
+
+
+
+#endif 
