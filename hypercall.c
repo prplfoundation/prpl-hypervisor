@@ -251,6 +251,11 @@ int32_t HypercallHandler(){
 
 		break;
 		}
+		
+                case HCALL_READ_DEVCFG3:{
+                    MoveToPreviousGuestGPR(REG_V0, _DEVCFG3);
+                    break;
+                }
 
 		default:
 			break;

@@ -220,6 +220,16 @@ guest_is_up:
         nop
         .set reorder        
 .end guest_is_up
+
+        .global read_devcofg3
+        .ent read_devcofg3        
+read_devcofg3:
+        .set noreorder 
+        hypcall 0x170
+        jr $ra
+        nop
+        .set reorder        
+.end read_devcofg3
         
         
         .global spinlock

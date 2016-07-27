@@ -73,5 +73,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define HCALL_GET_MAC     0x153  /* a0 = destination buffer */
 
+#define HCALL_READ_DEVCFG3 0x170
+
 #endif
 
