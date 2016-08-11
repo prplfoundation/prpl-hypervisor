@@ -3,7 +3,7 @@ F_CLK=200000000
 CFLAGS_STRIP = -fdata-sections -ffunction-sections
 LDFLAGS_STRIP = --gc-sections
 
-GCC_MIPS = mips-mti-elf-gcc -EL -O2 -c -Wa,-mvirt -mips32r2 -mtune=m14k -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I ./include -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
+GCC_MIPS = mips-mti-elf-gcc -EL -O2 -c -Wa,-mvirt -DLITTLE_ENDIAN -mips32r2 -mtune=m14k -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I ./include -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
 
 AS_MIPS = mips-mti-elf-as -EL -mips32r2 -mvirt  -msoft-float
 LD_MIPS = mips-mti-elf-ld 
@@ -12,7 +12,7 @@ READ_MIPS = mips-mti-elf-readelf
 OBJ_MIPS = mips-mti-elf-objcopy
 SIZE_MIPS = mips-mti-elf-size
 
-ifeq ($(APP_NAME),tcp-listener)
+ifeq ($(APP_NAME),tcp-listener-ethdrv)
 GCC_MIPS+=-DPICOTCP
 LIBS=build/pico_dev_pic32.o build/libpicotcp.a
 INC=-I ../../picotcp/build/include/
@@ -23,10 +23,11 @@ all: clean $(LIBS)
 	$(GCC_MIPS) -o build/libc.o lib/libc.c
 	$(GCC_MIPS) -o build/platform.o lib/platform.c
 	$(GCC_MIPS) -o build/puf.o lib/puf.c
-	$(GCC_MIPS) -o build/network.o lib/network.c	
+	$(GCC_MIPS) -o build/network.o lib/network.c
+	$(GCC_MIPS) -o build/eth.o lib/eth.c $(INC)	
 	$(GCC_MIPS) -o build/malloc.o lib/malloc.c		
 	$(GCC_MIPS) -o build/$(APP_NAME).o apps/$(APP_NAME).c $(INC)
-	$(LD_MIPS) build/crt0.o build/libc.o build/platform.o build/puf.o build/$(APP_NAME).o build/network.o build/malloc.o -o build/bin/$(APP_NAME).elf -Tlib/pic32mz.ld -Llib/ -liidprplpuf -Map build/$(APP_NAME).map -N $(LIBS)
+	$(LD_MIPS) build/crt0.o build/libc.o build/platform.o build/puf.o build/$(APP_NAME).o build/network.o build/eth.o build/malloc.o -o build/bin/$(APP_NAME).elf -Tlib/pic32mz.ld -Llib/ -liidprplpuf -Map build/$(APP_NAME).map -N $(LIBS)
 	$(DUMP_MIPS) --disassemble --reloc build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).lst
 	$(DUMP_MIPS) -h build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).sec
 	$(DUMP_MIPS) -s build/bin/$(APP_NAME).elf > build/bin/$(APP_NAME).cnt

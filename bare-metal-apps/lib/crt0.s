@@ -220,6 +220,27 @@ guest_is_up:
         nop
         .set reorder        
 .end guest_is_up
+
+    .global hyper_eth_send
+    .ent hyper_eth_send
+hyper_eth_send:
+    .set noreorder 
+    hypcall 0x010
+    jr $ra
+    nop
+    .set reorder
+.end hyper_eth_send
+
+        .global hyper_eth_recv
+        .ent hyper_eth_recv
+hyper_eth_recv:
+        .set noreorder 
+        hypcall 0x011
+        sw $v1, 0($a0)
+        jr $ra
+        nop
+.end hyper_eth_recv
+
         
         
         .global spinlock
