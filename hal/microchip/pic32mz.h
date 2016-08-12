@@ -1508,6 +1508,24 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define PIC32_EMAC1MIND_SCAN        0x0002  /* Scanning in progress */
 #define PIC32_EMAC1MIND_MIIMBUSY    0x0001  /* Read/write cycle in progress */
 
+/*
+ * Ethernet MAC configuration register 2.
+ */
+#define PIC32_EMAC1CFG2_EXCESSDFR   0x4000  /* Defer to carrier indefinitely */
+#define PIC32_EMAC1CFG2_BPNOBKOFF   0x2000  /* Backpressure/No Backoff */
+#define PIC32_EMAC1CFG2_NOBKOFF     0x1000  /* No Backoff */
+#define PIC32_EMAC1CFG2_LONGPRE     0x0200  /* Long preamble enforcement */
+#define PIC32_EMAC1CFG2_PUREPRE     0x0100  /* Pure preamble enforcement */
+#define PIC32_EMAC1CFG2_AUTOPAD     0x0080  /* Automatic detect pad enable */
+#define PIC32_EMAC1CFG2_VLANPAD     0x0040  /* VLAN pad enable */
+#define PIC32_EMAC1CFG2_PADENABLE   0x0020  /* Pad/CRC enable */
+#define PIC32_EMAC1CFG2_CRCENABLE   0x0010  /* CRC enable */
+#define PIC32_EMAC1CFG2_DELAYCRC    0x0008  /* Delayed CRC */
+#define PIC32_EMAC1CFG2_HUGEFRM     0x0004  /* Huge frame enable */
+#define PIC32_EMAC1CFG2_LENGTHCK    0x0002  /* Frame length checking */
+#define PIC32_EMAC1CFG2_FULLDPLX    0x0001  /* Full-duplex operation */
+
+
 
 /* Timer registers */
 #define T2CON           PIC32MZ_PBASE (0x40200)

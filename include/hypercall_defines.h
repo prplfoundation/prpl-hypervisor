@@ -71,7 +71,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define HCALL_FLASH_WRITE 0x152  /* a0 = source buffer */
 
 
-#define HCALL_GET_MAC     0x153  /* a0 = destination buffer */
+#define ETH_GET_MAC    0x153  /* a0 = destination buffer */
+#define ETH_LINK_STATE 0x12
+#define ETH_RECV_FRAME 0x11
+#define ETH_SEND_FRAME 0x10
 
 #endif
 

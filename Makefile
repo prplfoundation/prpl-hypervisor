@@ -16,6 +16,9 @@
 #List of bare-metal applications 
 APP_LIST = tcp-listener iidprpl arm-control
 
+# Comment this line if you does not need ethernet support.
+
+
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES#
 ########################################################################################################
@@ -37,8 +40,9 @@ CFLAGS_STRIP = -fdata-sections -ffunction-sections
 LDFLAGS_STRIP = --gc-sections 
 LDFLAGS = -Thal/microchip/pic32mz.ld 
 #CFLAGS = -EL -O2 -c -mtune=m14k  -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
-CFLAGS = -EL -O2 -c -mips32r2 -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} -DHYPVERSION=${VERSION}
-         
+CFLAGS = -EL -O2 -c -mips32r2 -DETHERNET_SUPPORT -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} -DHYPVERSION=${VERSION}
+
+
 
 AS_MIPS = mips-mti-elf-as -EL
 LD_MIPS = mips-mti-elf-ld #$(LDFLAGS_STRIP)
@@ -72,7 +76,7 @@ BIN = prplHypervisor
 all: clean config_vms $(APP) apps generate_firmware
 
 $(APP): $(OBJS)
-	$(LD_MIPS) $(LDFLAGS)  $^ -o $@
+	$(LD_MIPS) $(LDFLAGS) $^ bin/ethernet.o -o $@
 	$(DUMP_MIPS) --disassemble --reloc $(APP) > $(BIN).lst
 	$(DUMP_MIPS) -h $(APP) > $(BIN).sec
 	$(DUMP_MIPS) -s $(APP) > $(BIN).cnt

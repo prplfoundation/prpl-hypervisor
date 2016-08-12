@@ -236,12 +236,31 @@ hyper_eth_send:
 hyper_eth_recv:
         .set noreorder 
         hypcall 0x011
-        sw $v1, 0($a0)
         jr $ra
         nop
+        .set reorder
 .end hyper_eth_recv
 
+        .global hyper_eth_mac
+        .ent hyper_eth_mac
+hyper_eth_mac:
+        .set noreorder 
+        hypcall 0x153
+        jr $ra
+        nop
+        .set reorder
+.end hyper_eth_mac
         
+        .global hyper_eth_link_state
+        .ent hyper_eth_link_state
+hyper_eth_link_state:
+        .set noreorder 
+        hypcall 0x12
+        jr $ra
+        nop
+        .set reorder
+.end hyper_eth_link_state
+
         
         .global spinlock
         .ent spinlock

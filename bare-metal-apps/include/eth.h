@@ -33,6 +33,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 int32_t hyper_eth_send(void *buf, int len);
 int32_t hyper_eth_poll(void *buf, int len);
+int32_t eth_link_state(struct pico_device *dev);
+void eth_get_mac(uint8_t *mac);
+
 
 #define ETH_MESSAGE_SZ 1536
 #define ETH_MESSAGELIST_SZ 5

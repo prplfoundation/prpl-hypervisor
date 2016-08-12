@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <network.h>
 #include <puf.h>
+#include <eth.h>
 
 #include "pico_defines.h"
 #include "pico_stack.h"
@@ -34,6 +35,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define KEYSIZE 16
 
+static char tx_buf[ETH_RX_BUF_SIZE] = {0};
 static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 static struct pico_socket *s = NULL;
 static struct pico_ip4 my_eth_addr, netmask;
@@ -208,34 +210,41 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 
 int main()
 {
-    uint8_t mac[6] = {0x00,0x00,0x00,0x12,0x34,0x56};
+    uint8_t mac[6];
+    
+    eth_get_mac(mac);
+    
     const char *ipaddr="192.168.0.2";
     uint16_t port_be = 0;
     int i = 0;
-
+  
     /* Select output serial 2 = UART2, 6 = UART6 */
     serial_select(UART2);
-#if 0
-    printf("Configuring SPI1\n");
-
-    setupSPI1();
-
-    printf("Configured SPI1\n");
-#endif
 
     init_network();
-
-    printf("Initializing pico stack\n");
+    
+    /* Configure the virtual ethernet driver */
+    struct pico_device* eth_dev = PICO_ZALLOC(sizeof(struct pico_device));
+    if(!eth_dev) {
+        return 0;
+    }   
+    
+    eth_dev->send = eth_send;
+    eth_dev->poll = eth_poll;
+    eth_dev->link_state = eth_link_state;
+    
+    if( 0 != pico_device_init((struct pico_device *)eth_dev, "virt-eth", mac)) {
+        printf ("\nDevice init failed.");
+        PICO_FREE(eth_dev);
+        return 0;
+    }    
+    
+    printf("\nInitializing pico stack");
     pico_stack_init();
-
-    printf("Creating ethernet device\n");
-    pico_dev_eth = (struct pico_device *) pico_eth_create("eth", mac);
-    if (!pico_dev_eth)
-        printf("Failed to create ethernet device!\n");
-
+    
     pico_string_to_ipv4(ipaddr, &my_eth_addr.addr);
     pico_string_to_ipv4("255.255.255.0", &netmask.addr);
-    pico_ipv4_link_add(pico_dev_eth, my_eth_addr, netmask);
+    pico_ipv4_link_add(eth_dev, my_eth_addr, netmask);
 
     port_be = short_be(LISTENING_PORT);
 
@@ -252,9 +261,11 @@ int main()
 
     while (1)
     {
+        
 	    pico_stack_tick();
 
 	    /* Only wrap key when VM 2 is up and only do it once */
+        
 	    if (guest_is_up(2) != MESSAGE_VCPU_NOT_INIT && key_wrapped == 0)
 	    {
             retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
@@ -272,7 +283,6 @@ int main()
 
             key_wrapped = 1;
 	    }
-
     }
 
     return 0;
