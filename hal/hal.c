@@ -124,7 +124,11 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     }*/
 
     /* Run scheduler .*/
-    runScheduler();     
+    runScheduler();  
+    
+#ifdef ETHERNET_SUPPORT
+    en_init();
+#endif
     
     hal_start_hyper();
 

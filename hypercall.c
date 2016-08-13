@@ -21,6 +21,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <tlb.h>
 
+#ifdef ETHERNET_SUPPORT
+#include "hal/microchip/ethernet.h"
+uint8_t tx_buf[MTU];
+uint8_t rx_buf[MTU];
+#endif
+
 /**Handle hypercalls */
 int32_t HypercallHandler(){
 		
@@ -237,19 +243,13 @@ int32_t HypercallHandler(){
 		break;
 		}
 
-		case HCALL_GET_MAC:{
-			vcpu_t* vcpu = curr_vcpu;
+        /* This hypercall is used by PUF API. */
+		case ETH_GET_MAC:{
 
 			uint8_t * mac = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 6, 0xf);
+            memcpy(mac, eth_port.macaddr, sizeof(uint8_t) * 6);
 
-			mac[0] = *((uint8_t *) 0xBF882320);
-			mac[1] = *((uint8_t *) 0xBF882321);
-			mac[2] = *((uint8_t *) 0xBF882310);
-			mac[3] = *((uint8_t *) 0xBF882311);
-			mac[4] = *((uint8_t *) 0xBF882300);
-			mac[5] = *((uint8_t *) 0xBF882301);
-
-		break;
+            break;
 		}
 		
                 case HCALL_READ_DEVCFG3:{
@@ -257,11 +257,53 @@ int32_t HypercallHandler(){
                     break;
                 }
 
-		default:
-			break;
-		
-		break;		
-	}	
+#ifdef ETHERNET_SUPPORT         	
+        case ETH_RECV_FRAME:{
+            
+            int32_t framesz;
+
+            char* frame_ptr = (char*)MoveFromPreviousGuestGPR(REG_A0);
+
+            /* Copy the message the receiver */
+            char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame_ptr, curr_vm->base_addr, MTU, 0xf);
+            
+            uint8_t* buf = MACH_PHYS_TO_VIRT(MACH_VIRT_TO_PHYS(rx_buf));
+            
+            framesz = en_ll_input(buf);
+            
+            memcpy(frame_ptr_mapped, buf, framesz);
+            
+            /* Return the message size to the receiver */
+            MoveToPreviousGuestGPR(REG_V0, framesz);
+            
+            break;
+        }
+        case ETH_SEND_FRAME:{
+            /* Getting parameters from guest*/
+            uint8_t *frame  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
+            uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
+            
+            char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame, curr_vm->base_addr, size, 0xf);
+            uint8_t* buf = MACH_PHYS_TO_VIRT(MACH_VIRT_TO_PHYS(tx_buf));
+            
+            memcpy(buf,frame_ptr_mapped,size);
+            
+            MoveToPreviousGuestGPR(REG_V0, size);
+            
+            en_ll_output(buf, size);
+            
+            break;
+        }
+        
+        case ETH_LINK_STATE:{
+            MoveToPreviousGuestGPR(REG_V0, eth_port.is_up);
+            break;
+        }
+#endif 	
+
+        default:
+            break;
+    }
 	
 	return ret;
 }

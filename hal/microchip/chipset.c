@@ -19,6 +19,7 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include <config.h>
 #include <hal.h>
 #include "pic32mz.h"
+#include "ethernet.h"
 
 PIC32MZ_DEVCFG (
     _DEVCFG0_JTAG_DISABLE |      /* Disable JTAG port */
@@ -113,7 +114,7 @@ void configure_timer(){
 
 
 uint32_t timer_int_handler(){
-    
+
     uint32_t ret = SUCEEDED;
     
     if (IFS(0) & 0x1000000){
@@ -128,6 +129,11 @@ uint32_t timer_int_handler(){
         if ((tick_count++)%5==0){
             ret = RESCHEDULE;
         }
+#ifdef ETHERNET_SUPPORT        
+        if(tick_count%500==0){
+           en_watchdog();
+        }
+#endif        
     }
     return ret;
 }
