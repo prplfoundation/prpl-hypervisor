@@ -35,6 +35,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define KEYSIZE 16
 
+static char msg1[] = "\nKeyCode: ";
+static char msg2[] = "\nEnter KeyCode + Arm Command (1, 2 or 3): ";
+static char msg3[] = "\nInvalid Key ";
+static char msg4[] = "\nValid key! Command relayed to robotic arm controller.";
 static char tx_buf[ETH_RX_BUF_SIZE] = {0};
 static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 static struct pico_socket *s = NULL;
@@ -125,10 +129,12 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
     int ret = 0;
     int i,j;
     char c;
+    static int send_key_once = 0;
+    static struct pico_socket *s_client = NULL;
 
     if (ev & PICO_SOCK_EV_RD) {
 
-        r = pico_socket_read(s, rx_buf, ETH_RX_BUF_SIZE);
+        r = pico_socket_read(s_client, rx_buf, ETH_RX_BUF_SIZE);
         if (r < 0)
             printf("Error while reading from socket!\n");
  
@@ -155,32 +161,36 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 	retVal = PUF_UnwrapKey(key_buf, label, context, &keySize, &keyIndex, key_unwrapped);
 
 	if (IID_PRPL_SUCCESS != retVal) {
-		printf("Invalid key!\n");
+		printf(msg3);
+                pico_socket_write(s_client, msg3, strlen(msg3));
+                pico_socket_write(s_client, msg2, strlen(msg2));
 	} else {
-		printf("Valid key! Command relayed to robotic arm controller.\n");
+		printf(msg4);
 		if (rx_buf[r-3]=='1' || rx_buf[r-3]=='2'){
 			SendMessage(3, &rx_buf[r-3], 1);
 		}
+                pico_socket_write(s_client, msg4, strlen(msg4));
+                pico_socket_write(s_client, msg2, strlen(msg2));
 	}
 
     }
 
-    if (ev == PICO_SOCK_EV_CONN)
+    if (ev & PICO_SOCK_EV_CONN)
     {
-        s = pico_socket_accept(s, &peer, &port);
+        s_client = pico_socket_accept(s, &peer, &port);
         printf("Accepted connection\n");
-	    if (key_wrapped == 0)
+	if (key_wrapped == 0)
 	    printf("Key not ready yet\n");
-	    else
-	    {
+	else{
 
 	// ---------------------------------------------------------------------------------------------------
 	// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
 	// Remove if you send key in binary
 	// ---------------------------------------------------------------------------------------------------
-	char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
+        if (send_key_once == 0){
+            char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
 
-	for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
+            for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
 
 		c = keyCode[i] >>4;
 		c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
@@ -190,22 +200,38 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 		c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
 		keyAscii[j++] = c;
 		
-	}
+            }
 
-	// ---------------------------------------------------------------------------------------------------
+            // ---------------------------------------------------------------------------------------------------
 
-	    //ret = pico_socket_write(s, keyCode, KEYSIZE + KEYCODE_OVERHEAD);
-            ret = pico_socket_write(s, keyAscii, j);
+            ret = pico_socket_write(s_client, msg1, strlen(msg1));
+                if (ret < 0)
+                    printf("Failed to send wrapped key\n");
+	    
+            ret = pico_socket_write(s_client, keyAscii, j);
 	        if (ret < 0)
 	            printf("Failed to send wrapped key\n");
             else
                 printf("Sent wrapped key\n");
 	    }
+	    
+	    send_key_once = 1;
+            
+        }
+        ret = pico_socket_write(s_client, msg2, strlen(msg2));
+        if (ret < 0)
+            printf("Failed to send wrapped key\n");
+        
     }
 
     /* process error event, socket error occured */
-    if (ev == PICO_SOCK_EV_ERR)
+    if (ev & PICO_SOCK_EV_ERR)
         printf("Socket error!\n");
+    
+    if (ev & PICO_SOCK_EV_CLOSE){
+           printf("Connection Close!\n");
+           pico_socket_close(s_client);
+    }
 }
 
 int main()
