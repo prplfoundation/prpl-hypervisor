@@ -73,16 +73,16 @@ int main() {
 
 		if (IID_PRPL_SUCCESS != retVal) { /* If the AC doesn't exist, generate and create it */
 			retVal = IID_PRPL_Enroll(activationCode_buffer);
-			printf("IID_PRPL Enroll executed\n");
+			printf("\nVM#2: IID_PRPL Enroll executed");
 
 			if (IID_PRPL_SUCCESS == retVal) {
 				retVal = storeAC(activationCode_buffer); /* Store the new AC */
 
 				if (IID_PRPL_SUCCESS != retVal) {
-					printf("Storage of Activation Code failed with error: %02X\n", retVal);
+                    printf("\nVM#2: Storage of Activation Code failed with error: %02X", retVal);
 				}
 			} else {
-				printf("IID_PRPL Enroll failed with error: %02X\n", retVal);
+                printf("\nVM#2: IID_PRPL Enroll failed with error: %02X", retVal);
 			}
 		}
 
@@ -90,13 +90,13 @@ int main() {
 			retVal = IID_PRPL_Start(activationCode_buffer);
 
 			if (retVal != IID_PRPL_SUCCESS) {
-				printf("IID_PRPL Start failed with error: %02X\n", retVal);
+                printf("\nVM#2: IID_PRPL Start failed with error: %02X", retVal);
 			} else {
-				printf("IID_PRPL started successfully\n");
+                printf("\nVM#2: IID_PRPL started successfully");
 			}
 		}
 	} else {
-		printf("IID_PRPL Init failed with error: %02X\n", retVal);
+        printf("\nVM#2: IID_PRPL Init failed with error: %02X", retVal);
 	}
 
 	while(1) {

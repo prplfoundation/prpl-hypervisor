@@ -31,16 +31,16 @@ void* exceptionHandler_addr = exceptionHandler;
 
 static void print_config(void)
 {
-        printf("\n===========================================================");
-        printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
-        printf("\nCopyright (c) 2016, prpl Foundation");
-        printf("\n===========================================================");
-        printf("\nCPU ID:        %s", CPU_ID);
-        printf("\nARCH:          %s", CPU_ARCH);
-        printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
-        printf("\nHeap size:     %dKbytes", HEAP_SIZE/1024);
-        printf("\nScheduler      %dms", QUANTUM/100000);
-        printf("\nVMs:           %d\n", NVMACHINES);
+        printf("===========================================================");
+        printf("prplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
+        printf("Copyright (c) 2016, prpl Foundation");
+        printf("===========================================================");
+        printf("CPU ID:        %s", CPU_ID);
+        printf("ARCH:          %s", CPU_ARCH);
+        printf("SYSCLK:        %dMHz", CPU_SPEED/1000000);
+        printf("Heap size:     %dKbytes", HEAP_SIZE/1024);
+        printf("Scheduler      %dms", QUANTUM/100000);
+        printf("VMs:           %d\n", NVMACHINES);
 }
 
 

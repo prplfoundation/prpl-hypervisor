@@ -173,7 +173,7 @@ void stop_vm_timer(){
 /* Performs software reset to the board. */
 void SoftReset(){
     
-    printf("\nReset button (sw1) pressed. Performing software reset.");
+    printf("Reset button (sw1) pressed. Performing software reset.");
     udelay(1000000);
     
     NVMKEY = 0x0;

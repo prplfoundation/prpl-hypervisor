@@ -25,19 +25,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define INFO "Info: "
 
 #ifdef WARNINGS
-#define Warning(A,...) printf("WARNING: "A"\n",##__VA_ARGS__);
+#define Warning(A,...) printf("WARNING: "A,##__VA_ARGS__);
 #else
 #define Warning(A,...)
 #endif
 
 #ifdef INFOS
-#define Info(A,...) printf(A"\n",##__VA_ARGS__);
+#define Info(A,...) printf(A,##__VA_ARGS__);
 #else
 #define Info(A,...)
 #endif
 
 #ifdef CRITICALS
-#define Critical(A,...) printf("CRITICAL: "A"\n",##__VA_ARGS__);
+#define Critical(A,...) printf("CRITICAL: "A,##__VA_ARGS__);
 #else
 #define Critical(A,...)
 #endif

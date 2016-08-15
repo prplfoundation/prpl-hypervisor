@@ -36,7 +36,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define KEYSIZE 16
 
 static char msg1[] = "\nKeyCode: ";
-static char msg2[] = "\nEnter KeyCode + Arm Command (1, 2 or 3): ";
+static char msg2[] = "\nEnter KeyCode + Arm Command (1 or 2): ";
 static char msg3[] = "\nInvalid Key ";
 static char msg4[] = "\nValid key! Command relayed to robotic arm controller.";
 static char tx_buf[ETH_RX_BUF_SIZE] = {0};
@@ -97,140 +97,120 @@ void irq_timer()
 
 }
 
-
-/* SP1 configuration */
-static void setupSPI1()
-{
-#if 0
-    /* Pin settings */
-
-    ANSELBCLR = 0x0008; /* pin B3 used as output for CS */
-    TRISBCLR = 0x0008;
-    TRISDCLR = 0x0002;  /* pin D1 used as output for SCLK */
-    TRISFCLR = 0x0020;  /* pin F5 used as output for MOSI */
-    TRISFSET = 0x0010;  /* pin F4 used as input for MISO */
-    LATFSET = 0x0010;
-
-    SDI1R = 2;  /* pin F4 as SPI1 data input */
-    RPF5R = 5;  /* pin F5 as SPI1 data output */
-
-    /* SPI config settings */
-#endif
-    SPI1BRG = 4; /* Set clock divider to selected_clock/10: selected_clk/(2*(4+1)) */
-    SPI1CON = 0x8120; /* enable SPI / master mode / data transition from high to low clk */
-
-}
-
 static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 {
     int r = 0;
     uint16_t port;
-    uint16_t peer;
+    struct pico_ip4 peer;
     int ret = 0;
     int i,j;
     char c;
     static int send_key_once = 0;
     static struct pico_socket *s_client = NULL;
+    char str_ip_peer[200];
 
     if (ev & PICO_SOCK_EV_RD) {
-
+        printf("\nVM#1: Receiving client data.");
+        
         r = pico_socket_read(s_client, rx_buf, ETH_RX_BUF_SIZE);
         if (r < 0)
-            printf("Error while reading from socket!\n");
+            printf("VM#1: Error while reading from socket!\n");
  
-        printf("Data received(%d bytes):\n", r);
-        for (i = 0; i < r; i++)
+        printf("\nVM#1: Data received(%d bytes):\n", r);
+        for (i = 0; i < r; i++){
+            if(i%10==0) printf("\n");
             printf("%02x ", rx_buf[i]);
+        }
         printf("\n");
 
-	// ---------------------------------------------------------------------------------------------------
-	// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
-	// and the arm command as a '1' or '2' ascii. Remove if you send key+command in binary. 
-	// ---------------------------------------------------------------------------------------------------
-	char key_buf[KEYSIZE + KEYCODE_OVERHEAD];
+        // ---------------------------------------------------------------------------------------------------
+        // This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+        // and the arm command as a '1' or '2' ascii. Remove if you send key+command in binary. 
+        // ---------------------------------------------------------------------------------------------------
+        char key_buf[KEYSIZE + KEYCODE_OVERHEAD];
 	
-	for (i=0,j=0; i < r-1; i+=2,j+=1) {
+        for (i=0,j=0; i < r-1; i+=2,j+=1) {
                 char hn = rx_buf[i] >='0' && rx_buf[i] <='9' ? rx_buf[i] - '0' : rx_buf[i] - 'a' +10;
                 char ln = rx_buf[i+1] >='0' && rx_buf[i+1] <='9' ? rx_buf[i+1] - '0' : rx_buf[i+1] - 'a' +10;
                 key_buf[j] = (hn << 4 ) | ln;
         }
 
-	// ---------------------------------------------------------------------------------------------------	
+        printf("VM#1: Verifying received key.\n");
+        retVal = PUF_UnwrapKey(key_buf, label, context, &keySize, &keyIndex, key_unwrapped);
 
-	//retVal = PUF_UnwrapKey(rx_buf, label, context, &keySize, &keyIndex, key_unwrapped);
-	retVal = PUF_UnwrapKey(key_buf, label, context, &keySize, &keyIndex, key_unwrapped);
-
-	if (IID_PRPL_SUCCESS != retVal) {
-		printf(msg3);
-                pico_socket_write(s_client, msg3, strlen(msg3));
-                pico_socket_write(s_client, msg2, strlen(msg2));
-	} else {
-		printf(msg4);
-		if (rx_buf[r-3]=='1' || rx_buf[r-3]=='2'){
-			SendMessage(3, &rx_buf[r-3], 1);
-		}
-                pico_socket_write(s_client, msg4, strlen(msg4));
-                pico_socket_write(s_client, msg2, strlen(msg2));
-	}
+        if (IID_PRPL_SUCCESS != retVal) {
+            printf(msg3);
+            pico_socket_write(s_client, msg3, strlen(msg3));
+            pico_socket_write(s_client, msg2, strlen(msg2));
+        } else {
+            printf(msg4);
+            if (rx_buf[r-3]=='1' || rx_buf[r-3]=='2'){
+                printf("\nVM#1: Command %c.", rx_buf[r-3]);
+                SendMessage(3, &rx_buf[r-3], 1);
+            }
+            pico_socket_write(s_client, msg4, strlen(msg4));
+            pico_socket_write(s_client, msg2, strlen(msg2));
+        }
 
     }
 
     if (ev & PICO_SOCK_EV_CONN)
     {
         s_client = pico_socket_accept(s, &peer, &port);
-        printf("Accepted connection\n");
-	if (key_wrapped == 0)
-	    printf("Key not ready yet\n");
-	else{
+        pico_ipv4_to_string(str_ip_peer, peer.addr);
+        printf("\nVM#1: Accepted connection from %s:%d", str_ip_peer, port);
+        if (key_wrapped == 0)
+            printf("\nVM#1: Key not ready yet");
+        else{
 
-	// ---------------------------------------------------------------------------------------------------
-	// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
-	// Remove if you send key in binary
-	// ---------------------------------------------------------------------------------------------------
-        if (send_key_once == 0){
-            char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
+            // ---------------------------------------------------------------------------------------------------
+            // This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+            // Remove if you send key in binary
+            // ---------------------------------------------------------------------------------------------------
+            printf("\nVM#1: Sending wrapped key to the client %s:%d", str_ip_peer, port);
+        
+            if (send_key_once == 0){
+                char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
 
-            for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
+                for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
 
-		c = keyCode[i] >>4;
-		c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
-		keyAscii[j++] = c;
+                    c = keyCode[i] >>4;
+                    c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
+                    keyAscii[j++] = c;
 
-		c = keyCode[i] & 0x0F;
-		c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
-		keyAscii[j++] = c;
-		
-            }
+                    c = keyCode[i] & 0x0F;
+                    c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
+                    keyAscii[j++] = c;
+
+                }
 
             // ---------------------------------------------------------------------------------------------------
 
-            ret = pico_socket_write(s_client, msg1, strlen(msg1));
+                ret = pico_socket_write(s_client, msg1, strlen(msg1));
                 if (ret < 0)
-                    printf("Failed to send wrapped key\n");
-	    
-            ret = pico_socket_write(s_client, keyAscii, j);
-	        if (ret < 0)
-	            printf("Failed to send wrapped key\n");
-            else
-                printf("Sent wrapped key\n");
-	    }
-	    
-	    send_key_once = 1;
-            
+                    printf("\nVM#1: Failed to send wrapped key");
+        
+                ret = pico_socket_write(s_client, keyAscii, j);
+                if (ret < 0)
+                    printf("\nVM#1: Failed to send wrapped key");
+                else
+                    printf("\nVM#1: Waiting for client message.");
+            }
+            send_key_once = 1;
         }
         ret = pico_socket_write(s_client, msg2, strlen(msg2));
         if (ret < 0)
-            printf("Failed to send wrapped key\n");
-        
+            printf("VM#1: Failed to send wrapped key\n");
     }
 
     /* process error event, socket error occured */
-    if (ev & PICO_SOCK_EV_ERR)
-        printf("Socket error!\n");
+    if (ev & PICO_SOCK_EV_ERR){
+        printf("VM#1: Socket error!\n");
+    }
     
     if (ev & PICO_SOCK_EV_CLOSE){
-           printf("Connection Close!\n");
            pico_socket_close(s_client);
+           printf("\nVM#1: Client connection close.");
     }
 }
 
@@ -260,12 +240,12 @@ int main()
     eth_dev->link_state = eth_link_state;
     
     if( 0 != pico_device_init((struct pico_device *)eth_dev, "virt-eth", mac)) {
-        printf ("\nDevice init failed.");
+        printf ("\nVM#1: Device init failed.");
         PICO_FREE(eth_dev);
         return 0;
     }    
     
-    printf("\nInitializing pico stack");
+    printf("\nVM#1: Initializing pico stack");
     pico_stack_init();
     
     pico_string_to_ipv4(ipaddr, &my_eth_addr.addr);
@@ -274,16 +254,18 @@ int main()
 
     port_be = short_be(LISTENING_PORT);
 
-    printf("Opening socket\n");
+    printf("\nVM#1: Opening socket");
     s = pico_socket_open(PICO_PROTO_IPV4, PICO_PROTO_TCP, &cb_tcp);
     if (!s)
-        printf("Failed to open socket!\n");
+        printf("\nVM#1: Failed to open socket!");
 
     if (pico_socket_bind(s, &my_eth_addr.addr, &port_be) != 0)
-        printf("Failed to bind socket!\n");
+        printf("\nVM#1: Failed to bind socket!");
 
     if (pico_socket_listen(s, MAX_CONNECTIONS) != 0)
-        printf("Failed to listen on socket!\n");
+        printf("\nVM#1: Failed to listen on socket!");
+    
+    printf("\nVM#1: TCP server waiting for incoming connections on %s:%d\n", ipaddr, LISTENING_PORT);
 
     while (1)
     {
@@ -297,9 +279,9 @@ int main()
             retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
 
             if (IID_PRPL_SUCCESS != retVal) {
-                printf("Error PUF_WrapKey: %x\n", retVal);
+                printf("VM#1: Error PUF_WrapKey: %x\n", retVal);
             } else {
-                printf("keyCode: ");
+                printf("VM#1: keyCode: ");
                 for (i = 0; i < KEYSIZE + KEYCODE_OVERHEAD; ++i) {
                     printf("%02x", keyCode[i]);
                 }

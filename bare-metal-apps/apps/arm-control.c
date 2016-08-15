@@ -115,11 +115,17 @@ int process_message()
 		{
 		// start/resume the sequence
 		case '1':
+            serial_select(UART2);
+            printf("\nVM#3: Moving the Robotic ARM.");
+            serial_select(UART6);
 			start_sequence_flag = 1;
 			break;
 
 		// stop the sequence
 		case '2':
+            serial_select(UART2);
+            printf("\nVM#3: Stoping the Robotic ARM.");
+            serial_select(UART6);
 			start_sequence_flag = 0;
 			break;
 
@@ -190,6 +196,10 @@ int main() {
 	init_network();
 
 	stop_sequence();
+    
+    serial_select(UART2);
+    printf("\nVM#3: Starting Robotic Arm Control.");
+    serial_select(UART6);
 
     while(1) {
 

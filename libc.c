@@ -259,6 +259,8 @@ int32_t printf(const char *format, ...)
 {
         va_list args;
         
+        puts("\nHYPER: ");
+        
         va_start( args, format );
         return print( 0, format, args );
 }
