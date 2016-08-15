@@ -1,0 +1,117 @@
+#
+#Copyright (c) 2016, prpl Foundation
+#
+#Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
+#fee is hereby granted, provided that the above copyright notice and this permission notice appear 
+#in all copies.
+#
+#THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+#INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE 
+#FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+#LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+#ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+#This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
+
+#List of bare-metal applications 
+APP_LIST = ping pong
+
+# CROSS Compiler 
+CROSS_COMPILER = mips-mti-elf-
+
+# Code generation options - Comment undesired features.
+ETHERNET = -DETHERNET_SUPPORT 
+
+
+########################################################################################################
+# SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
+# OR PORTING TO A NEW PLATFORM.
+########################################################################################################
+
+# Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
+BAUDRATE=115200
+F_CLK=200000000
+SERIAL_DEV=/dev/ttyACM0
+
+TOPDIR=../../
+
+PLATFORM_DIR=platform/pic32mz_starter_kit/
+
+VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
+
+LINKER_SCRIPT = ../../arch/mips/pic32mz_starter_kit/pic32mz.ld
+
+### GCC flags configuration: processor tunning ###
+CFLAGS = -EL -O2 -mtune=m14k -mips32r2
+#MIPZ VZ support
+CFLAGS += -Wa,-mvirt
+#flointing pointing options
+CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
+#General options
+CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
+#Additional features flags
+CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK)
+# AS flags
+ASFLAGS = -EL -mvirt -mips32r2
+# LD flags
+LDFLAGS = -EL
+
+### Include dirs ###
+INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz_starter_kit/include \
+           -I$(TOPDIR)arch/mips/common/include \
+           -I$(TOPDIR)sys/lib/include \
+           -I$(TOPDIR)sys/kernel/include
+
+BUILDDIR=build/hypervisor
+ 
+#Configure CROSS COMPILER
+AS = $(CROSS_COMPILER)as 
+LD = $(CROSS_COMPILER)ld 
+OBJDUMP = $(CROSS_COMPILER)objdump
+READELF = $(CROSS_COMPILER)readelf
+OBJCOPY = $(CROSS_COMPILER)objcopy
+SIZE = $(CROSS_COMPILER)size
+CC= $(CROSS_COMPILER)gcc
+
+APP = prplHypervisor
+
+all: config_vms lib kernel common pic32mz $(APP) bare_apps generate_firmware
+
+include $(TOPDIR)sys/sys.mk
+include $(TOPDIR)arch/mips/common/common.mk
+include $(TOPDIR)arch/mips/pic32mz_starter_kit/pic32mz.mk
+
+$(APP): 
+	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -o $(APP).elf *.o ../../bin/ethernet.o
+	$(OBJDUMP) --disassemble --reloc $(APP).elf > $(APP).lst
+	$(OBJDUMP) -h $(APP).elf > $(APP).sec
+	$(OBJDUMP) -s $(APP).elf > $(APP).cnt
+	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
+	$(OBJCOPY) -O ihex --change-addresses=0x80000000 $(APP).elf $(BIN).hex
+	$(SIZE) $(APP).elf
+
+serial:
+	stty ${BAUDRATE} raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F ${SERIAL_DEV}
+
+load: serial
+	../../bin/pic32prog -S -d ${SERIAL_DEV} firmware.hex
+
+bare_apps:
+	mkdir -p ../../bare-metal-apps/build/bin
+	for i in $(APP_LIST) ; do \
+		$(MAKE) -C ../../bare-metal-apps/ clean; \
+		$(MAKE) -C ../../bare-metal-apps/ APP_NAME=$$i \
+	;done
+
+generate_firmware:
+	../../scripts/genhex.sh $(APP_LIST)
+
+config_vms:
+	$(TOPDIR)/scripts/config.sh $(APP_LIST)
+	
+clean:
+	rm -f $(APP).* 
+	rm -f *.o
+	rm -f firmware.hex
+	$(MAKE) -C ../../bare-metal-apps/ clean
+	rm -rf ../../bare-metal-apps/build

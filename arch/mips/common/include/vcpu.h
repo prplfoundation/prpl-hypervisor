@@ -21,7 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <scheduler.h>
 #include <vm.h>
-#include <irq.h>
+//#include <irq.h>
 
 #define NUM_ASIDS 64
 
@@ -183,7 +183,7 @@ typedef struct vcpu_t {
 typedef struct {
   //unsigned int id;
   unsigned int lastTime;
-  irq_handler_t irq_handlers[8];     
+//  irq_handler_t irq_handlers[8];     
   vcpu_t *curr_vcpu;
 } processor_t;
 

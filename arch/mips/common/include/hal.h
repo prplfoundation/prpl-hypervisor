@@ -18,6 +18,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _HAL_H_
 #define _HAL_H_
 
+#include <mips_cp0.h>
+
+#ifdef ETHERNET_SUPPORT
+#include <ethernet.h>
+#endif 
+
 /* COP0 register definition */
 #define CPO_CONFIG		0
 #define CPO_CONFIG1		0x01

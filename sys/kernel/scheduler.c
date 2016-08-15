@@ -18,7 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <scheduler.h>
 #include <vcpu.h>
 #include <libc.h>
-#include <irq.h>
+//#include <irq.h>
 #include <globals.h>
 #include <config.h>
 

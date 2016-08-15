@@ -1,4 +1,4 @@
-/*
+
 Copyright (c) 2016, prpl Foundation
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
@@ -13,11 +13,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-*/
 
-#ifndef IRQ_H
-#define IRQ_H
 
-typedef void (*irq_handler_t)();
-
-#endif
+See doc/howto.html for deployment instructions. 

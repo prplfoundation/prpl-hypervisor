@@ -60,8 +60,6 @@ void hardware_config(){
 
 
 
-uint32_t tick_count = 0;
-
 void configure_timer(){
     unsigned int temp_CP0;
 
@@ -113,63 +111,6 @@ void configure_timer(){
 }
 
 
-uint32_t timer_int_handler(){
-
-    uint32_t ret = SUCEEDED;
-    
-    if (IFS(0) & 0x1000000){
-        //curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
-        IFSCLR(0) = 0x1000000;
-        //putchar('*');
-    }
-    if (IFS(0) & 0x00004000){
-        IFSCLR(0) = 0x00004000;
-        /* insert timer interrupt on guest*/
-        curr_vcpu->guestclt2 = curr_vcpu->guestclt2 | (3 << GUESTCLT2_GRIPL_SHIFT);
-        if ((tick_count++)%5==0){
-            ret = RESCHEDULE;
-        }
-#ifdef ETHERNET_SUPPORT        
-        if(tick_count%500==0){
-           en_watchdog();
-        }
-#endif        
-    }
-    return ret;
-}
-
-
-void register_timer(uint32_t interval){
-    curr_vcpu->timer_interval = interval;
-    start_vm_timer(interval);
-    
-}
-
-
-void start_vm_timer(uint32_t interval){
-    T4CON = 0;
-    TMR4 = 0x0;
-    TMR5 = 0;
-
-    PR4 = interval & 0xffff;
-    PR5 = interval >> 16;
-                   
-    OFF(24) = 0x200;
-        
-    IPCSET(4) = 0x1C000000;
-    IFSCLR(0) = 0x1000000;
-    IECSET(0) = 0x80000;
-    IPCSET(6) = 0xe;
-    IFSCLR(0) = 0x80000;
-    IECSET(0) = 0x1000000;      
-    T4CON |= 0x8008;
-}
-
-void stop_vm_timer(){
-    T4CON = 0;
-    IFSCLR(0) = 0x1000000;
-}
-
 /* Performs software reset to the board. */
 void SoftReset(){
     
@@ -190,3 +131,11 @@ void SoftReset(){
     while(1) ;  
 }
 
+/* Critical error ocurred. Waiting for reset */
+void WaitforReset(){
+    while(1){
+        if (!(PORTB & (1 << 12))) {
+            SoftReset();
+        }
+    }
+}

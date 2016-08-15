@@ -21,12 +21,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <tlb.h>
 
-#ifdef ETHERNET_SUPPORT
-#include "hal/microchip/ethernet.h"
-uint8_t tx_buf[MTU];
-uint8_t rx_buf[MTU];
-#endif
-
 /**Handle hypercalls */
 int32_t HypercallHandler(){
 		
@@ -207,7 +201,7 @@ int32_t HypercallHandler(){
 		}
                 case HCALL_START_TIMER_GUEST:{
                     uint32_t interval  = MoveFromPreviousGuestGPR(REG_A0);
-                    register_timer(interval);
+                    /*register_timer(interval);*/
                     break;
                 }
                 /* Check if the guest is UP */
@@ -247,16 +241,20 @@ int32_t HypercallHandler(){
 		case ETH_GET_MAC:{
 
 			uint8_t * mac = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), curr_vm->base_addr, sizeof(uint8_t) * 6, 0xf);
+#ifdef ETHERNET_SUPPORT             
             memcpy(mac, eth_port.macaddr, sizeof(uint8_t) * 6);
+#else            
+            mac[0] = *((uint8_t *) 0xBF882320);
+            mac[1] = *((uint8_t *) 0xBF882321);
+            mac[2] = *((uint8_t *) 0xBF882310);
+            mac[3] = *((uint8_t *) 0xBF882311);
+            mac[4] = *((uint8_t *) 0xBF882300);
+            mac[5] = *((uint8_t *) 0xBF882301);
+#endif            
 
             break;
 		}
 		
-                case HCALL_READ_DEVCFG3:{
-                    MoveToPreviousGuestGPR(REG_V0, _DEVCFG3);
-                    break;
-                }
-
 #ifdef ETHERNET_SUPPORT         	
         case ETH_RECV_FRAME:{
             

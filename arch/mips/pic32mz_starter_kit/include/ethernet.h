@@ -1,4 +1,18 @@
 /*
+ * Copyright (c) 2016, prpl Foundation
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
+ * fee is hereby granted, provided that the above copyright notice and this permission notice appear 
+ * in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE 
+ * FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * 
+ * This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/Brazil.
+ * 
  * Network driver for the PIC32MZ internal Ethernet controller. The following
  * PHY variants are supported:
  *      SMSC LAN8720A
@@ -13,7 +27,7 @@
 
 #include <types.h>
 #include <globals.h>
-#include "pic32mz.h"
+#include <pic32mz.h>
 
 #define delay_ms(x) udelay(x*1000)
 #define min(a,b)        ((a)<(b)?(a):(b))
@@ -146,4 +160,10 @@ void en_watchdog(void);
 void en_ll_output(uint8_t *frame, uint16_t size);
 int32_t en_ll_input(uint8_t *frame);
 int32_t en_init();
+
+/* Send/receive buffers unsed in the hypercalls */
+uint8_t tx_buf[MTU];
+uint8_t rx_buf[MTU];
+
+
 #endif 

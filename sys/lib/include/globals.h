@@ -18,7 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <vm.h>
 #include <vcpu.h>
-#include "../hal/microchip/pic32mz.h"
+//#include <pic32mz.h>
 
 #define CRITICAL(x) printf(x); while(1){};
 

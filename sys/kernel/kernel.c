@@ -28,26 +28,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <hypercall.h>
 #include <common.h>
+#include <mips_cp0.h>
 
 
 static uint32_t counttimerInt = 0;
 static uint32_t guestexit = 0;
 
-/** Hardware interrupt handle */
-uint32_t InterruptHandler(){
-	uint32_t ret;
-	
-        /*TODO: Only timer interrupt supported. This must be rewrite due to EIC support. */
-    
-        ret = timer_int_handler();
-        
-        /* Check for sw1 button pressed*/
-        if (!(PORTB & (1 << 12))) {
-            SoftReset();
-        }
-
-	return ret;
-}
 
 /** Handle guest exceptions */
 uint32_t GuestExitException(){
