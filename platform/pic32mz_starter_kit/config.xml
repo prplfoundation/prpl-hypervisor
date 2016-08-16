@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<hypervisor>
+    <system>
+        <debug>DEBUG WARNINGS INFOS CRITICALS VERBOSE</debug>
+        <cpu>M5150</cpu>
+        <platform>
+            <platform_string>Microchip Starter Kit</platform_string>
+            <system_clock>200000000</system_clock>
+            <uart_speed>115200</uart_speed>
+        </platform>    
+        <scheduler_quantum_ms>1</scheduler_quantum_ms>
+        <heap_size_bytes>0x8000 </heap_size_bytes>
+        <heap_address>0x8000 </heap_address>
+    </system>
+    <virtual_machines>
+        <vm_data>
+            <os_type>BAREOS</os_type>
+            <RAM_size_bytes>131072</RAM_size_bytes>
+            <flash_size_bytes>131072</flash_size_bytes>
+            <vm_entry_point>0x9d001000</vm_entry_point>
+            <memory_maps>
+                <base_addr size="1MB">0xbf800000</base_addr>
+            </memory_maps>
+        </vm_data>
+    </virtual_machines>
+</hypervisor>
