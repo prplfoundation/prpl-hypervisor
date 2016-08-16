@@ -97,10 +97,9 @@ load: serial
 	../../bin/pic32prog -S -d ${SERIAL_DEV} firmware.hex
 
 bare_apps:
-	mkdir -p ../../bare-metal-apps/build/bin
 	for i in $(APP_LIST) ; do \
-		$(MAKE) -C ../../bare-metal-apps/ clean; \
-		$(MAKE) -C ../../bare-metal-apps/ APP_NAME=$$i \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) clean; \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) \
 	;done
 
 generate_firmware:
@@ -113,5 +112,7 @@ clean:
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
-	$(MAKE) -C ../../bare-metal-apps/ clean
-	rm -rf ../../bare-metal-apps/build
+	for i in $(APP_LIST) ; do \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) clean \
+	;done
+

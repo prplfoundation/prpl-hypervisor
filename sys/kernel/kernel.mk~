@@ -1,8 +1,0 @@
-
-kernel:
-	$(CC) $(CFLAGS) $(INC_DIRS) -o $(BUILDDIR) \
-        	$(TOPDIR)sys/kernel/dispatcher.c \
-	        $(TOPDIR)sys/kernel/hypercall.c \
-	       	$(TOPDIR)sys/kernel/kernel.c \
-	        $(TOPDIR)sys/kernel/scheduler.c \
-	        $(TOPDIR)sys/kernel/vm.c 

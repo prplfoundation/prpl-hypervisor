@@ -15,28 +15,48 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+#ifndef ETH_H
+#define ETH_H
+
+#ifdef PICOTCP
 
 #include <pic32mz.h>
 #include <libc.h>
+#include <network.h>
+
+#include "pico_defines.h"
+#include "pico_stack.h"
 
 
-volatile int32_t t2 = 0;
 
-void irq_timer(){
- t2++;     
-}
+/* Ethernet Send/Receive */
+
+int32_t hyper_eth_send(void *buf, int len);
+int32_t hyper_eth_poll(void *buf, int len);
+int32_t eth_link_state(struct pico_device *dev);
+void eth_get_mac(uint8_t *mac);
 
 
-int main() {
-    /* Select output serial 2 = UART2, 6 = UART6 */
-    serial_select(UART2);
+#define ETH_MESSAGE_SZ 1536
+#define ETH_MESSAGELIST_SZ 5
+
+struct eth_message_t{
+        uint32_t size; /* size of each message in message_list */
+        uint8_t packet[ETH_MESSAGE_SZ];
+};
+
+
+struct eth_message_list_t{
+        uint32_t in;
+        uint32_t out;
+        volatile uint32_t num_packets;
+        struct eth_message_t ringbuf[ETH_MESSAGELIST_SZ];
+};
+
+
+int eth_send(struct pico_device *dev, void *buf, int len);
+int eth_poll(struct pico_device *dev, int loop_score);
     
-    while (1){
-        printf("\nInt count: %d", t2);
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+#endif
+#endif
 

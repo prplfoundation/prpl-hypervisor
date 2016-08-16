@@ -1,6 +1,0 @@
-
-common:
-	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        $(CURDIR)/lib/libc.c \
-	        linkedlist.c \
-	        malloc.c
