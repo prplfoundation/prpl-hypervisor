@@ -35,11 +35,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define KEYSIZE 16
 
-static char msg1[] = "\nKeyCode: ";
-static char msg2[] = "\nEnter KeyCode + Arm Command (1 or 2): ";
 static char msg3[] = "\nInvalid Key ";
 static char msg4[] = "\nValid key! Command relayed to robotic arm controller.";
-static char tx_buf[ETH_RX_BUF_SIZE] = {0};
 static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 static struct pico_socket *s = NULL;
 static struct pico_ip4 my_eth_addr, netmask;
@@ -140,16 +137,12 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 
         if (IID_PRPL_SUCCESS != retVal) {
             printf(msg3);
-            pico_socket_write(s_client, msg3, strlen(msg3));
-            pico_socket_write(s_client, msg2, strlen(msg2));
         } else {
             printf(msg4);
             if (rx_buf[r-3]=='1' || rx_buf[r-3]=='2'){
                 printf("\nVM#1: Command %c.", rx_buf[r-3]);
                 SendMessage(3, &rx_buf[r-3], 1);
             }
-            pico_socket_write(s_client, msg4, strlen(msg4));
-            pico_socket_write(s_client, msg2, strlen(msg2));
         }
 
     }
@@ -184,12 +177,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 
                 }
 
-            // ---------------------------------------------------------------------------------------------------
-
-                ret = pico_socket_write(s_client, msg1, strlen(msg1));
-                if (ret < 0)
-                    printf("\nVM#1: Failed to send wrapped key");
-        
+                // ---------------------------------------------------------------------------------------------------
                 ret = pico_socket_write(s_client, keyAscii, j);
                 if (ret < 0)
                     printf("\nVM#1: Failed to send wrapped key");
@@ -198,9 +186,6 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
             }
             send_key_once = 1;
         }
-        ret = pico_socket_write(s_client, msg2, strlen(msg2));
-        if (ret < 0)
-            printf("VM#1: Failed to send wrapped key\n");
     }
 
     /* process error event, socket error occured */
