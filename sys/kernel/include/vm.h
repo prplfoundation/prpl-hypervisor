@@ -22,6 +22,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <linkedlist.h>
 #include <tlb.h>
 
+/* Number of colums for VM's configuratio */
+#define VMCONF_NUMCOLUNS  6
+
+
 /* OS types */
 #define GENERIC		0
 #define BAREOS		1

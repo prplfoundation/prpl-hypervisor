@@ -10,7 +10,7 @@
         </platform>    
         <scheduler_quantum_ms>1</scheduler_quantum_ms>
         <heap_size_bytes>0x8000 </heap_size_bytes>
-        <heap_address>0x8000 </heap_address>
+        <heap_address>0x80002000 </heap_address>
     </system>
     <virtual_machines>
         <vm_data>
@@ -19,7 +19,7 @@
             <flash_size_bytes>131072</flash_size_bytes>
             <vm_entry_point>0x9d001000</vm_entry_point>
             <memory_maps>
-                <base_addr size="1MB">0xbf800000</base_addr>
+                <base_addr size="1048576">0xbf800000</base_addr>
             </memory_maps>
         </vm_data>
     </virtual_machines>

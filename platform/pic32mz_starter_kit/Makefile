@@ -16,6 +16,9 @@
 #List of bare-metal applications 
 APP_LIST = ping pong
 
+#Input XML file for VMs configuration
+CONF_XML = scripts/config-2VM.xml
+
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
@@ -60,7 +63,8 @@ LDFLAGS = -EL
 INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz_starter_kit/include \
            -I$(TOPDIR)arch/mips/common/include \
            -I$(TOPDIR)sys/lib/include \
-           -I$(TOPDIR)sys/kernel/include
+           -I$(TOPDIR)sys/kernel/include \
+           -I$(TOPDIR)platform/pic32mz_starter_kit/include
 
 BUILDDIR=build/hypervisor
  
@@ -106,7 +110,8 @@ generate_firmware:
 	../../scripts/genhex.sh $(APP_LIST)
 
 config_vms:
-	$(TOPDIR)/scripts/config.sh $(APP_LIST)
+	python scripts/genconf.py $(CONF_XML)
+
 	
 clean:
 	rm -f $(APP).* 

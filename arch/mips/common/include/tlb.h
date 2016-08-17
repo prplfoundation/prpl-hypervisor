@@ -20,6 +20,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include "types.h"
 
+#define STATICTLB
+
 /* EntryLo bit flags */
 #define ENTRYLO_RI		(1<<31)
 #define ENTRYLO_XI		(1<<30)
