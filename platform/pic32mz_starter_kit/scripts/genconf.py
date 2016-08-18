@@ -134,14 +134,15 @@ def process_mem_map(vm_number, mem_size, mem_base, virtual_base, file):
     
         
 #Configure VMs. This procedure is called for each vm_data entry.          
-def conf_vms(root,file):
+def conf_vms(root, file, vms_info_file):
     
     vm_number = 1
     vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS
     vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS
     total_tlb_entries = 0
     
-    vms_info = ''
+    app_list = ''
+    vms_info = 'VM# \tflash_size \tram_size\n'
     
     file.write('/* VMs mapping */\n')
     conf_file.write('#define VMCONF {\\\n')
@@ -150,6 +151,7 @@ def conf_vms(root,file):
         os_type = None
         RAM_size_bytes = None
         flash_size_bytes = None
+        app_name = None
         num_tlb_entries = 2 #RAM and flash mappings are the minimal VM map requirement. They requires two TLB entries. 
         
         #Process the general VM data
@@ -168,7 +170,9 @@ def conf_vms(root,file):
 
             if vm_data.tag == 'memory_maps':
                num_tlb_entries += len(vm_data)
-                
+
+            if vm_data.tag == 'app_name':
+               app_name = vm_data.text
 
         if flash_size_bytes is None:
             print 'flash_size_bytes not defined.'
@@ -220,7 +224,8 @@ def conf_vms(root,file):
         #Increment the position of the next VM on RAM.
         vm_ram_inter_addr += RAM_size_bytes
         
-        vms_info += 'VM'+ str(vm_number)+ ' \t' + str(flash_size_bytes) + ' \t' + str(RAM_size_bytes) + '\n'
+        vms_info += app_name + ' \t' + str(flash_size_bytes) + ' \t' + str(RAM_size_bytes) + '\n'
+        app_list += app_name + ' '
         
         for m in mmap:
             process_mem_map(vm_number, int(m['size']), int(m['base_addr']), int(m['base_addr']), file)
@@ -237,7 +242,9 @@ def conf_vms(root,file):
     
     file.write('#define NVMACHINES %d\n' % (vm_number-1))
     
-    return vms_info
+    vms_info_file.write(vms_info+'\n')
+    
+    return app_list
 
 #Start the xml processament.                
 
@@ -249,19 +256,20 @@ tree = ET.parse(sys.argv[1])
 root = tree.getroot()
 
 conf_file = open("include/config.h", "w")
+vms_info_file = open("include/vms.info", "w")
+
 initial_msg(conf_file, sys.argv[1])
 
 for child in root:
     if child.tag == 'system':
         process_system(child, conf_file)
     if child.tag == 'virtual_machines':
-        vms_info = conf_vms(child, conf_file)
+        app_list = conf_vms(child, conf_file, vms_info_file)
         
         
 conf_file.write('\n#define VMCONF_RT {0}\n')
-
-conf_file.write('\n/* VMs info \n')
-conf_file.write('VM# \tflash_size \tram_size\n')                    
-conf_file.write('%s' % vms_info)                    
-conf_file.write('*/')                    
+                
 conf_file.close()
+vms_info_file.close()
+
+print app_list

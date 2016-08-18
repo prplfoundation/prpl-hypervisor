@@ -13,11 +13,8 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-#List of bare-metal applications 
-APP_LIST = blink
-
 #Input XML file for VMs configuration
-CONF_XML = scripts/config-1VM.xml
+CONF_XML = samples_xml/config-2VM.xml
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -29,6 +26,7 @@ ETHERNET = -DETHERNET_SUPPORT
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
 # OR PORTING TO A NEW PLATFORM.
 ########################################################################################################
+APP_LIST = ""
 
 # Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
 BAUDRATE=115200
@@ -101,23 +99,22 @@ load: serial
 
 bare_apps:
 	for i in $(APP_LIST) ; do \
-        $(eval FSIZE:=$(shell awk '/VM1/{print $$2}' include/config.h)) \
-        $(eval RSIZE:=$(shell awk '/VM1/{print $$3}' include/config.h)) \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=$(FSIZE) RAM_SIZE=$(RSIZE) \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk '/'$$i'/{print $$2}' include/vms.info` RAM_SIZE=`awk '/'$$i'/{print $$3}' include/vms.info` \
 	;done
 
 generate_firmware:
 	../../scripts/genhex.sh $(APP_LIST)
 
 config_vms:
-	python scripts/genconf.py $(CONF_XML)
+	$(eval APP_LIST:=$(shell python scripts/genconf.py $(CONF_XML)))
 
 	
-clean:
+clean: config_vms
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
+	rm -f include/vms.info
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean \
 	;done
