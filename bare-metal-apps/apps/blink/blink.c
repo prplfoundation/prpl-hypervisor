@@ -15,7 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+/* Simple UART and Blink Bare-metal application sample */
 
 #include <pic32mz.h>
 #include <libc.h>
@@ -23,14 +23,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 volatile int32_t t2 = 0;
 
+
 void irq_timer(){
     t2++;
 }
 
 int main() {
-
+    /* Pin RH0 as ouput (LED 1)*/
+    TRISHCLR = 1;
     while (1){
-        // printf("\nblink: %d", t2);
+        printf("\nTimer tick count: %d", t2);
+        /* Blink Led */
+        LATHINV = 1;
+        /* 1 second delay */
         udelay(1000000);
    }
     

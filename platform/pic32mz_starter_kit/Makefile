@@ -14,17 +14,16 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #List of bare-metal applications 
-APP_LIST = ping pong
+APP_LIST = blink
 
 #Input XML file for VMs configuration
-CONF_XML = scripts/config-2VM.xml
+CONF_XML = scripts/config-1VM.xml
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
 # Code generation options - Comment undesired features.
 ETHERNET = -DETHERNET_SUPPORT 
-
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -102,8 +101,10 @@ load: serial
 
 bare_apps:
 	for i in $(APP_LIST) ; do \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) clean; \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) \
+        $(eval FSIZE:=$(shell awk '/VM1/{print $$2}' include/config.h)) \
+        $(eval RSIZE:=$(shell awk '/VM1/{print $$3}' include/config.h)) \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean; \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=$(FSIZE) RAM_SIZE=$(RSIZE) \
 	;done
 
 generate_firmware:
@@ -118,6 +119,6 @@ clean:
 	rm -f *.o
 	rm -f firmware.hex
 	for i in $(APP_LIST) ; do \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) clean \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean \
 	;done
 

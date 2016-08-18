@@ -141,6 +141,8 @@ def conf_vms(root,file):
     vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS
     total_tlb_entries = 0
     
+    vms_info = ''
+    
     file.write('/* VMs mapping */\n')
     conf_file.write('#define VMCONF {\\\n')
     for child in root:
@@ -218,6 +220,8 @@ def conf_vms(root,file):
         #Increment the position of the next VM on RAM.
         vm_ram_inter_addr += RAM_size_bytes
         
+        vms_info += 'VM'+ str(vm_number)+ ' \t' + str(flash_size_bytes) + ' \t' + str(RAM_size_bytes) + '\n'
+        
         for m in mmap:
             process_mem_map(vm_number, int(m['size']), int(m['base_addr']), int(m['base_addr']), file)
             
@@ -232,6 +236,8 @@ def conf_vms(root,file):
     file.write('\n')
     
     file.write('#define NVMACHINES %d\n' % (vm_number-1))
+    
+    return vms_info
 
 #Start the xml processament.                
 
@@ -249,8 +255,13 @@ for child in root:
     if child.tag == 'system':
         process_system(child, conf_file)
     if child.tag == 'virtual_machines':
-        conf_vms(child, conf_file)
+        vms_info = conf_vms(child, conf_file)
         
         
-conf_file.write('\n#define VMCONF_RT {0}\n')        
+conf_file.write('\n#define VMCONF_RT {0}\n')
+
+conf_file.write('\n/* VMs info \n')
+conf_file.write('VM# \tflash_size \tram_size\n')                    
+conf_file.write('%s' % vms_info)                    
+conf_file.write('*/')                    
 conf_file.close()

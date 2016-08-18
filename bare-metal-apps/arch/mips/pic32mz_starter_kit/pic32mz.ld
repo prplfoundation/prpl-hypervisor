@@ -3,16 +3,14 @@ ENTRY(_entry)
 
 MEMORY 
 {
-flash		(rx)   : ORIGIN = 0x9d000000, LENGTH = 128K	/* Flash area*/
-ram		(rw!x) : ORIGIN = 0x80000000, LENGTH = 127K	/* RAM area. */
-puf		(rw!x) : ORIGIN = 0x8001FC00, LENGTH = 1K	/* PUF area. */
+    flash	(rx)   : ORIGIN = 0x9d000000, LENGTH = FLASH_SIZE	/* Flash area*/
+    ram		(rw!x) : ORIGIN = 0x80000000, LENGTH = RAM_SIZE	/* RAM area. */
 }
 
 /* define a global symbol _stack  */
 
 _stack = ORIGIN(ram) + LENGTH(ram);
-
-_puf_address = ORIGIN(puf);
+_stack_size = STACK_SIZE;
 
 /* now define the output sections  */
 
@@ -24,6 +22,7 @@ SECTIONS
 		. = 0x200;
 		*(.vector0)
 		. = 0x1000;
+        *(.e_entry)
 		_text = .;
 		*(.text)
 	        *(.text.*)
@@ -70,4 +69,8 @@ SECTIONS
 
 }
 	_end = .;
+    . = ALIGN(4); 
+    _heap_start = . ;
+    _heap_size = LENGTH(ram) - _heap_start - ORIGIN(ram) - 4 - _stack_size;
+
 

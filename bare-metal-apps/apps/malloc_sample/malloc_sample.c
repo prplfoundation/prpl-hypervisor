@@ -15,12 +15,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART Bare-metal application sample */
+/* Simple malloc tester application sample */
 
 #include <pic32mz.h>
 #include <libc.h>
 #include <malloc.h>
 
+extern _heap_size;
+extern _heap_start;
 
 volatile int32_t t2 = 0;
 
@@ -34,6 +36,7 @@ int main() {
     uint8_t* buffer2;
     uint32_t  i;
     int32_t  ret;
+    printf("Heap size %d bytes at 0x%x.\n", &_heap_size, &_heap_start);
 
     while (1){
         buffer = (uint8_t*)malloc(2048);

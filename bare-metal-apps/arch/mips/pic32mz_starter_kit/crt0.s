@@ -90,10 +90,11 @@ _isr:
 isr_return:
 	mtc0  $k0, $14	
 	eret
-
+	
+	
 	.set at
-	.text
 	.align 2
+	.section .e_entry
 	.global _entry
 	.ent	_entry
 _entry:
@@ -138,7 +139,7 @@ $L1:
 	nop
 .end _entry
 
-
+        .text
         .global hypcall_enable_timer
         .ent    hypcall_enable_timer
 hypcall_enable_timer:
