@@ -466,7 +466,7 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 			}
 			if(*format == 's'){
 				int8_t *s = (int8_t *)va_arg(args, int32_t);
-				pc += prints(out, s?s:"(null)", width, pad);
+                pc += prints(out, s?s:(int8_t *)"(null)", width, pad);
 				continue;
 			}
 			if(*format == 'd'){
