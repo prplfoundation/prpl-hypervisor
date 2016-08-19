@@ -145,7 +145,7 @@ def conf_vms(root, file, vms_info_file):
     vms_info = 'VM# \tflash_size \tram_size\n'
     
     file.write('/* VMs mapping */\n')
-    conf_file.write('#define VMCONF {\\\n')
+    file.write('#define VMCONF {\\\n')
     for child in root:
         vm_entry_point = None
         os_type = None
@@ -236,7 +236,7 @@ def conf_vms(root, file, vms_info_file):
             print "Your are using too much TLB entries."
             sys.exit(1)
     
-    conf_file.write('\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n')
+    file.write('\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n')
     
     file.write('\n')
     
