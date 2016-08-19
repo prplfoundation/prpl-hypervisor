@@ -19,5 +19,6 @@ pic32mz:
 		$(TOPDIR)arch/mips/pic32mz_starter_kit/flash.c \
 		$(TOPDIR)arch/mips/pic32mz_starter_kit/interrupts.c \
 		$(TOPDIR)arch/mips/pic32mz_starter_kit/uart.c \
+		$(TOPDIR)arch/mips/pic32mz_starter_kit/usb.c \
 		$(TOPDIR)arch/mips/pic32mz_starter_kit/boot.S
 

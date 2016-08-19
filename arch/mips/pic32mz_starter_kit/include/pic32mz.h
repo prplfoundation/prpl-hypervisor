@@ -2379,5 +2379,357 @@ typedef union {
 } IFS4bits_t;
 #define IFS4bits (*((volatile IFS4bits_t *) 0xbf810080))
 
+typedef union {
+    struct {
+        unsigned FUNC:7;
+        unsigned :1;
+        unsigned SUSPEN:1;
+        unsigned SUSPMODE:1;
+        unsigned RESUME:1;
+        unsigned RESET:1;
+        unsigned HSMODE:1;
+        unsigned HSEN:1;
+        unsigned SOFTCONN:1;
+        unsigned ISOUPD:1;
+        unsigned EP0IF:1;
+        unsigned EP1TXIF:1;
+        unsigned EP2TXIF:1;
+        unsigned EP3TXIF:1;
+        unsigned EP4TXIF:1;
+        unsigned EP5TXIF:1;
+        unsigned EP6TXIF:1;
+        unsigned EP7TXIF:1;
+    };
+    struct {
+        unsigned w:32;
+    };
+} USBCSR0bits_t;
+#define USBCSR0bits (*((volatile USBCSR0bits_t *) 0xbf8e3000))
+
+typedef struct {
+    unsigned U1MD:1;
+    unsigned U2MD:1;
+    unsigned U3MD:1;
+    unsigned U4MD:1;
+    unsigned U5MD:1;
+    unsigned U6MD:1;
+    unsigned :2;
+    unsigned SPI1MD:1;
+    unsigned SPI2MD:1;
+    unsigned SPI3MD:1;
+    unsigned SPI4MD:1;
+    unsigned SPI5MD:1;
+    unsigned SPI6MD:1;
+    unsigned :2;
+    unsigned I2C1MD:1;
+    unsigned I2C2MD:1;
+    unsigned I2C3MD:1;
+    unsigned I2C4MD:1;
+    unsigned I2C5MD:1;
+    unsigned :3;
+    unsigned USBMD:1;
+    unsigned :3;
+    unsigned CAN1MD:1;
+    unsigned CAN2MD:1;
+} PMD5bits_t;
+#define PMD5bits (*((volatile PMD5bits_t *) 0xbf800080))
+
+typedef union {
+    struct {
+        unsigned SESSION:1;
+        unsigned HOSTREQ:1;
+        unsigned HOSTMODE:1;
+        unsigned VBUS:2;
+        unsigned LSDEV:1;
+        unsigned FSDEV:1;
+        unsigned BDEV:1;
+        unsigned RXEDMA:1;
+        unsigned TXEDMA:1;
+        unsigned :6;
+        unsigned TXFIFOSZ:4;
+        unsigned TXDPB:1;
+        unsigned :3;
+        unsigned RXFIFOSZ:4;
+        unsigned RXDPB:1;
+    };
+    struct {
+        unsigned w:32;
+    };
+} USBOTGbits_t;
+#define USBOTGbits (*((volatile USBOTGbits_t *) 0xbf8e3060))
+
+typedef union {
+    struct {
+        unsigned USBWKUPEN:1;
+        unsigned USBRIE:1;
+        unsigned USBIE:1;
+        unsigned SENDMONEN:1;
+        unsigned BSVALMONEN:1;
+        unsigned ASVALMONEN:1;
+        unsigned VBUSMONEN:1;
+        unsigned PHYIDEN:1;
+        unsigned USBIDVAL:1;
+        unsigned USBIDOVEN:1;
+        unsigned :14;
+        unsigned USBWKUP:1;
+        unsigned USBRF:1;
+        unsigned USBIF:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBCRCONbits_t;
+#define USBCRCONbits (*((volatile USBCRCONbits_t *) 0xbf884000))
+
+typedef union {
+    struct{
+        unsigned :1;
+        unsigned EP1RXIE:1;
+        unsigned EP2RXIE:1;
+        unsigned EP3RXIE:1;
+        unsigned EP4RXIE:1;
+        unsigned EP5RXIE:1;
+        unsigned EP6RXIE:1;
+        unsigned EP7RXIE:1;
+        unsigned :8;
+        unsigned SUSPIF:1;
+        unsigned RESUMEIF:1;
+        unsigned RESETIF:1;
+        unsigned SOFIF:1;
+        unsigned CONNIF:1;
+        unsigned DISCONIF:1;
+        unsigned SESSRQIF:1;
+        unsigned VBUSERRIF:1;
+        unsigned SUSPIE:1;
+        unsigned RESUMEIE:1;
+        unsigned RESETIE:1;
+        unsigned SOFIE:1;
+        unsigned CONNIE:1;
+        unsigned DISCONIE:1;
+        unsigned SESSRQIE:1;
+        unsigned VBUSERRIE:1;
+    };
+    struct {
+        unsigned RCVIE:8;
+        unsigned :8;
+        unsigned INTERRUPTS:8;
+        unsigned GENIE:8;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBCSR2bits_t;
+#define USBCSR2bits (*((volatile USBCSR2bits_t *) 0xbf8e3008))
+
+typedef union {
+    struct{
+        unsigned RFRMNUM:11;
+        unsigned :5;
+        unsigned ENDPOINT:4;
+        unsigned :4;
+        unsigned NAK:1;
+        unsigned TESTJ:1;
+        unsigned TESTK:1;
+        unsigned PACKET:1;
+        unsigned FORCEHS:1;
+        unsigned FORCEFS:1;
+        unsigned FIFOACC:1;
+        unsigned FORCEHST:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBCSR3bits_t;
+#define USBCSR3bits (*((volatile USBCSR3bits_t *) 0xbf8e300c))
+
+typedef union {
+    struct {
+        unsigned TXMAXP:11;
+        unsigned MULT:5;
+        unsigned TXPKTRDY:1;
+        unsigned FIFONE:1;
+        unsigned ENERROR:1;
+        unsigned FLUSH:1;
+        unsigned SETUPPKT:1;
+        unsigned RXSTALL:1;
+        unsigned CLRDT:1;
+        unsigned NAKTMOUT:1;
+        unsigned DATATGGL:1;
+        unsigned DTWREN:1;
+        unsigned DMAREQMD:1;
+        unsigned FRCDATTG:1;
+        unsigned DMAREQEN:1;
+        unsigned MODE:1;
+        unsigned :1;
+        unsigned AUTOSET:1;
+    };
+    struct {
+        unsigned :18;
+        unsigned UNDERRUN:1;
+        unsigned :1;
+        unsigned SENDSTALL:1;
+        unsigned SENTSTALL:1;
+        unsigned :1;
+        unsigned INCOMPTX:1;
+        unsigned :6;
+        unsigned ISO:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBIENCSR0bits_t;
+#define USBIENCSR0bits (*((volatile USBIENCSR0bits_t *) 0xbf8e300c))
+
+typedef union {
+    struct {
+        unsigned :16;
+        unsigned RXPKTRDY:1;
+        unsigned TXPKTRDY:1;
+        unsigned RXSTALL:1;
+        unsigned SETUPPKT:1;
+        unsigned ENERROR:1;
+        unsigned REQPKT:1;
+        unsigned STATPKT:1;
+        unsigned NAKTMOUT:1;
+        unsigned FLSHFIFO:1;
+        unsigned DATATGGL:1;
+        unsigned DTWREN:1;
+        unsigned DISPING:1;
+        unsigned :4;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBENCTRL0bits_t;
+#define USBENCTRL0bits (*((volatile USBENCTRL0bits_t *) 0xbf8e3010))
+
+
+typedef union {
+    struct {
+        unsigned RXMAXP:11;
+        unsigned MULT:5;
+        unsigned RXPKTRDY:1;
+        unsigned FIFOFULL:1;
+        unsigned ENERROR:1;
+        unsigned DERRNAKT:1;
+        unsigned FLUSH:1;
+        unsigned REQPKT:1;
+        unsigned RXSTALL:1;
+        unsigned CLRDT:1;
+        unsigned INCOMPRX:1;
+        unsigned DATATGGL:1;
+        unsigned DATATWEN:1;
+        unsigned DMAREQMD:1;
+        unsigned PIDERR:1;
+        unsigned DMAREQEN:1;
+        unsigned AUTORQ:1;
+        unsigned AUTOCLR:1;
+    };
+    struct {
+        unsigned :18;
+        unsigned OVERRUN:1;
+        unsigned DATAERR:1;
+        unsigned :1;
+        unsigned SENDSTALL:1;
+        unsigned SENTSTALL:1;
+        unsigned :5;
+        unsigned DISNYET:1;
+        unsigned :1;
+        unsigned ISO:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBIENCSR1bits_t;
+#define USBIENCSR1bits (*((volatile USBIENCSR1bits_t *) 0xbf8e3010))
+
+typedef union {
+    struct{
+        unsigned DATA:32;
+    };
+    struct {
+        unsigned byte:8;
+        unsigned :24;
+    };
+} USBFIFO0bits_t;
+#define USBFIFO0bits (*((volatile USBFIFO0bits_t *) 0xbf8e3020))
+
+typedef union {
+    struct {
+        unsigned RXCNT:7;
+        unsigned :15;
+        unsigned SPEED:2;
+        unsigned NAKLIM:5;
+        unsigned :3;
+    };
+    struct {
+        unsigned w:32;
+    };
+} USBIE0CSR2bits_t;
+#define USBIE0CSR2bits (*((volatile USBIE0CSR2bits_t *) 0xbf8e3018))
+
+typedef union {
+    struct {
+        unsigned :1;
+        unsigned EP1RXIF:1;
+        unsigned EP2RXIF:1;
+        unsigned EP3RXIF:1;
+        unsigned EP4RXIF:1;
+        unsigned EP5RXIF:1;
+        unsigned EP6RXIF:1;
+        unsigned EP7RXIF:1;
+        unsigned :8;
+        unsigned EP0IE:1;
+        unsigned EP1TXIE:1;
+        unsigned EP2TXIE:1;
+        unsigned EP3TXIE:1;
+        unsigned EP4TXIE:1;
+        unsigned EP5TXIE:1;
+        unsigned EP6TXIE:1;
+        unsigned EP7TXIE:1;
+    };
+    struct {
+      unsigned : 8;
+      unsigned : 8;
+      unsigned TRXIE : 8;
+    };
+    struct {
+        unsigned w:32;
+    };
+} USBCSR1bits_t;
+#define USBCSR1bits (*((volatile USBCSR1bits_t *) 0xbf8e3004))
+
+typedef union {
+    struct{
+        unsigned LNKSTATE:4;
+        unsigned HIRD:4;
+        unsigned RMTWAK:1;
+        unsigned :3;
+        unsigned ENDPOINT:4;
+        unsigned LPMXMT:1;
+        unsigned LPMRES:1;
+        unsigned LPMEN:2;
+        unsigned LPMNAK:1;
+        unsigned :3;
+        unsigned LPMTOIE:1;
+        unsigned LPMSTIE:1;
+        unsigned LPMNYIE:1;
+        unsigned LPMACKIE:1;
+        unsigned LPMRESIE:1;
+        unsigned LPMERRIE:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} USBLPMR1bits_t;
+#define USBLPMR1bits (*((volatile USBLPMR1bits_t *) 0xbf8e3360))
+
+typedef struct {
+    unsigned HSEOF:8;
+    unsigned FSEOF:8;
+    unsigned LSEOF:8;
+    unsigned SOFRST:8; /* NRST:1 NRSTX:1 */
+} USBEOFRSTbits_t;
+#define USBEOFRSTbits (*((volatile USBEOFRSTbits_t *) 0xbf8e307c))
 
 #endif 

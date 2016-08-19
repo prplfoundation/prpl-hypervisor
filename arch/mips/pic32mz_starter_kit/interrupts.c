@@ -43,8 +43,15 @@ uint32_t timer_int_handler(){
         if(tick_count%500==0){
             en_watchdog();
         }
-        #endif        
+        #endif    
+        
+#ifdef USB_SUPPORT        
+        if(tick_count%100==0){
+            usb_device_attach();
+        }
+#endif
     }
+    
     return ret;
 }
 
