@@ -28,29 +28,31 @@ enum USB_SPEED {
     HIGH_SPEED =1
 };
 
+#define USB_DEVCONN_INT (1<<4)
+#define USB_VBUSERR_INT (1<<7)
+#define USB_DEVDISCONN_INT (1<<5)
+
 #define ENABLE_POWER_SUPPLY TRISBCLR = (1<<5); LATBSET = (1<<5)
+#define DISABLE_POWER_SUPPLY LATBCLR = (1<<5)
+#define OVERCURRENT_PIN_ENABLE ANSELBCLR = (1<<2); CNPUBSET = (1<<2); TRISBSET = (1<<2)
+#define IS_OVERCURRENT (!(PORTB & (1<<2)))
+
 
 /* USB ID pull down */
-#define USBID_PIN_PULL_DOWN ANSELFCLR = (1<<3); TRISFSET = (1<<3); CNPDFSET = (1<<3)
-#define USBID_PIN_PULL_DOWN ANSELCCLR = (1<<3); TRISCSET = (1<<3); CNPDCSET = (1<<3) 
+#define USBID_PIN_PULL_DOWN_F CNCONFSET = (1<<15); ANSELFCLR = (1<<3); TRISFSET = (1<<3); CNPDFSET = (1<<3)
+#define USBID_PIN_PULL_DOWN_C CNCONCSET = (1<<15); ANSELCCLR = (1<<3); TRISCSET = (1<<3); CNPDCSET = (1<<3) 
 
 /* Clear USB interrupt */
 #define USB_INTERRUPT_CLEAR IFSCLR(4) = (1<<4)
 
 /* Enable USB interrupts */
-#define USB_INTERRUPT_ENABLE IECSET(4) = (1<<4)
+#define USB_INTERRUPT_ENABLE  OFF(132) = 0x200; IPCSET(33) = 0x1F; IECSET(4) = (1<<4)
 
 /* Clear USB DMA interrupt */
 #define USB_DMA_INTERRUPT_CLEAR IFSCLR(4) = (1<<5)
 
 /* Enable USB DMA interrupts */
-#define USB_DMA_INTERRUPT_ENABLE IECSET(4) = (1<<5)
-
-/* Configure USB interrupt vector */
-#define USB_INTERRUPT_VECTOR OFF(132) = 0x200
-
-/* Configure USB DMA interrupt vector */
-#define USB_DMA_INTERRUPT_VECTOR OFF(133) = 0x200
+#define USB_DMA_INTERRUPT_ENABLE OFF(133) = 0x200; IPCSET(33) = 0x1F00; IECSET(4) = (1<<5)
 
 /*Check for device mode */
 #define IS_B_MODE (USBOTGbits.BDEV & 0x80)

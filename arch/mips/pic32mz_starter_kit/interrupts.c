@@ -39,17 +39,6 @@ uint32_t timer_int_handler(){
         if ((tick_count++)%5==0){
             ret = RESCHEDULE;
         }
-        #ifdef ETHERNET_SUPPORT        
-        if(tick_count%500==0){
-            en_watchdog();
-        }
-        #endif    
-        
-#ifdef USB_SUPPORT        
-        if(tick_count%100==0){
-            usb_device_attach();
-        }
-#endif
     }
     
     return ret;
@@ -68,6 +57,25 @@ uint32_t InterruptHandler(){
     if (!(PORTB & (1 << 12))) {
         SoftReset();
     }
+    
+#ifdef ETHERNET_SUPPORT        
+        if(tick_count%500==0){
+            en_watchdog();
+        }
+#endif    
+        
+#ifdef USB_SUPPORT        
+        if(tick_count%100==0){
+            usb_device_attach();
+        }
+        
+        if(IFS(4) & (1<<4)){
+            /* clear global USB interrupt bit */
+            IFSCLR(4) = (1<<4);
+            usb_int_handler();
+        }
+#endif
+    
     
     return ret;
 }
