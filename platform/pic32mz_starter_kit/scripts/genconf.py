@@ -1,3 +1,7 @@
+
+#This script requires the instalation of Enum34 package on python 2.7
+#sudo pip install enum34
+
 import xml.etree.ElementTree as ET
 import sys
 import io

@@ -107,7 +107,10 @@ generate_firmware:
 	../../scripts/genhex.sh $(APP_LIST)
 
 config_vms:
-	$(eval APP_LIST:=$(shell python scripts/genconf.py $(CONF_XML)))
+	#execute first and exit in case of errors
+	python scripts/genconf.py $(CONF_XML) || (exit 1)
+	#execute and export to a makefile variable the ouput of the script
+	$(eval APP_LIST:=$(shell python scripts/genconf.py $(CONF_XML) || (exit 1)))
 
 	
 clean: config_vms
