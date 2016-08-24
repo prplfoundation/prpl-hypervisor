@@ -15,47 +15,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample */
+#ifndef __USB_MANAGER_H
+#define __USB_MANAGER_H
 
-#include <pic32mz.h>
-#include <libc.h>
-#include <usb_lib.h>
+/* Register a VM to receive/send data through USB Host */
+void usb_vm_register(uint32_t id);
 
+/* Insert an interrupt on a VM */
+void usb_vm_insert_interrupt(uint32_t interrupt);    
 
-volatile int32_t t2 = 0;
-
-
-void irq_timer(){
-    t2++;
-}
-
-struct descriptor_decoded descriptor;
-
-int main() {
-    
-    /* Pin RH0 as ouput (LED 1)*/
-    TRISHCLR = 1;
-    
-    uint32_t guest_id = hyp_get_guest_id();
-    
-    printf("\nVM#%d ", guest_id);
-    
-    /* register this VM for USB interrupts */
-    hyper_usb_vm_register(guest_id);
-    
-    printf("\nWaiting for device.");
-    
-    wait_device(&descriptor, sizeof(descriptor));
-    
-    printf("\nUSB Device connected: idVendor 0x%04x idProduct 0x%04x ", descriptor.idVendor, descriptor.idProduct);
-        
-    while (1){
-        /* Blink Led */
-        LATHINV = 1;
-        /* 1 second delay */
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+#endif
 

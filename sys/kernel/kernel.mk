@@ -19,4 +19,5 @@ kernel:
 	        $(TOPDIR)sys/kernel/hypercall.c \
 	       	$(TOPDIR)sys/kernel/kernel.c \
 	        $(TOPDIR)sys/kernel/scheduler.c \
-	        $(TOPDIR)sys/kernel/vm.c 
+	        $(TOPDIR)sys/kernel/vm.c \
+	        $(TOPDIR)sys/kernel/usb_manager.c 

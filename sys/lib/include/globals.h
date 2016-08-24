@@ -22,8 +22,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define CRITICAL(x) printf(x); while(1){};
 
-#define INFO "Info: "
-
 #ifdef WARNINGS
 #define Warning(A,...) printf("WARNING: "A"\n",##__VA_ARGS__);
 #else

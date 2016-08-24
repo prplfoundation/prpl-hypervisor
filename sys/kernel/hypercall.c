@@ -298,7 +298,25 @@ int32_t HypercallHandler(){
             break;
         }
 #endif 	
-
+#ifdef USB_SUPPORT
+        case USB_VM_REGISTER:{
+            uint32_t guest_id  = (uint32_t)MoveFromPreviousGuestGPR(REG_A0);
+            usb_vm_register(guest_id);
+            break;
+        }
+        case USB_VM_GET_DESCRIPTOR:{
+            uint8_t *buf  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
+            uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
+            
+            char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, curr_vm->base_addr, size, 0xf);
+                        
+            size = usb_get_descriptor(frame_ptr_mapped, size);
+            
+            MoveToPreviousGuestGPR(REG_V0, size);
+            
+            break;
+        }
+#endif            
         default:
             break;
     }

@@ -316,3 +316,24 @@ unlock:
         sw $zero, 0($a0)
         .set reorder                
 .end unlock
+
+        .global hyper_usb_vm_register
+        .ent hyper_usb_vm_register
+hyper_usb_vm_register:
+        .set noreorder 
+        hypcall 0x20
+        jr $ra
+        nop
+        .set reorder                
+.end hyper_usb_vm_register
+
+    .global hyper_usb_get_descr
+    .ent hyper_usb_get_descr
+hyper_usb_get_descr:
+    .set noreorder 
+    hypcall 0x21
+    jr $ra
+    nop
+    .set reorder                
+.end hyper_usb_get_descr
+

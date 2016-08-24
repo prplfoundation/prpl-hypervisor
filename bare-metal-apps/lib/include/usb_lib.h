@@ -15,47 +15,37 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample */
+#ifndef USB_LIB_H
+#define USB_LIB_H
 
 #include <pic32mz.h>
 #include <libc.h>
-#include <usb_lib.h>
 
 
-volatile int32_t t2 = 0;
+#define USB_VM_REGISTER 0x20
 
+struct descriptor_decoded{
+    uint8_t bLength;
+    uint8_t bDescriptorType;
+    uint16_t bcdUSB;
+    uint8_t bDeviceClass;
+    uint8_t bDeviceSubClass;
+    uint8_t bDeviceProtocol;
+    uint8_t bMaxPacketSize;
+    uint16_t idVendor;
+    uint16_t idProduct;
+    uint16_t bcdDevice;
+    uint8_t iManufacturer;
+    uint8_t iProduct;
+    uint8_t iSerialNumber;
+    uint8_t bNumConfigurations;
+};
 
-void irq_timer(){
-    t2++;
-}
+void hyper_usb_vm_register(uint32_t guest_id);
 
-struct descriptor_decoded descriptor;
+uint32_t hyper_usb_get_descr(uint8_t* descriptor, uint32_t size);
 
-int main() {
-    
-    /* Pin RH0 as ouput (LED 1)*/
-    TRISHCLR = 1;
-    
-    uint32_t guest_id = hyp_get_guest_id();
-    
-    printf("\nVM#%d ", guest_id);
-    
-    /* register this VM for USB interrupts */
-    hyper_usb_vm_register(guest_id);
-    
-    printf("\nWaiting for device.");
-    
-    wait_device(&descriptor, sizeof(descriptor));
-    
-    printf("\nUSB Device connected: idVendor 0x%04x idProduct 0x%04x ", descriptor.idVendor, descriptor.idProduct);
-        
-    while (1){
-        /* Blink Led */
-        LATHINV = 1;
-        /* 1 second delay */
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+uint32_t wait_device(struct descriptor_decoded *descriptor, uint32_t size);
+
+#endif
 

@@ -64,6 +64,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define DESCRIPTOR_SZ                               18
 
+/* Virtual USB interrupt sent to VMs*/
+#define USB_VIRTUAL_INTERRUPT 7
+
 
 enum USB_OPERATION_MODE {
     HOST_MODE,
@@ -92,6 +95,7 @@ enum USB_STATE{
 };
 
 enum USB_TRANSFER_STATE{
+    TRANSFER_INT_VM,
     TRANSFER_IDLE,
     TRANSFER_START,
     TRANSFER_SENDING,
@@ -206,6 +210,9 @@ struct descriptor_decoded{
 void update_state_machine();
 uint32_t calc_wait_time(uint32_t time, uint32_t ms_delay);
 void read_descriptor(struct descriptor_receive *descr);
+void update_transfer_state_machine();
+void setup_packet_send(uint8_t *data, uint32_t size);
+void data_packet_sent(uint8_t *data, uint32_t size);
 
 #endif
 

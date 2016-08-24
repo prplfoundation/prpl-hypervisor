@@ -21,6 +21,9 @@
 #include <globals.h>
 #include <usb.h>
 #include <mips_cp0.h>
+#include <scheduler.h>
+#include <hal.h>
+
 
 
 static struct usb_status_t usb_status;
@@ -29,6 +32,11 @@ static struct usb_setup_packet_t setup_packet;
 static struct descriptor_decoded descriptor;
 static struct usb_transfer_status_t usb_transfer_status;
 uint8_t buffer_tx[64];
+
+uint32_t get_descriptor(uint8_t* buf, uint32_t size){
+    memcpy(buf, &descriptor, sizeof(struct descriptor_decoded));
+    return sizeof(struct descriptor_decoded);
+}
 
 void usb_interrupt_enable(uint32_t general, uint32_t transmit, uint32_t receive){
     USBCSR1bits.TRXIE = transmit;
@@ -47,7 +55,7 @@ uint32_t usb_start(uint32_t operation_mode, uint32_t speed){
     
     usb_status.state = IDLE;
     
-    usb_transfer_status.state = TRANSFER_IDLE;
+    usb_transfer_status.state = TRANSFER_INT_VM;
     
     OVERCURRENT_PIN_ENABLE;
     
@@ -114,21 +122,19 @@ void usb_int_handler(){
     uint32_t interrupts = USBCSR2bits.INTERRUPTS;
     
     if (interrupts & USB_DEVCONN_INT){
-        //printf("\nDevice Connected!");
         usb_status.connected = 1;
         usb_status.state = DEBOUNCE;
         usb_status.wait_debounce = mfc0(CP0_COUNT, 0);
     }
 
     if (interrupts & USB_DEVDISCONN_INT){
-        //printf("\nDevice Disconnected!");
+
         usb_status.state = IDLE;
-        usb_transfer_status.state = TRANSFER_IDLE;
+        usb_transfer_status.state = TRANSFER_INT_VM;
         usb_status.connected = 0;
     }
     
     if (interrupts & USB_VBUSERR_INT){
-        printf("\nDevice VBUS error!");
         usb_status.state = VBUSERROR;
         usb_status.connected = 0;
     }
@@ -143,7 +149,6 @@ void usb_int_handler(){
            usb_status.state = READ_DESCRIPTOR;
        }else if (usb_transfer_status.state == TRANSFER_WAIT_TX_INT){
            usb_transfer_status.state = TRANSFER_SENDING;
-           putchar('!');
            
        }
     }
@@ -178,6 +183,7 @@ void update_state_machine(){
     static uint32_t request_count = 0;
     uint32_t sz;
     uint32_t i;
+    vcpu_t* vcpu = NULL;
     
     switch (usb_status.state){
         case DEBOUNCE:
@@ -255,12 +261,10 @@ void update_state_machine(){
             }else{
                 usb_status.state=RUNNING;
                 memcpy(&descriptor, &descriptor_data, sizeof(descriptor));
-                printf("\nUSB Device connected: idVendor 0x%04x idProduct 0x%04x ", descriptor.idVendor, descriptor.idProduct);
             }
             break;
             
         case RUNNING:
-            usb_transfer_status.state = TRANSFER_IDLE;
             break;
 
         case IDLE:
@@ -295,10 +299,20 @@ static uint32_t sent_sz = 0;
 void update_transfer_state_machine(){
     uint32_t i;
     static uint32_t flag=0;
+    vcpu_t *vcpu=NULL;
     
     switch(usb_transfer_status.state){
+        case TRANSFER_INT_VM:
+            /* If we arrived on this state send a interrupt to associated the VM 
+             since a device was detected. */
+            usb_transfer_status.state = TRANSFER_IDLE;
+            vcpu = (vcpu_t*)get_registered_vm();
+            if (vcpu){
+                vcpu->guestclt2 |= ( 0x9<< GUESTCLT2_GRIPL_SHIFT);
+            }
+            
+            break;
         case TRANSFER_IDLE:
-            usb_transfer_status.state = TRANSFER_START;
             break;
         case TRANSFER_START:
             usb_fill_setup_packet(&setup_packet, (  USB_SETUP_DIRN_HOST_TO_DEVICE | 
@@ -311,27 +325,25 @@ void update_transfer_state_machine(){
                                                     
             memset(buffer_tx, 0, sizeof(buffer_tx));            
             memcpy(buffer_tx, &setup_packet, sizeof(setup_packet));
-            buffer_tx[8] = 0;
-            buffer_tx[9] = 0;
+            buffer_tx[0] = 0;
+            buffer_tx[1] = 0;
             
             if(flag == 0)
-                buffer_tx[10] = 1;
+                buffer_tx[2] = 1;
             else
-                buffer_tx[10] = 0;
+                buffer_tx[2] = 0;
             
             flag = !flag;
             
             usb_transfer_status.state = TRANSFER_SENDING;
             sent_sz = 0;
-            /*puts("\n");
-            for(i=0;i<7;i++)
-                printf("%02x ", *(buffer_tx + i));*/
+            setup_packet_send((uint8_t*)&setup_packet, sizeof(setup_packet));
             
             break;
             
         case TRANSFER_SENDING:
-            data_packet_sent(buffer_tx, 11); 
-            if (sent_sz>10){
+            data_packet_sent(buffer_tx, 3); 
+            if (sent_sz>2){
                 usb_status.wait_debounce = mfc0(CP0_COUNT, 0);
                 usb_transfer_status.state = TRANSFER_DONE;
             }else{
@@ -343,6 +355,7 @@ void update_transfer_state_machine(){
             break;
             
         case TRANSFER_DONE:
+              
             if (calc_wait_time(usb_status.wait_debounce, 1000)){
                 usb_transfer_status.state = TRANSFER_IDLE;  
             }
@@ -412,12 +425,8 @@ void data_packet_sent(uint8_t *data, uint32_t size){
         USBFIFO0bits.byte = *(data + sent_sz);
         sent_sz++;
     }
-    if (sent_sz < 9){
-        /* SETUPPKT and TXPKTRDY*/
-        USBENCTRL0bits.w |= 0xA0000;
-    }else {
-        *(((uint8_t*)&USBENCTRL0bits)+2) = 0x2;
-    }
     
+    *(((uint8_t*)&USBENCTRL0bits)+2) = 0x2;
+
 }
 

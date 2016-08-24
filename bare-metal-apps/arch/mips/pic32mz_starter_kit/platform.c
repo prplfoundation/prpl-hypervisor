@@ -20,6 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define TIMER 1 
 #define NETWORK 2
+#define USB  4
 
 /* interrupts inserted by the hypervisor */
 void _irq_handler(uint32_t status, uint32_t cause)
@@ -35,6 +36,10 @@ void _irq_handler(uint32_t status, uint32_t cause)
         irq_network();
     }
     
+    if (ripl & USB){
+        irq_usb();
+    }
+   
 }
 
 
@@ -49,13 +54,13 @@ void init_proc(){
     mtc0(CP0_CAUSE, 0, temp_CP0);       /* Update Cause */
  
     temp_CP0 = mfc0(CP0_STATUS, 0);     /* Get Status */
-    temp_CP0 &= ~STATUS_BEV;        /* Clear Status IV */
+    temp_CP0 &= ~STATUS_BEV;        /* Clear Status BEV */
     mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
     
     temp_CP0 = mfc0(12,1); /* intCTL IV must be different of 0 to allow EIC mode. */
     temp_CP0 |= 8<<5;
     mtc0(12, 1, temp_CP0);
-    
+
     asm volatile ("ei");
     
 }
