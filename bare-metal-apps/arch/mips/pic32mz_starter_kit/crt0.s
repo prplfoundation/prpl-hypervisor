@@ -337,3 +337,12 @@ hyper_usb_get_descr:
     .set reorder                
 .end hyper_usb_get_descr
 
+.global hyper_usb_send_data
+.ent hyper_usb_send_data
+hyper_usb_send_data:
+    .set noreorder 
+    hypcall 0x23
+    jr $ra
+    nop
+    .set reorder                
+.end hyper_usb_send_data

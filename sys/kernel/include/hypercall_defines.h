@@ -78,6 +78,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define USB_VM_REGISTER 0x20
 #define USB_VM_GET_DESCRIPTOR 0x21
+#define USB_VM_SEND_DATA 0x23
 
 #define HCALL_READ_DEVCFG3 0x170
 

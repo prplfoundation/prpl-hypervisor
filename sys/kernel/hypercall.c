@@ -316,6 +316,17 @@ int32_t HypercallHandler(){
             
             break;
         }
+        case USB_VM_SEND_DATA:{
+            uint8_t *buf  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
+            uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
+            
+            char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, curr_vm->base_addr, size, 0xf);
+            
+            size = usb_send_data(frame_ptr_mapped, size);
+           
+            break;
+            
+        }
 #endif            
         default:
             break;

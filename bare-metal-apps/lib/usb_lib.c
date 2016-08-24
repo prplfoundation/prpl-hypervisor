@@ -28,8 +28,11 @@ uint32_t wait_device(struct descriptor_decoded *descriptor, uint32_t size){
     memcpy(descriptor, bufrx, size);
 }
 
+void usb_send_data(uint8_t* buf, uint32_t size){
+    hyper_usb_send_data(buf, size);
+}
+
 void irq_usb(){
-    puts("\nirq_usb");
     if (!device_connected){
         hyper_usb_get_descr(bufrx, sizeof(bufrx));
         device_connected = 1;

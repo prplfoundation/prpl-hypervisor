@@ -31,7 +31,14 @@ static struct descriptor_receive descriptor_data;
 static struct usb_setup_packet_t setup_packet;
 static struct descriptor_decoded descriptor;
 static struct usb_transfer_status_t usb_transfer_status;
+
 uint8_t buffer_tx[64];
+
+void usb_send_data(uint8_t* buf, uint32_t size){
+    memcpy(buffer_tx, buf, size);
+    usb_transfer_status.state = TRANSFER_START;   
+}
+
 
 uint32_t get_descriptor(uint8_t* buf, uint32_t size){
     memcpy(buf, &descriptor, sizeof(struct descriptor_decoded));
@@ -303,8 +310,8 @@ void update_transfer_state_machine(){
     
     switch(usb_transfer_status.state){
         case TRANSFER_INT_VM:
-            /* If we arrived on this state send a interrupt to associated the VM 
-             since a device was detected. */
+            /* This state means a device was connected and his descriptor was read. 
+             Send an interrupt to the registered VM. */
             usb_transfer_status.state = TRANSFER_IDLE;
             vcpu = (vcpu_t*)get_registered_vm();
             if (vcpu){
@@ -323,18 +330,6 @@ void update_transfer_state_machine(){
                                                     0, 
                                                     3 ) ;
                                                     
-            memset(buffer_tx, 0, sizeof(buffer_tx));            
-            memcpy(buffer_tx, &setup_packet, sizeof(setup_packet));
-            buffer_tx[0] = 0;
-            buffer_tx[1] = 0;
-            
-            if(flag == 0)
-                buffer_tx[2] = 1;
-            else
-                buffer_tx[2] = 0;
-            
-            flag = !flag;
-            
             usb_transfer_status.state = TRANSFER_SENDING;
             sent_sz = 0;
             setup_packet_send((uint8_t*)&setup_packet, sizeof(setup_packet));
@@ -355,11 +350,7 @@ void update_transfer_state_machine(){
             break;
             
         case TRANSFER_DONE:
-              
-            if (calc_wait_time(usb_status.wait_debounce, 1000)){
-                usb_transfer_status.state = TRANSFER_IDLE;  
-            }
-            
+            usb_transfer_status.state = TRANSFER_IDLE;  
             break;
             
     }

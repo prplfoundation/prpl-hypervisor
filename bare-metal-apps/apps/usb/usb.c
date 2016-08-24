@@ -23,7 +23,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 volatile int32_t t2 = 0;
-
+uint8_t tx[3] = {0, 0, 0};
 
 void irq_timer(){
     t2++;
@@ -38,12 +38,10 @@ int main() {
     
     uint32_t guest_id = hyp_get_guest_id();
     
-    printf("\nVM#%d ", guest_id);
-    
     /* register this VM for USB interrupts */
     hyper_usb_vm_register(guest_id);
     
-    printf("\nWaiting for device.");
+    printf("\nVM#%d: Please connect the OWI Robotic Arm to the USB.", guest_id);
     
     wait_device(&descriptor, sizeof(descriptor));
     
@@ -52,8 +50,14 @@ int main() {
     while (1){
         /* Blink Led */
         LATHINV = 1;
+
+        /* Robotic Arm Blink Led */
+        tx[2] = ~tx[2];
+        usb_send_data(tx, 3);
+
         /* 1 second delay */
         udelay(1000000);
+        
    }
     
     return 0;
