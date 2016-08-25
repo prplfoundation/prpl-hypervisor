@@ -21,6 +21,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <usb_lib.h>
 
+#define IDPRODUCT 0
+#define IDVENDOR 0x1267
 
 volatile int32_t t2 = 0;
 uint8_t tx[3] = {0, 0, 0};
@@ -42,11 +44,13 @@ int main() {
     hyper_usb_vm_register(guest_id);
     
     printf("\nVM#%d: Please connect the OWI Robotic Arm to the USB.", guest_id);
-    
     wait_device(&descriptor, sizeof(descriptor));
+    printf("\nVM#%d: USB Device connected: idVendor 0x%04x idProduct 0x%04x ", guest_id, descriptor.idVendor, descriptor.idProduct);
     
-    printf("\nUSB Device connected: idVendor 0x%04x idProduct 0x%04x ", descriptor.idVendor, descriptor.idProduct);
-        
+    if(descriptor.idVendor != IDVENDOR || descriptor.idProduct != IDPRODUCT){
+        printf("\nVM#%d: Warning! This device not recognized.", guest_id);
+    }
+
     while (1){
         /* Blink Led */
         LATHINV = 1;
@@ -57,7 +61,7 @@ int main() {
 
         /* 1 second delay */
         udelay(1000000);
-        
+            
    }
     
     return 0;

@@ -137,7 +137,7 @@ void usb_int_handler(){
     if (interrupts & USB_DEVDISCONN_INT){
 
         usb_status.state = IDLE;
-        usb_transfer_status.state = TRANSFER_INT_VM;
+        usb_transfer_status.state = TRANSFER_IDLE;
         usb_status.connected = 0;
     }
     
@@ -238,7 +238,7 @@ void update_state_machine(){
             break;
 
         case WAIT_TX_INT:
-            /* Updated by next state by the interrupt handler */
+            /* Updated to next state by the interrupt handler */
             break;
 
         case HANDSHAKE:
