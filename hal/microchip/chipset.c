@@ -144,6 +144,7 @@ uint32_t timer_int_handler(){
         /* clear global USB interrupt bit */
         IFSCLR(4) = (1<<4);
         usb_int_handler();
+        usb_device_attach();
     }
 #endif
 
