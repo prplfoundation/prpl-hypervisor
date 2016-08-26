@@ -20,6 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define TIMER 1 
 #define NETWORK 2
+#define USB 4
 
 /* interrupts inserted by the hypervisor */
 void _irq_handler(uint32_t status, uint32_t cause)
@@ -34,6 +35,11 @@ void _irq_handler(uint32_t status, uint32_t cause)
     if (ripl & NETWORK){
         irq_network();
     }
+
+    if (ripl & USB){
+        irq_usb();
+    }
+    
     
 }
 

@@ -55,27 +55,27 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GUESTCTL0EXT_CGI (1<<4)
 
 #define DEBUG_DM        (1<<30)
-/*#define STATUS_EXL      (1<<1)
+#define STATUS_EXL      (1<<1)
 #define STATUS_ERL      (1<<2)
 #define STATUS_BEV      (1<<22)
-#define STATUS_IE        1*/
+#define STATUS_IE        1
 #define STATUS_IM7      (1<<15)
 #define CAUSE_WP        (1<<22)
 /*#define CAUSE_IP0       (1<<8)
 #define CAUSE_IP1       (1<<9)*/
 #define CONFIG_K0        0x7
 #define	CAUSE_EXECCODE  (0x1F << 2)
-/*#define CAUSE_IV        (1<<23)*/
+#define CAUSE_IV        (1<<23)
 #define CAUSE_IP         0x3FF00
-/*#define CAUSE_BD        (1<<31)
-#define CAUSE_TI	(1<<30)*/
+#define CAUSE_BD        (1<<31)
+#define CAUSE_TI	(1<<30)
 #define INTCTL_VS        0x2
 #define PAGEGRAIN_ESP   (1<<28)
 #define SRSCLT_PSS      (0xF<<6)
 #define SRSCLT_HSS	(0xF<<26)
 
-
-
+#define CP0_CAUSE      13
+#define CP0_EBASE      15
 
 #define CONFIG_K0_UNCACHED	0x2
 #define SRSCTL_HSS		(0xF << 26)

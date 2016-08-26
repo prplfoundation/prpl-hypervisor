@@ -40,7 +40,7 @@ CFLAGS_STRIP = -fdata-sections -ffunction-sections
 LDFLAGS_STRIP = --gc-sections 
 LDFLAGS = -Thal/microchip/pic32mz.ld 
 #CFLAGS = -EL -O2 -c -mtune=m14k  -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} #$(CFLAGS_STRIP)
-CFLAGS = -EL -O2 -c -mips32r2 -DETHERNET_SUPPORT -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} -DHYPVERSION=${VERSION}
+CFLAGS = -EL -O2 -c -mips32r2 -DETHERNET_SUPPORT -DUSB_SUPPORT -mtune=m14k -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -I include/ -I $(HAL)/include/ -DCPU_SPEED=${F_CLK} -DHYPVERSION=${VERSION}
 
 
 
@@ -68,7 +68,10 @@ $(HAL)/vcpu.o \
 $(HAL)/common.o \
 $(MICROCHIP)/flash.o \
 $(MICROCHIP)/uart.o \
-$(MICROCHIP)/chipset.o 
+$(MICROCHIP)/chipset.o \
+$(MICROCHIP)/usb.o \
+$(MICROCHIP)/usb_manager.o
+
 
 APP = prplHypervisor.elf
 BIN = prplHypervisor

@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "hal.h"
 #include "kernel.h"
 #include<globals.h>
+#include "microchip/usb.h"
 
 #define STR(x) #x
 #define STR_VALUE(x) STR(x)
@@ -59,6 +60,12 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     
     /* UART start */
     init_uart(115200, 9600, 200000000);
+
+#ifdef USB_SUPPORT    
+    if(usb_start(HOST_MODE, FULL_SPEED)){ 
+        return 1;
+    }
+#endif    
     
     print_config();
     

@@ -76,5 +76,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define ETH_RECV_FRAME 0x11
 #define ETH_SEND_FRAME 0x10
 
+#define USB_VM_REGISTER 0x20
+#define USB_VM_GET_DESCRIPTOR 0x21
+#define USB_VM_SEND_DATA 0x23
+
+
 #endif
 

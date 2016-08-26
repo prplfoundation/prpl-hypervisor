@@ -133,7 +133,20 @@ uint32_t timer_int_handler(){
         if(tick_count%500==0){
            en_watchdog();
         }
-#endif        
+#endif       
+
+#ifdef USB_SUPPORT  
+    if(tick_count%100==0){
+        usb_device_attach();
+    }
+
+    if(IFS(4) & (1<<4)){
+        /* clear global USB interrupt bit */
+        IFSCLR(4) = (1<<4);
+        usb_int_handler();
+    }
+#endif
+
     }
     return ret;
 }
