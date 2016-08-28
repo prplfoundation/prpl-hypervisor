@@ -24,7 +24,7 @@ void irq_timer(){
  t2++;
 }
 
-int32_t start_sequence_flag = 0;
+int32_t run_sequence_flag = 0;
 
 /*
  * OWI arm definitions
@@ -116,21 +116,17 @@ int process_message()
 		// start/resume the sequence
 		case '1':
             serial_select(UART2);
-            printf("\nVM#3: Moving the Robotic ARM.");
+            printf("\nVM#3: Start arm sequence");
             serial_select(UART6);
-			start_sequence_flag = 1;
+			run_sequence_flag = 1;
 			break;
 
-		// stop the sequence
+		// stop/pause the sequence
 		case '2':
             serial_select(UART2);
-            printf("\nVM#3: Stoping the Robotic ARM.");
+            printf("\nVM#3: Stop arm sequence");
             serial_select(UART6);
-			start_sequence_flag = 0;
-			break;
-
-		// return to 0;
-		case '3':
+			run_sequence_flag = 0;
 			break;
 
 		default:
@@ -149,7 +145,7 @@ void send_owi_command(unsigned char byte1, unsigned char byte2, unsigned char by
 
 	putchar(byte1);
 	putchar(byte2);
-	putchar((unsigned char)start_sequence_flag);
+	putchar((unsigned char)run_sequence_flag);
 	putchar(counter);
 }
 
@@ -164,7 +160,7 @@ void stop_sequence()
 	send_owi_command(owi_stop[0], owi_stop[1], owi_stop[2]);
 }
 
-void start_sequence(struct owi_command *commands, int num_commands)
+void run_sequence(struct owi_command *commands, int num_commands)
 {
 	int32_t index = 0;
 
@@ -194,8 +190,6 @@ int main() {
 	serial_select(UART6);
 
 	init_network();
-
-	stop_sequence();
     
     serial_select(UART2);
     printf("\nVM#3: Starting Robotic Arm Control.");
@@ -205,12 +199,13 @@ int main() {
 
     	process_message();
 
-		if (start_sequence_flag == 1) {
-			start_sequence(sequence1, sizeof(sequence1) / sizeof(struct owi_command));
+		if (run_sequence_flag == 1) {
+			run_sequence(sequence1, sizeof(sequence1) / sizeof(struct owi_command));
 
-			// pause for 3 seconds after the cycle completes to allow the user to
-			// stop the cycle
-			udelay(2000000);
+			// pause after the cycle completes to allow the user to
+			// stop the cycle with the arm at the home position
+			udelay(1500*1000);
+
 		}
     }
     
