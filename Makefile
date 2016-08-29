@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #List of bare-metal applications 
-APP_LIST = tcp-listener-rmii iidprpl arm-control
+APP_LIST = tcp-listener-rmii iidprpl arm-control-usb
 
 # Comment this line if you does not need ethernet support.
 

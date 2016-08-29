@@ -20,7 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "boot.h"
 #include "hal.h"
 #include "kernel.h"
-#include<globals.h>
+#include <globals.h>
 #include "microchip/usb.h"
 
 #define STR(x) #x
