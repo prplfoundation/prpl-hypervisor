@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 import sys
 import io
 from enum import Enum
+from inspect import currentframe, getframeinfo
 
 #Intermediate Physical address of the first VM on the RAM
 VMS_RAM_INTERMEDIATE_BASE_ADDRESS = 0x80010000
@@ -17,6 +18,8 @@ VMS_FLASH_VIRTUAL_BASE_ADDRESS = 0x9D000000
 
 # NVMACHINES 1
 
+#get line number and filename for debug.
+filename = getframeinfo(currentframe()).filename
 
 
 #M5150 Page Sizes
@@ -30,6 +33,36 @@ class PageSizes(Enum):
     PAGEMASK_16MB = 16777216
     PAGEMASK_64MB = 67108864
     PAGEMASK_256MB = 268435456
+
+#VMs size
+class MemSizes(Enum):
+    MEM_SIZE_4KB = 4096
+    MEM_SIZE_16KB = 16384
+    MEM_SIZE_32KB = 32768
+    MEM_SIZE_64KB = 65536
+    MEM_SIZE_128KB = 131072
+    MEM_SIZE_256KB = 262144
+    MEM_SIZE_512KB = 524288
+    MEM_SIZE_1MB = 1048576
+    
+
+#get the memory size in bytes
+def getValue_from_enum(enum_class, item):
+    #check if it is possible to use a dual entry for flash
+    selected_mem_size = None
+    for name, member in enum_class.__members__.items():
+        if member.name == item:
+            selected_mem_size = member
+            break
+    
+    if selected_mem_size is None:
+        return  None
+    
+    return selected_mem_size.value
+    
+    
+    
+
     
 #Convert Kseg0 addreess to physical address and
 #remove the last 12 bits as required by the TLB entries
@@ -84,7 +117,11 @@ def mem_map(root):
     for child in root:
         if child.tag == 'base_addr':
             info = {'base_addr': int(child.text, 16),
-                    'size': child.attrib['size']}
+                    'size': getValue_from_enum(PageSizes, child.attrib['size'])}
+            if info['size'] is None:
+                print '%s:%s: base_addr size proprierty is invalid: %s' %  (filename, currentframe().f_lineno, child.attrib['size'])
+                sys.exit(1)
+                
 
             mmap.append(info)
             
@@ -115,7 +152,7 @@ def select_page_size(size):
 #write the a TLB entry
 def write_page_mapping(member, dual_entry, mem_size, mem_base, virtual_base, file):
     if member is None:
-        print "Invalide flash size. Valide values are 16KB, 32KB, 64KB, 128KB, 256KB, 512KB or 1MB"
+        print "%s:%s: Invalide flash size. Valide values are 16KB, 32KB, 64KB, 128KB, 256KB, 512KB or 1MB" % (filename, currentframe().f_lineno)
         sys.exit(1)
     
     if dual_entry == True:
@@ -164,11 +201,17 @@ def conf_vms(root, file, vms_info_file):
                 os_type = vm_data.text
      
             if vm_data.tag == 'RAM_size_bytes':
-                RAM_size_bytes = int(vm_data.text)
+                RAM_size_bytes = getValue_from_enum(MemSizes, vm_data.text)
+                if RAM_size_bytes is None:
+                    print '%s:%s: RAM_size_bytes invalid: %s' % (filename, currentframe().f_lineno, vm_data.text)
+                    sys.exit(1)
 
             if vm_data.tag == 'flash_size_bytes':
-                flash_size_bytes = int(vm_data.text)
-     
+                flash_size_bytes = getValue_from_enum(MemSizes, vm_data.text)
+                if flash_size_bytes is None:
+                    print '%s:%s flash_size_bytes invalid: %s' % (filename, currentframe().f_lineno, vm_data.text)
+                    sys.exit(1)
+                
             if vm_data.tag == 'vm_entry_point':
                 vm_entry_point = vm_data.text
 
@@ -179,23 +222,23 @@ def conf_vms(root, file, vms_info_file):
                app_name = vm_data.text
 
         if flash_size_bytes is None:
-            print 'flash_size_bytes not defined.'
+            print '%s%s: flash_size_bytes not defined.' % (filename, currentframe().f_lineno)
             sys.exit(1)
         
         if os_type is None:
-            print 'os_type not defined.'
+            print '%s:%s: os_type not defined.' % (filename, currentframe().f_lineno)
             sys.exit(1)
         
         if RAM_size_bytes is None:
-            print 'RAM_size_bytes not defined.'
+            print '%s:%s: RAM_size_bytes not defined.' % (filename, currentframe().f_lineno)
             sys.exit(1)
 
         if vm_entry_point is None:
-            print 'vm_entry_point not defined.'
+            print '%s:%s: vm_entry_point not defined.' % (filename, currentframe().f_lineno)
             sys.exit(1)
 
         if num_tlb_entries is None:
-            print 'Memory map not defined.'
+            print '%s:%s: Memory map not defined.' % (filename, currentframe().f_lineno)
             sys.exit(1)
            
         #Address where the VM is in the RAM as seeing by the hypervisor (physical intermediate address)
@@ -237,7 +280,7 @@ def conf_vms(root, file, vms_info_file):
         vm_number+=1
         total_tlb_entries += num_tlb_entries
         if total_tlb_entries > 15:
-            print "Your are using too much TLB entries."
+            print "Line %s: Your are using too much TLB entries." % currentframe().f_lineno
             sys.exit(1)
     
     file.write('\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n')
@@ -253,7 +296,7 @@ def conf_vms(root, file, vms_info_file):
 #Start the xml processament.                
 
 if len(sys.argv) < 2:
-    print 'Sintaxe: %s <xml input file>' % sys.argv[0]
+    print '%s:%s: Sintaxe: %s <xml input file>' % (filename, currentframe().f_lineno, sys.argv[0])
     sys.exit(1)
     
 tree = ET.parse(sys.argv[1])
