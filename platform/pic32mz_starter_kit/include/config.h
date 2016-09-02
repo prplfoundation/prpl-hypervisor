@@ -21,7 +21,7 @@
 /* VMs mapping */
 #define VMCONF {\
 	0x80010000, 0,	3,	BAREOS,	0,	0x9d001000, \
-	1,	0x1d010, 	0x1d020, 	PAGEMASK_64KB, 	0x1d000, 	2,\
+	1,	0x1d010, 	      0, 	PAGEMASK_256KB, 	0x1d000, 	2,\
 	1,	0x00010, 	0x00020, 	PAGEMASK_64KB, 	0x00000, 	2,\
 	1,	0x1f800, 	      0, 	 PAGEMASK_1MB, 	0x1f800, 	2,\
 	0, 	      0, 	        0, 	       0, 	       0, 	    0}
