@@ -22,9 +22,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
    based on K&R The C Programming Language book 2nd. ed., p.149
 */
 
-#define HEAP_ADDRESS 0x80014000
-#define HEAP_SIZE 0xA000 /* 40Kb */
- 
+extern _heap_start;
+extern _heap_size;
+
 static mem_header *freep = NULL;        /* start free list */
 static mem_header *sfreep, sfree;       /* saved values to restore */
 
@@ -37,7 +37,6 @@ static mem_header *sfreep, sfree;       /* saved values to restore */
 void HeapInit(void *heap, uint32_t len){
     mem_header *prevp, *p;
     uint32_t nunits;
-
     if ((prevp = freep) == NULL){
         nunits = ((len+sizeof(mem_header)-1)/sizeof(mem_header))+1; 
         p = heap;
@@ -136,10 +135,8 @@ void *realloc(void *ptr, uint32_t size){
 }
 
 uint32_t init_mem() {
+    HeapInit((void*)&_heap_start, (int)(&_heap_size));
   
-  //Initialize heap           
-  HeapInit((void*)HEAP_ADDRESS, HEAP_SIZE);
-  
-  return 0;
+    return 0;
 }
 

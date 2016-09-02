@@ -18,8 +18,10 @@
 dd if=prplHypervisor.bin of=/tmp/prplHypervisor.bin bs=64K conv=sync
 
 for i in $*; do 
-    ## fill the VMs binary file to 32Kb
-    dd if=bare-metal-apps/build/bin/$i.bin of=/tmp/$i.bin bs=128K conv=sync
+    ## get the VM's flash size
+    flash_size=$(awk '/'$i'/{print $2}' include/vms.info)
+    #padding the VM's bin to its maximum size
+    dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$flash_size conv=sync
 done
 
 rm -rf /tmp/tmp.bin

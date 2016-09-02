@@ -21,4 +21,4 @@ for i in $*; do
 done
 
 #copy the correct config file
-cp include/configs/config-${NUMVMS}vm.h include/config.h
+cp ../../sys/kernel/include/configs/config-${NUMVMS}vm.h ../../sys/kernel/include/config.h

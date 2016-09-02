@@ -18,19 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _PIC32MZ_
 #define _PIC32MZ_
 
-/* C type extensions */
-#ifdef PICOTCP
 #include <stdint.h>
-#else
-typedef unsigned char			uint8_t;
-typedef char				int8_t;
-typedef unsigned short int		uint16_t;
-typedef short int			int16_t;
-typedef unsigned int			uint32_t;
-typedef int				int32_t;
-typedef unsigned long long		uint64_t;
-typedef long long			int64_t;
-#endif
 
 typedef void				(*funcptr)();
 
