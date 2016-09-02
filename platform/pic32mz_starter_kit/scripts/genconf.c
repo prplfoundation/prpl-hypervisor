@@ -8,10 +8,20 @@
 #define OUTFILE "../include/config.h"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
 #define SYSTEM_COMMENT "/* Hypervisor kernel configuration and board info */\n"
+#define VM_MAP_COMMENT "/* VMs mapping */\n"
 
 /* Intermediate Physical address of the first VM on the RAM */
 #define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80010000
+
+/* Virtual address for VM's RAM */
 #define VMS_RAM_VIRTUAL_BASE_ADDRESS  0x80000000
+
+/* Intermediate Physical address of the first VM on the FLASH */
+#define VMS_FLASH_INTERMEDIATE_BASE_ADDRESS  0x9D010000
+
+/* Virtual address for VM's FLASH */
+#define VMS_FLASH_VIRTUAL_BASE_ADDRESS  0x9D000000
+
 
 
 #define DEBUG
@@ -21,36 +31,53 @@
 #define debug(...) do{ }while(0)
 #endif
 
-/* Struct for translation between const names and values */
+/* Struct for translation between string names and its respective values */
 struct mem_sizes_def{
-    unsigned int size;
-    char name[128];
+    unsigned int value;
+    char name[32];
 };
 
 /* Pages mask definition used by the hypervisor */
 const struct mem_sizes_def PageSizes[] = {
-    {name: "PAGEMASK_4KB",    size: 4096},
-    {name: "PAGEMASK_16KB",   size: 16384},
-    {name: "PAGEMASK_64KB",   size: 65536},
-    {name: "PAGEMASK_256KB",  size: 262144},
-    {name: "PAGEMASK_1MB",    size: 1048576},    
-    {name: "PAGEMASK_4MB",    size: 4194304},    
-    {name: "PAGEMASK_16MB",   size: 16777216},    
-    {name: "PAGEMASK_256MB",  size: 268435456}
+    {name: "PAGEMASK_4KB",    value: 4096},
+    {name: "PAGEMASK_16KB",   value: 16384},
+    {name: "PAGEMASK_64KB",   value: 65536},
+    {name: "PAGEMASK_256KB",  value: 262144},
+    {name: "PAGEMASK_1MB",    value: 1048576},    
+    {name: "PAGEMASK_4MB",    value: 4194304},    
+    {name: "PAGEMASK_16MB",   value: 16777216},    
+    {name: "PAGEMASK_256MB",  value: 268435456}
 };
 
 /* Memory areas definition used in the config file. */
 const struct mem_sizes_def MemSizes[] = {
-    {name: "MEM_SIZE_4KB",    size: 4096},
-    {name: "MEM_SIZE_16KB",   size: 16384},
-    {name: "MEM_SIZE_32KB",   size: 32768},
-    {name: "MEM_SIZE_64KB",   size: 65536},
-    {name: "MEM_SIZE_128KB",  size: 131072},    
-    {name: "MEM_SIZE_256KB",  size: 262144},    
-    {name: "MEM_SIZE_512KB",  size: 524288},    
-    {name: "MEM_SIZE_1MB",    size: 1048576}
-};    
+    {name: "MEM_SIZE_4KB",    value: 4096},
+    {name: "MEM_SIZE_8KB",    value: 8192},
+    {name: "MEM_SIZE_16KB",   value: 16384},
+    {name: "MEM_SIZE_32KB",   value: 32768},
+    {name: "MEM_SIZE_64KB",   value: 65536},
+    {name: "MEM_SIZE_128KB",  value: 131072},    
+    {name: "MEM_SIZE_256KB",  value: 262144},    
+    {name: "MEM_SIZE_512KB",  value: 524288},    
+    {name: "MEM_SIZE_1MB",    value: 1048576}
+};  
 
+/**
+ * @brief Find a string name on a array of struct mem_sizes_def returning it corresponding size.
+ * @param mdef A array of struct mem_sizes_def.
+ * @param num_ele Num of elements in the array.
+ * @param str_name Name to be find. 
+ * @return Corresponding positive value or 0 if the name was not found. 
+ */
+int get_value_from_str(struct mem_sizes_def *mdef, int num_el, char *str_name){
+    int i;
+    for(i=0;i<num_el;i++){
+        if (!strcmp(mdef[i].name, str_name)){
+            return mdef[i].value;
+        }
+    }
+    return 0;
+}
 
 /**
  * @brief Write to the configuration file.
@@ -121,7 +148,7 @@ char* strings_cat(char *dest, int size, ...){
 /**
  * @brief Insert blank line in the ouput file.
  * @param f output file.
- * @return Pointer to the destination string. 
+ * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
  */
 int insert_blank_line(FILE *f){
     if ( write_to_conf_file(f, "\n")) {
@@ -261,9 +288,342 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     if (ret = insert_blank_line(outfile)){
         return ret;
     }
-    
-    
 }
+
+/**
+ * @brief Find a TLB mask that fits the memory mapping size. 
+ * @param mem_size Memory mapping size in bytes.
+ * @param page_size Array that contains all TLB possible mask sizes. 
+ * @param num_el Number of elements in the array. 
+ * @param dual_entry Indicates if a dual TLB entry must be used. 
+ * @return A pointer to the element in the array or NULL if no match.  
+ */
+const struct mem_sizes_def* select_page_mask(int mem_size, const struct mem_sizes_def *page_sizes, int num_el, int *dual_entry){
+    int i;
+    int half_sz = mem_size/2;
+    
+    *dual_entry = 0;
+    
+    /* check if the memory mapping size fits a dual tlb entry  */
+    for(i=0; i<num_el; i++){
+        if(page_sizes[i].value == half_sz){
+            *dual_entry = 1;
+            return &page_sizes[i];
+        }
+    }
+    
+    /* dual entry can't be used  */
+    for(i=0; i<num_el; i++){
+        if(page_sizes[i].value == mem_size){
+            return &page_sizes[i];
+        }
+    }
+    
+    return NULL;
+}
+
+/**
+ * @brief Convert Kseg0 addresses to physical addresses in TLB format (last 12 bits shifted).  
+ * @param addr Kseg0 address
+ * @return Physical address in TLB format
+ */
+unsigned int kseg0_addr_to_physical(unsigned int addr){
+    return (addr & 0x1FFFFFFF) >> 12;
+}
+
+
+/**
+ * @brief Process a TLB entry writing the output file.
+ * @param vm_number Used as TLB ID. 
+ * @param mem_size Size of the mapped area.
+ * @param mem_base Intermediate physical address where the mapped area starts. 
+ * @param va Virtual address to be mapped.  
+ * @return 0 if sucessfull or error code in case of fail. 
+ */
+int process_tlb_entry(int vm_number, 
+                      unsigned int mem_size, 
+                      unsigned int mem_base, 
+                      unsigned int va, 
+                      FILE* outfile){
+    
+    char str[STRSZ];
+    const struct mem_sizes_def* page_size;
+    int dual_entry, ret;
+
+    /* TLB entry number */
+    snprintf(str, STRSZ, "\t%d,\t", vm_number);
+    if ( ret = write_to_conf_file(outfile, str)) {
+        return ret;
+    }
+    
+    if ( (page_size = select_page_mask(mem_size, (const struct mem_sizes_def *)&PageSizes, sizeof(PageSizes)/sizeof(struct mem_sizes_def), &dual_entry)) == NULL){
+        fprintf(stderr, "The memory size 0x%x does not fit any TLB entry size.\n", mem_size);
+        return EXIT_FAILURE;
+    }
+    
+    if(dual_entry){
+        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base));
+        if ( ret = write_to_conf_file(outfile, str)) {
+            return ret;
+        }
+
+        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base+(mem_size/2)));
+        if ( ret = write_to_conf_file(outfile, str)) {
+            return ret;
+        }
+        
+    }else {
+        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base));
+        if ( ret = write_to_conf_file(outfile, str)) {
+            return ret;
+        }
+        
+        if ( ret = write_to_conf_file(outfile, "      0,\t")) {
+            return ret;
+        }
+    }
+
+    snprintf(str, STRSZ, "%13s,\t", page_size->name);
+    if ( ret = write_to_conf_file(outfile, str) ) {
+        return ret;
+    }
+    
+    sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(va));        
+    if ( ret = write_to_conf_file(outfile, str) ) {
+        return ret;
+    }
+
+    if ( ret = write_to_conf_file(outfile, "2,\\\n")) {
+        return ret;
+    }
+    
+    return 0;
+}
+
+/**
+ * @brief Generate the output configuration for the VMs mapping.
+ * @param cfg libconfig input.
+ * @param outfile Output config file. 
+ * @param app_list Returns the list of VMs.
+ * @param vm_count Number of virtual machines.
+ * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
+ */
+int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
+    int vm_number = 1;
+    int vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS;
+    int vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS;
+    int total_tlb_entries = 0;
+    int i, num_el, ret, aux, ram_size, flash_size, j, num_mm;
+    unsigned int value;
+    char auxstr[STRSZ], str[STRSZ];
+    const char *auxstrp;
+    config_setting_t *setting;
+    
+    /* make sure app_list is an empty str */
+    strcpy(app_list, "");
+    
+    /* Write comment */
+    if ( ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) {
+        return ret;
+    }
+
+    setting = config_lookup(&cfg, "virtual_machines");
+    if(!setting){
+        fprintf(stderr, "Missing virtual_machines group configuration on the input file.\n");
+        return EXIT_FAILURE;
+    }
+    
+    if ( ret = write_to_conf_file(outfile, "#define VMCONF {\\\n") ) {
+        return ret;
+    }
+    
+    num_el = config_setting_length(setting);
+    *vm_count = num_el;
+    for (i=0;i<num_el;i++){
+        config_setting_t *vm_conf = config_setting_get_elem(setting, i);
+        
+        /* get app_name */
+        if( !config_setting_lookup_string(vm_conf, "app_name", &auxstrp)){
+            fprintf(stderr, "Missing app_name proprierty on virtual_machines group.\n");
+            return EXIT_FAILURE;
+        }
+        strncat(app_list, auxstrp, STRSZ);
+        strncat(app_list, " ", STRSZ);
+        
+        /* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
+        snprintf(auxstr, STRSZ, "\t0x%x, \t", vm_ram_inter_addr);
+        if ( ret = write_to_conf_file(outfile, auxstr) ) {
+            return ret;
+        }
+        
+        /* VM size not used. Keep zero. */
+        if ( ret = write_to_conf_file(outfile, "0, \t") ) {
+            return ret;
+        }
+        
+        /* write num of tlb entries */
+        config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
+        aux = config_setting_length(mem_maps);
+        /* RAM and FLASH mapping requires 2 additional TLB entries */
+        aux += 2;
+        snprintf(auxstr, STRSZ, "0x%x, \t", aux);
+        if ( ret = write_to_conf_file(outfile, auxstr) ) {
+            return ret;
+        }
+        
+        /* get OS type  */
+        if( !config_setting_lookup_string(vm_conf, "os_type", &auxstrp)){
+            fprintf(stderr, "Missing os_type proprierty on virtual_machines group.\n");
+            return EXIT_FAILURE;
+        }
+        strings_cat(str, STRSZ, auxstrp, ", \t", NULL);
+        if ( ret = write_to_conf_file(outfile, str) ) {
+            return ret;
+        }
+        
+        /* interrupt redirect not used. Keep 0*/
+        if ( ret = write_to_conf_file(outfile, "0, \t") ) {
+            return ret;
+        }
+        
+        /* get OS entry point  */
+        if( !config_setting_lookup_int(vm_conf, "vm_entry_point", &value)){
+            fprintf(stderr, "Missing vm_entry_point proprierty on virtual_machines group.\n");
+            return EXIT_FAILURE;
+        }
+        snprintf(str, STRSZ, "0x%x\\\n", value);
+        if ( ret = write_to_conf_file(outfile, str) ) {
+            return ret;
+        }
+        
+        /* get RAM size */
+        if( !config_setting_lookup_string(vm_conf, "RAM_size_bytes", &auxstrp)){
+            fprintf(stderr, "Missing RAM_size_bytes proprierty on virtual_machines group.\n");
+            return EXIT_FAILURE;
+        }
+        if ( (ram_size = get_value_from_str((struct mem_sizes_def*)MemSizes, sizeof(MemSizes)/sizeof(struct mem_sizes_def), (char*)auxstrp)) == 0){
+            fprintf(stderr, "Invalide value for RAM_size_bytes: %s.\n", auxstrp);
+            return EXIT_FAILURE;
+        }
+
+        /* Create a TLB entry to the RAM memory */
+        if ((ret = process_tlb_entry(vm_number, ram_size, vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, outfile))){
+            return ret;
+        }
+        
+        /* Increment to the intermediate address of the next VM */
+        vm_ram_inter_addr += ram_size;
+            
+        /* get FLASH size */
+        if( !config_setting_lookup_string(vm_conf, "flash_size_bytes", &auxstrp)){
+            fprintf(stderr, "Missing flash_size_bytes proprierty on virtual_machines group.\n");
+            return EXIT_FAILURE;
+        }
+        if ( (flash_size = get_value_from_str((struct mem_sizes_def*)MemSizes, sizeof(MemSizes)/sizeof(struct mem_sizes_def), (char*)auxstrp)) == 0){
+            fprintf(stderr, "Invalide value for flash_size_bytes: %s.\n", auxstrp);
+            return EXIT_FAILURE;
+        }
+        
+        /* Create a TLB entry to the FLASH memory */
+        if ((ret = process_tlb_entry(vm_number, flash_size, vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, outfile))){
+            return ret;
+        }
+        
+        /* Increment to the intermediate address of the next VM */
+        vm_flash_inter_addr += flash_size;
+        
+        /* process the additional memory mapping */
+        mem_maps = config_setting_lookup(vm_conf, "memory_maps");
+        num_mm = config_setting_length(mem_maps);
+        for(j=0; j<num_mm; j++){
+            unsigned int page_size;
+            unsigned int base_addr;
+            config_setting_t *mm = config_setting_get_elem(mem_maps, j);
+
+            /* get base addr */
+            if( !config_setting_lookup_int(mm, "base_addr", &base_addr)){
+                fprintf(stderr, "Missing base_addr proprierty on virtual_machines.memory_maps group.\n");
+                return EXIT_FAILURE;
+            }
+            
+            /* get page size */
+            if( !config_setting_lookup_string(mm, "page_size", &auxstrp)){
+                fprintf(stderr, "Missing page_size proprierty on virtual_machines.memory_maps group.\n");
+                return EXIT_FAILURE;
+            }
+            if ( (page_size = get_value_from_str((struct mem_sizes_def*)MemSizes, sizeof(MemSizes)/sizeof(struct mem_sizes_def), (char*)auxstrp)) == 0){
+                fprintf(stderr, "Invalide value for flash_size_bytes: %s.\n", auxstrp);
+                return EXIT_FAILURE;
+            }
+            
+            /* Create a TLB entry to this mapping */
+            if ((ret = process_tlb_entry(vm_number, page_size, base_addr, base_addr, outfile))){
+                return ret;
+            }
+            
+        }
+        
+        vm_number++;
+    }
+    
+    if ( ret = write_to_conf_file(outfile, "\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n") ) {
+        return ret;
+    }
+    
+    return 0;
+}
+
+
+/**
+ * @brief Write the number of VMs to the config file. 
+ * @param vm_count Number of VMs.
+ * @param app_list Name of the VMs.
+ * @param outfile Output config file. 
+ * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
+ */
+int write_vm_number(int vm_count, char* app_list, FILE* outfile){
+    char str[STRSZ];
+    char straux[STRSZ];
+    int ret;
+    
+    if (ret = insert_blank_line(outfile)){
+        return ret;
+    }
+    
+    strings_cat(str, STRSZ, "/* Virtual Machine names: ", app_list, " */\n", NULL);
+    if ( ret = write_to_conf_file(outfile, str) ) {
+        return ret;
+    }
+    
+    snprintf(straux, STRSZ, "%d", vm_count);
+    strings_cat(str, STRSZ, "#define NVMACHINES ", straux, "\n", NULL);
+    if ( ret = write_to_conf_file(outfile, str) ) {
+        return ret;
+    }
+    
+    return 0;
+}
+
+/**
+ * @brief Write empty RT-VM list.
+ * @param outfile Output config file. 
+ * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
+ */
+int rt_vm_list(FILE* outfile){
+    int ret;
+    
+    if (ret = insert_blank_line(outfile)){
+        return ret;
+    }
+    
+    if ( ret = write_to_conf_file(outfile, "#define VMCONF_RT {0}\n\n") ) {
+        return ret;
+    }
+    
+    return 0;
+}
+
+            
 
 int main(int argc, char **argv)
 {
@@ -272,6 +632,8 @@ int main(int argc, char **argv)
     const char *str;
     int uart_speed;
     FILE* outfile;
+    char app_list[STRSZ];
+    int vm_count;
     
     if (argc<2){
         fprintf(stderr, "Usage: %s <config file path>\n", argv[0]);
@@ -307,10 +669,30 @@ int main(int argc, char **argv)
         fclose(outfile);
         return(EXIT_FAILURE);
     }
-         
+    
+    if (gen_conf_vms(cfg, outfile, app_list, &vm_count)){
+        config_destroy(&cfg);
+        fclose(outfile);
+        return(EXIT_FAILURE);
+    }
+    
+    if (write_vm_number(vm_count, app_list, outfile)){  
+        config_destroy(&cfg);
+        fclose(outfile);
+        return(EXIT_FAILURE);
+    }
+
+    if (rt_vm_list(outfile)){  
+        config_destroy(&cfg);
+        fclose(outfile);
+        return(EXIT_FAILURE);
+    }
+    
+    printf("%s\n", app_list);
+     
     fclose(outfile);
     config_destroy(&cfg);
     return(EXIT_SUCCESS);
 }
 
-/* eof */
+
