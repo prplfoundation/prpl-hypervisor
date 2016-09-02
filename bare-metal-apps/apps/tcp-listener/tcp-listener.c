@@ -48,6 +48,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "pico_tcp.h"
 #include "pico_socket.h"
 
+#include "wolfssl/ssl.h"
+
 #define LISTENING_PORT 80
 #define MAX_CONNECTIONS 1
 #define ETH_RX_BUF_SIZE 1536
@@ -196,6 +198,16 @@ int main()
         PICO_FREE(eth_dev);
         return 0;
     }    
+
+    /* WolfSSL initialization only, to make sure libwolfssl.a is needed */
+    WOLFSSL_CTX *SSL_Context;
+
+    wolfSSL_Init();
+    SSL_Context = wolfSSL_CTX_new(wolfTLSv1_2_client_method());
+    if (!SSL_Context)
+        printf("\nFailed to initialize wolfSSL context");
+    else
+        printf("\nSuccessfully initialized wolfSSL context");
 
     /* picoTCP initialization */
     printf("\nInitializing pico stack\n");

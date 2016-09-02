@@ -14,13 +14,13 @@
     </system>
     <virtual_machines>
         <vm_data>
-            <app_name>blink</app_name>
+            <app_name>tcp-listener</app_name>
             <os_type>BAREOS</os_type>
-            <RAM_size_bytes>131072</RAM_size_bytes>
-            <flash_size_bytes>131072</flash_size_bytes>
+            <RAM_size_bytes>MEM_SIZE_128KB</RAM_size_bytes>
+            <flash_size_bytes>MEM_SIZE_128KB</flash_size_bytes>
             <vm_entry_point>0x9d001000</vm_entry_point>
             <memory_maps>
-                <base_addr size="1048576">0xbf800000</base_addr>
+                <base_addr size="PAGEMASK_1MB">0xbf800000</base_addr>
             </memory_maps>
         </vm_data>
     </virtual_machines>

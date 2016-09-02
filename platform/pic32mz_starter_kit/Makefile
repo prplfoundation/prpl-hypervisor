@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input XML file for VMs configuration
-CONF_XML = samples_xml/config-2VM.xml
+CONF_XML = samples_xml/config-1VM.xml
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-

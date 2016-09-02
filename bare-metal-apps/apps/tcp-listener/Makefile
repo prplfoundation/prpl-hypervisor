@@ -5,9 +5,12 @@ INC_DIRS = -I ../../../../picotcp/build/include/
 
 #Aditional C flags
 CFLAGS = -DPICOTCP
+#wolfssl flags
+CFLAGS+= -DWOLFSSL_PICOTCP -DFTM_TIMING_RESISTANT -DNO_WRITEV -DNO_ERROR_STRINGS -DSMALL_SESSION_CACHE -DWOLFSSL_SMALL_STACK -DHAVE_TLS_EXTENSIONS -DNO_DSA -DNO_RABBIT -DNO_MD4 -DNO_DES3 -DNO_FILESYSTEM -DUSER_TIME -DTIME_OVERRIDES -DUSE_FAST_MATH -DRSA_DECODE_EXTRA -DHAVE_ECC -DHAVE_ALL_CURVES -DHAVE_SUPPORTED_CURVES -DSINGLE_THREADED -DWOLFSSL_USER_IO
 
 #Aditional Libraries
-LIBS=../../../../picotcp/build/lib/libpicotcp.a
+LIBS=../../../../picotcp/build/lib/libpicotcp.a \
+	 ../../../../picotcp/build/lib/libwolfssl.a
 
 # Add your targets before the $(APP) target. Your targets should be defined at the .mk files. 
 # See app.mk as an example.
