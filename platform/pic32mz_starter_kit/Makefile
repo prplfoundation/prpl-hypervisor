@@ -14,13 +14,13 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input XML file for VMs configuration
-CONF_XML = samples_xml/config-2VM.xml
+CONF_XML = samples_xml/sample-2VMs.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
 # Code generation options - Comment undesired features.
-ETHERNET = -DETHERNET_SUPPORT 
+ETHERNET = -DETHERNET_SUPPORT -DUSB_SUPPORT
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -106,11 +106,14 @@ bare_apps:
 generate_firmware:
 	../../scripts/genhex.sh $(APP_LIST)
 
-config_vms:
+make_genconf:
+	gcc -o genconf scripts/genconf.c -lconfig
+	
+config_vms: make_genconf
 	#execute first and exit in case of errors
-	python scripts/genconf.py $(CONF_XML) || (exit 1)
+	./genconf $(CONF_XML) || (exit 1)
 	#execute and export to a makefile variable the ouput of the script
-	$(eval APP_LIST:=$(shell python scripts/genconf.py $(CONF_XML) || (exit 1)))
+	$(eval APP_LIST:=$(shell ./genconf $(CONF_XML) || (exit 1)))
 
 	
 clean: config_vms
@@ -118,6 +121,7 @@ clean: config_vms
 	rm -f *.o
 	rm -f firmware.hex
 	rm -f include/vms.info
+	rm -f genconf
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean \
 	;done
