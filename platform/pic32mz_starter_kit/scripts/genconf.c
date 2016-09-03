@@ -26,6 +26,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #endif 
 
 #define STRSZ 128
+#define LARGESTR 1024
+#define VMS_INFO_FILE "include/vms.info"
 #define OUTFILE "include/config.h"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
 #define SYSTEM_COMMENT "/* Hypervisor kernel configuration and board info */\n"
@@ -434,18 +436,21 @@ int process_tlb_entry(int vm_number,
  * @param vm_count Number of virtual machines.
  * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
  */
-int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
+int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, char* vms_info){
     int vm_number = 1;
     int vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS;
     int vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS;
     int i, num_el, ret, aux, ram_size, flash_size, j, num_mm;
     unsigned int value;
-    char auxstr[STRSZ], str[STRSZ];
+    char auxstr[STRSZ], str[STRSZ], app_name[STRSZ];
     const char *auxstrp;
     config_setting_t *setting;
     
-    /* make sure app_list is an empty str */
+    /* make sure app_list and vm_info are an empty str */
     strcpy(app_list, "");
+    
+    /* Generates a list of VM's flash and RAM sizes */
+    strcpy(vms_info, "VM name \tflash_size \tram_size\n");
     
     /* Write comment */
     if ( (ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) ) {
@@ -474,6 +479,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
         }
         strncat(app_list, auxstrp, STRSZ);
         strncat(app_list, " ", STRSZ);
+        strncpy(app_name, auxstrp, STRSZ);
         
         /* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
         snprintf(auxstr, STRSZ, "\t0x%x, \t", vm_ram_inter_addr);
@@ -516,7 +522,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
             fprintf(stderr, "Missing vm_entry_point proprierty on virtual_machines group.\n");
             return EXIT_FAILURE;
         }
-        snprintf(str, STRSZ, "0x%x\\\n", value);
+        snprintf(str, STRSZ, "0x%x,\\\n", value);
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
@@ -588,6 +594,10 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
             
         }
         
+        snprintf(auxstr, STRSZ, "%d \t%d\n", flash_size, ram_size);
+        strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
+        strcat(vms_info, str);
+        
         vm_number++;
     }
     
@@ -648,7 +658,32 @@ int rt_vm_list(FILE* outfile){
     return 0;
 }
 
-            
+/**
+ * @brief Write a str to a file
+ * @param str Input string.
+ * @param fname Ouput file name
+ * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
+ */
+
+int write_str_to_file(char* str, char*fname){
+    FILE*f;
+    int size;
+    
+    if( (f=fopen(fname, "w")) == NULL){
+        perror("fopen: ");
+        return EXIT_FAILURE;
+    }
+    
+    size = strlen(str);
+    if (fwrite(str, sizeof(char), size, f) != size){
+        perror("fwrite: ");
+        return EXIT_FAILURE;
+    }
+    
+    fclose(f);
+    
+    return 0;
+}
 
 int main(int argc, char **argv)
 {
@@ -656,6 +691,7 @@ int main(int argc, char **argv)
     FILE* outfile;
     char app_list[STRSZ];
     int vm_count;
+    char* vms_info;
     
     if (argc<2){
         fprintf(stderr, "Usage: %s <config file path>\n", argv[0]);
@@ -692,11 +728,21 @@ int main(int argc, char **argv)
         return(EXIT_FAILURE);
     }
     
-    if (gen_conf_vms(cfg, outfile, app_list, &vm_count)){
+    vms_info = (char*)malloc(LARGESTR);
+    if (gen_conf_vms(cfg, outfile, app_list, &vm_count, vms_info)){
         config_destroy(&cfg);
         fclose(outfile);
         return(EXIT_FAILURE);
     }
+    
+    if(write_str_to_file(vms_info, VMS_INFO_FILE)){
+        config_destroy(&cfg);
+        fclose(outfile);
+        return(EXIT_FAILURE);
+    }
+    
+    free(vms_info);
+    
     
     if (write_vm_number(vm_count, app_list, outfile)){  
         config_destroy(&cfg);
@@ -712,6 +758,7 @@ int main(int argc, char **argv)
     
     printf("%s\n", app_list);
      
+    
     fclose(outfile);
     config_destroy(&cfg);
     return(EXIT_SUCCESS);
