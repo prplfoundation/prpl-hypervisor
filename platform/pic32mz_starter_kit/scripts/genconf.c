@@ -4,6 +4,10 @@
 #include <string.h>
 #include <stdarg.h>
 
+#if (LIBCONFIG_VER_MAJOR <= 1 && LIBCONFIG_VER_MINOR < 5)
+#define config_setting_lookup config_lookup_from
+#endif 
+
 #define STRSZ 128
 #define OUTFILE "../include/config.h"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
@@ -132,7 +136,7 @@ char* strings_cat(char *dest, int size, ...){
     
     va_start(arguments, size); 
     
-    while( c = va_arg(arguments, char*)){
+    while( (c = va_arg(arguments, char*)) ){
         total+=strlen(c);
         if (total > size)
             break;
@@ -157,12 +161,15 @@ int insert_blank_line(FILE *f){
     return 0;
 }
 
-/* Generate general system configuration 
- * @param cfg: input configuration.
+/**
+ * @brief Generate general system configuration 
+ * @param cfg Input configuration.
+ * @param outfile Output file
+ * @return 0 if sucessfull or EXIT_FAILURE in case of error. 
  */
 int gen_system_configuration(config_t cfg, FILE* outfile){
     config_setting_t *setting;
-    int num_el, i;
+    int num_el;
     int ret;
     char str[STRSZ];
     char auxstr[STRSZ];
@@ -175,7 +182,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
         num_el = config_setting_length(setting);
         int i;
         
-        if ( ret = write_to_conf_file(outfile, DEBUG_COMMENT)) {
+        if ( (ret = write_to_conf_file(outfile, DEBUG_COMMENT)) ) {
             return ret;
         }
         
@@ -183,18 +190,18 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
         {
             const char* debug_flag = config_setting_get_string_elem(setting, i);
             strings_cat(str, STRSZ, "#define ", debug_flag, "\n", NULL);
-            if ( ret = write_to_conf_file(outfile, str)) {
+            if ( (ret = write_to_conf_file(outfile, str)) ) {
                 return ret;
             }
         }
     }
     
-    if (ret = insert_blank_line(outfile)){
+    if ( (ret = insert_blank_line(outfile)) ){
         return ret;
     }
     
     /* Insert system configuration comment */
-    if ( ret = write_to_conf_file(outfile, SYSTEM_COMMENT)) {
+    if ( (ret = write_to_conf_file(outfile, SYSTEM_COMMENT)) ) {
         return ret;
     }
     
@@ -204,7 +211,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
         /* CPU_ID */
         if (config_setting_lookup_string(setting, "cpu", &auxstrp)){
             strings_cat(str, STRSZ, "#define CPU_ID ", "\"", auxstrp, "\"\n", NULL);
-            if ( ret = write_to_conf_file(outfile, str)) {
+            if ( (ret = write_to_conf_file(outfile, str)) ) {
                 return ret;
             }
         }else{
@@ -215,7 +222,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
         /*CPU_ARCH */
         if (config_setting_lookup_string(setting, "platform_str", &auxstrp)){
             strings_cat(str, STRSZ, "#define CPU_ARCH ", "\"", auxstrp, "\"\n", NULL);
-            if ( ret = write_to_conf_file(outfile, str)) {
+            if ( (ret = write_to_conf_file(outfile, str)) ) {
                 return ret;
             }
         }else{
@@ -228,14 +235,14 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
         if (config_setting_lookup_int(setting, "system_clock", &value)){
             snprintf(auxstr, STRSZ, "%d", value);
             strings_cat(str, STRSZ, "#define CPU_FREQ ", auxstr, "\n", NULL);
-            if ( ret = write_to_conf_file(outfile, str)) {
+            if ( (ret = write_to_conf_file(outfile, str)) ) {
                 return ret;
             }
             
             /* MILISECOND */
             snprintf(auxstr, STRSZ, "%d", value/2);
             strings_cat(str, STRSZ, "#define MILISECOND ", "(", auxstr, "/ 1000)", "\n", NULL);
-            if ( ret = write_to_conf_file(outfile, str)) {
+            if ( (ret = write_to_conf_file(outfile, str)) ) {
                 return ret;
             }
         }else{
@@ -253,7 +260,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     if (config_lookup_int(&cfg, "system.uart_speed", &value)){
         snprintf(auxstr, STRSZ, "%d", value);
         strings_cat(str, STRSZ, "#define UART_SPEED ", auxstr, "\n", NULL);
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
     }
@@ -262,7 +269,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     if (config_lookup_int(&cfg, "system.scheduler_quantum_ms", &value)){
         snprintf(auxstr, STRSZ, "%d", value);
         strings_cat(str, STRSZ, "#define QUANTUM (", auxstr, " * MILISECOND)", "\n", NULL);
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
     }
@@ -271,7 +278,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     if (config_lookup_int(&cfg, "system.heap_size_bytes", &value)){
         snprintf(auxstr, STRSZ, "0x%x", value);
         strings_cat(str, STRSZ, "#define HEAP_SIZE " , auxstr, "\n", NULL);
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
     }
@@ -280,14 +287,16 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     if (config_lookup_int(&cfg, "system.heap_address", &value)){
         snprintf(auxstr, STRSZ, "0x%x", value);
         strings_cat(str, STRSZ, "#define HEAP_ADDRESS " , auxstr, "\n", NULL);
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
     }
     
-    if (ret = insert_blank_line(outfile)){
+    if ( (ret = insert_blank_line(outfile)) ){
         return ret;
     }
+    
+    return 0;
 }
 
 /**
@@ -352,7 +361,7 @@ int process_tlb_entry(int vm_number,
 
     /* TLB entry number */
     snprintf(str, STRSZ, "\t%d,\t", vm_number);
-    if ( ret = write_to_conf_file(outfile, str)) {
+    if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
     
@@ -363,37 +372,37 @@ int process_tlb_entry(int vm_number,
     
     if(dual_entry){
         sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base));
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
 
         sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base+(mem_size/2)));
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
     }else {
         sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base));
-        if ( ret = write_to_conf_file(outfile, str)) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
-        if ( ret = write_to_conf_file(outfile, "      0,\t")) {
+        if ( (ret = write_to_conf_file(outfile, "      0,\t")) ) {
             return ret;
         }
     }
 
     snprintf(str, STRSZ, "%13s,\t", page_size->name);
-    if ( ret = write_to_conf_file(outfile, str) ) {
+    if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
     
     sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(va));        
-    if ( ret = write_to_conf_file(outfile, str) ) {
+    if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
 
-    if ( ret = write_to_conf_file(outfile, "2,\\\n")) {
+    if ( (ret = write_to_conf_file(outfile, "2,\\\n"))) {
         return ret;
     }
     
@@ -412,7 +421,6 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
     int vm_number = 1;
     int vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS;
     int vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS;
-    int total_tlb_entries = 0;
     int i, num_el, ret, aux, ram_size, flash_size, j, num_mm;
     unsigned int value;
     char auxstr[STRSZ], str[STRSZ];
@@ -423,7 +431,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
     strcpy(app_list, "");
     
     /* Write comment */
-    if ( ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) {
+    if ( (ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) ) {
         return ret;
     }
 
@@ -433,7 +441,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
         return EXIT_FAILURE;
     }
     
-    if ( ret = write_to_conf_file(outfile, "#define VMCONF {\\\n") ) {
+    if ( (ret = write_to_conf_file(outfile, "#define VMCONF {\\\n")) ) {
         return ret;
     }
     
@@ -452,12 +460,12 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
         
         /* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
         snprintf(auxstr, STRSZ, "\t0x%x, \t", vm_ram_inter_addr);
-        if ( ret = write_to_conf_file(outfile, auxstr) ) {
+        if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
             return ret;
         }
         
         /* VM size not used. Keep zero. */
-        if ( ret = write_to_conf_file(outfile, "0, \t") ) {
+        if ( (ret = write_to_conf_file(outfile, "0, \t")) ) {
             return ret;
         }
         
@@ -467,7 +475,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
         /* RAM and FLASH mapping requires 2 additional TLB entries */
         aux += 2;
         snprintf(auxstr, STRSZ, "0x%x, \t", aux);
-        if ( ret = write_to_conf_file(outfile, auxstr) ) {
+        if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
             return ret;
         }
         
@@ -477,22 +485,22 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
             return EXIT_FAILURE;
         }
         strings_cat(str, STRSZ, auxstrp, ", \t", NULL);
-        if ( ret = write_to_conf_file(outfile, str) ) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
         /* interrupt redirect not used. Keep 0*/
-        if ( ret = write_to_conf_file(outfile, "0, \t") ) {
+        if ( (ret = write_to_conf_file(outfile, "0, \t")) ) {
             return ret;
         }
         
         /* get OS entry point  */
-        if( !config_setting_lookup_int(vm_conf, "vm_entry_point", &value)){
+        if( !config_setting_lookup_int(vm_conf, "vm_entry_point", (int*)&value)){
             fprintf(stderr, "Missing vm_entry_point proprierty on virtual_machines group.\n");
             return EXIT_FAILURE;
         }
         snprintf(str, STRSZ, "0x%x\\\n", value);
-        if ( ret = write_to_conf_file(outfile, str) ) {
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
@@ -541,7 +549,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
             config_setting_t *mm = config_setting_get_elem(mem_maps, j);
 
             /* get base addr */
-            if( !config_setting_lookup_int(mm, "base_addr", &base_addr)){
+            if( !config_setting_lookup_int(mm, "base_addr", (int*)&base_addr)){
                 fprintf(stderr, "Missing base_addr proprierty on virtual_machines.memory_maps group.\n");
                 return EXIT_FAILURE;
             }
@@ -566,7 +574,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count){
         vm_number++;
     }
     
-    if ( ret = write_to_conf_file(outfile, "\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n") ) {
+    if ( (ret = write_to_conf_file(outfile, "\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n")) ) {
         return ret;
     }
     
@@ -586,18 +594,18 @@ int write_vm_number(int vm_count, char* app_list, FILE* outfile){
     char straux[STRSZ];
     int ret;
     
-    if (ret = insert_blank_line(outfile)){
+    if ( (ret = insert_blank_line(outfile)) ){
         return ret;
     }
     
     strings_cat(str, STRSZ, "/* Virtual Machine names: ", app_list, " */\n", NULL);
-    if ( ret = write_to_conf_file(outfile, str) ) {
+    if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
     
     snprintf(straux, STRSZ, "%d", vm_count);
     strings_cat(str, STRSZ, "#define NVMACHINES ", straux, "\n", NULL);
-    if ( ret = write_to_conf_file(outfile, str) ) {
+    if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
     
@@ -612,11 +620,11 @@ int write_vm_number(int vm_count, char* app_list, FILE* outfile){
 int rt_vm_list(FILE* outfile){
     int ret;
     
-    if (ret = insert_blank_line(outfile)){
+    if ( (ret = insert_blank_line(outfile)) ){
         return ret;
     }
     
-    if ( ret = write_to_conf_file(outfile, "#define VMCONF_RT {0}\n\n") ) {
+    if ( (ret = write_to_conf_file(outfile, "#define VMCONF_RT {0}\n\n")) ) {
         return ret;
     }
     
@@ -628,9 +636,6 @@ int rt_vm_list(FILE* outfile){
 int main(int argc, char **argv)
 {
     config_t cfg;
-    config_setting_t *setting;
-    const char *str;
-    int uart_speed;
     FILE* outfile;
     char app_list[STRSZ];
     int vm_count;
