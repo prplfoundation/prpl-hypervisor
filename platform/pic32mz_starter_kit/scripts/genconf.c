@@ -45,7 +45,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /* Virtual address for VM's FLASH */
 #define VMS_FLASH_VIRTUAL_BASE_ADDRESS  0x9D000000
 
-
+/* Number of TLB entries available for use. */
+#define TOTAL_TLB_ENTRIES      15
 
 #define DEBUG
 #ifdef DEBUG
@@ -445,6 +446,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
     char auxstr[STRSZ], str[STRSZ], app_name[STRSZ];
     const char *auxstrp;
     config_setting_t *setting;
+    int total_tlb_entries = 0;
     
     /* make sure app_list and vm_info are an empty str */
     strcpy(app_list, "");
@@ -500,6 +502,15 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         snprintf(auxstr, STRSZ, "0x%x, \t", aux);
         if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
             return ret;
+        }
+        
+        /* The current hypervisor implementation uses static tlb configuration.
+           Only 15 TLB entries are available, 1 is reserved for interVM communication. 
+           Stop compilation if more then 15 TLB entries are used. */
+        total_tlb_entries += aux;
+        if(total_tlb_entries > TOTAL_TLB_ENTRIES){
+            fprintf(stderr, "You are using more than %d TLB entries.\n", TOTAL_TLB_ENTRIES);
+            return EXIT_FAILURE;
         }
         
         /* get OS type  */
