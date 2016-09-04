@@ -251,7 +251,7 @@ virtual_machines group contains the configuration of each VM on the resulting sy
 <H2>5.1. system group</H2>
 
 <P>
-System group proprierties description. 
+System group properties description. 
 </P>
 
 <TABLE BORDER="1" CELLPADDING="4">
@@ -401,7 +401,8 @@ virtual_machines group proprierties description.
 </TABLE>
 
 <P>
-Example of a valid virtual_machine group.
+Example of a valid virtual_machine group describing two virtual machines. The blink VM has 32KB of SRAM, 64KB of FLASH and two 4KB pages mapping for peripheral access. The pong VM has 32KB of SRAM and FLASH a 4KB page
+mapping for peripheral access. 
 </P>
 
 <PRE>
@@ -410,7 +411,7 @@ Example of a valid virtual_machine group.
           app_name = "blink";
           os_type = "BAREOS";
           RAM_size_bytes = "MEM_SIZE_32KB";
-          flash_size_bytes = "MEM_SIZE_32KB";
+          flash_size_bytes = "MEM_SIZE_64KB";
           vm_entry_point = 0x9d001000;
           memory_maps = ({ /* Two 4K page mapping for peripheral access. */
                   base_addr = 0xbf822000;
@@ -420,7 +421,19 @@ Example of a valid virtual_machine group.
                   base_addr = 0xbf860000;
                   page_size = "MEM_SIZE_4KB";
               })
+      },
+      { 
+          app_name = "pong";
+          os_type = "BAREOS";
+          RAM_size_bytes = "MEM_SIZE_32KB";
+          flash_size_bytes = "MEM_SIZE_32KB";
+          vm_entry_point = 0x9d001000;
+          memory_maps = ({ /* Two 4K page mapping for peripheral access. */
+                  base_addr = 0xbf822000;
+                  page_size = "MEM_SIZE_4KB";
+              })
       }
+      
   );
 </PRE>
 
@@ -429,10 +442,10 @@ Example of a valid virtual_machine group.
 
 <P>
 To develop new applications move to the ~/prplHypervisor/bare-metal-apps/apps directory and see the blink, ping, pong directories among others examples. Each directory contains the implementation of a bare-metal
-application. The application on the directory is virtualized and executed when the file firmware.hex is flashed to the board. 
+application. Such applications are compiled, virtualized and executed. 
 </P>
 <P>
-The hypervisor can on for up to 3 bare-metal applications (virtual machines). Each virtual machine has a configurable SRAM and FLASH sizes, as explained before. To compile differente bare-metal applications modify 
+The hypervisor can perform up to 3 bare-metal applications (virtual machines). Each virtual machine has configurable SRAM and FLASH sizes, as explained before. To compile differente bare-metal applications modify 
 the input configuration file in <B>platform/pic32mz_starter_kit/Makefile</B>, as in the following example:
 </P>
 
@@ -440,6 +453,11 @@ the input configuration file in <B>platform/pic32mz_starter_kit/Makefile</B>, as
   #Input CFG file for VMs configuration
   CFG_FILE = samples_cfg/sample-1VM.cfg
 </PRE>
+
+<P>
+The easily way to implement a new bare-metal app is to copy the directory of a existing application, for example blink, to a new directory and modifing the implementation. Additionally, to compile different combination of 
+applications see the explation in the Section 5.
+</P>
 
 <A NAME="toc12"></A>
 <H2>6.1. Timer</H2>
