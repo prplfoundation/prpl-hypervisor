@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input XML file for VMs configuration
-CONF_XML = samples_xml/sample-2VMs.cfg
+CFG_FILE = samples_cfg/sample-1VM.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -107,13 +107,13 @@ generate_firmware:
 	../../scripts/genhex.sh $(APP_LIST)
 
 make_genconf:
-	gcc -o genconf scripts/genconf.c -lconfig
+	gcc -o genconf cfg_reader/genconf.c -lconfig
 	
 config_vms: make_genconf
 	#execute first and exit in case of errors
-	./genconf $(CONF_XML) || (exit 1)
+	./genconf $(CFG_FILE) || (exit 1)
 	#execute and export to a makefile variable the ouput of the script
-	$(eval APP_LIST:=$(shell ./genconf $(CONF_XML) || (exit 1)))
+	$(eval APP_LIST:=$(shell ./genconf $(CFG_FILE) || (exit 1)))
 
 	
 clean: config_vms

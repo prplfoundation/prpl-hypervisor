@@ -15,6 +15,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/**
+ * @file genconf.c
+ * @author Carlos Moratelli
+ * @brief This application generates the config.h include file with the VMs' configuration used during
+ * the hypervisor compilation. It makes easier to configure the hypervisor through readably 
+ * cfg files (see samples_cfg directory)
+ * 
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <libconfig.h>
