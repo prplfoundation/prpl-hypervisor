@@ -4,7 +4,7 @@ APP=tcp-listener
 INC_DIRS = -I ../../../../picotcp/build/include/
 
 #Aditional C flags
-CFLAGS = -DPICOTCP
+CFLAGS = -DPICOTCP -mhard-float
 #wolfssl flags
 CFLAGS+= -DWOLFSSL_PICOTCP -DFTM_TIMING_RESISTANT -DNO_WRITEV -DNO_ERROR_STRINGS -DSMALL_SESSION_CACHE -DWOLFSSL_SMALL_STACK -DHAVE_TLS_EXTENSIONS -DNO_DSA -DNO_RABBIT -DNO_MD4 -DNO_DES3 -DNO_FILESYSTEM -DUSE_FAST_MATH -DRSA_DECODE_EXTRA -DHAVE_ECC -DHAVE_ALL_CURVES -DHAVE_SUPPORTED_CURVES -DSINGLE_THREADED -DWOLFSSL_USER_IO
 
@@ -72,7 +72,7 @@ CFLAGS += -EL -O2 -mtune=m14k -mips32r2
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options
-CFLAGS +=  -mno-check-zero-division -mhard-float -fshort-double
+CFLAGS +=  -mno-check-zero-division -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
