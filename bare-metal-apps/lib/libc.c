@@ -836,3 +836,8 @@ int64_t __divdi3(int64_t num, int64_t den){
  
     return v;
 }
+
+/* Stubs for wolfssl compilation.
+   This functions should not called. */
+void sbrk(){};
+void gettimeofday(){};
