@@ -4,7 +4,7 @@ APP=tcp-listener
 INC_DIRS = -I ../../../../picotcp/build/include/
 
 #Aditional C flags
-CFLAGS = -DPICOTCP
+CFLAGS = -DPICOTCP -mhard-float
 
 #Aditional Libraries
 LIBS=../../../../picotcp/build/lib/libpicotcp.a
@@ -66,7 +66,7 @@ CFLAGS += -EL -O2 -mtune=m14k -mips32r2
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options
-CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
+CFLAGS +=  -mno-check-zero-division -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
