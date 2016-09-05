@@ -113,7 +113,7 @@ config_vms: make_genconf
 	#execute first and exit in case of errors
 	./genconf $(CFG_FILE) || (exit 1)
 	#execute and export to a makefile variable the ouput of the script
-	$(eval APP_LIST:=$(shell python scripts/genconf.py $(CONF_XML) || (exit 1)))
+	$(eval APP_LIST:=$(shell ./genconf $(CFG_FILE) || (exit 1)))
 
 	
 clean: config_vms
