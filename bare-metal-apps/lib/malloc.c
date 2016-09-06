@@ -135,7 +135,7 @@ void *realloc(void *ptr, uint32_t size){
 }
 
 uint32_t init_mem() {
-    HeapInit((void*)(( (uint32_t)(&_heap_start) + 4096) & 0xFFFFF000), ((int)(&_heap_size) & 0xFFFFF000) -1);
+    HeapInit((void*)(( (uint32_t)(&_heap_start) + 4096) & 0xFFFFF000), ((int)(&_heap_size) & 0xFFFFF000));
   
     return 0;
 }
