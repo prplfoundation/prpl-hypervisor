@@ -18,11 +18,12 @@
 BASE_ADDR=0x9d000000
 
 # Determine the list of the VM's flash start addresses.
-COUNT=0
+NUM_VM=0
 for i in $*; do 
     START_ADDR=$(awk '/'$i'/{print $4}' include/vms.info)
-    address_array[$COUNT]=$(echo $(($START_ADDR)))
-    ((COUNT++))
+    address_array[$NUM_VM]=$(echo $(($START_ADDR)))
+    ((NUM_VM++))
+    
 done 
 
 # Determines the hypervisor padding based on the start address of the first VM.  
@@ -38,9 +39,9 @@ dd if=prplHypervisor.bin of=/tmp/prplHypervisor.bin bs=$PADDING conv=sync
 #padding of the VM's
 COUNT=1
 for i in $*; do 
-    # Determine the VM's padding size based on the start address of the next VM, or 
+    # Determines the VM's padding size based on the start address of the next VM, or 
     #use the size of the VM in case of the last one
-    if [ $COUNT > ${ArrayName[@]} ]; then 
+    if [ $COUNT -lt $NUM_VM ]; then 
         PADDING=$(expr ${address_array[$COUNT]} - $BASE_ADDR)
     else
         flash_size=$(awk '/'$i'/{print $2}' include/vms.info)

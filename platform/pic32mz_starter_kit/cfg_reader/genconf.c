@@ -380,7 +380,6 @@ unsigned int kseg0_addr_to_physical(unsigned int addr){
  */
 
 int calculate_mem_base(const struct mem_sizes_def* page_size, unsigned int mem_base){
-//        printf("0x%x 0x%x 0x%x 0x%x \n", mem_base, page_size->value, mem_base % page_size->value, (mem_base + page_size->value) & (~page_size->mask));
         if (mem_base % page_size->value){
             return (mem_base + page_size->value) & (~page_size->mask);
         }

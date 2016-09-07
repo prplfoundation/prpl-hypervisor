@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = samples_cfg/sample-1VM.cfg
+CFG_FILE = samples_cfg/sample-2VMs.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -27,6 +27,8 @@ ETHERNET = -DETHERNET_SUPPORT -DUSB_SUPPORT
 # OR PORTING TO A NEW PLATFORM.
 ########################################################################################################
 APP_LIST = ""
+
+SHELL := /bin/bash
 
 # Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
 BAUDRATE=115200
