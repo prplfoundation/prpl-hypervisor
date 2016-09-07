@@ -66,20 +66,23 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Struct for translation between string names and its respective values */
 struct mem_sizes_def{
+    unsigned int mask;
     unsigned int value;
     char name[32];
 };
 
+
+
 /* Pages mask definition used by the hypervisor */
 const struct mem_sizes_def PageSizes[] = {
-    {name: "PAGEMASK_4KB",    value: 4096},
-    {name: "PAGEMASK_16KB",   value: 16384},
-    {name: "PAGEMASK_64KB",   value: 65536},
-    {name: "PAGEMASK_256KB",  value: 262144},
-    {name: "PAGEMASK_1MB",    value: 1048576},    
-    {name: "PAGEMASK_4MB",    value: 4194304},    
-    {name: "PAGEMASK_16MB",   value: 16777216},    
-    {name: "PAGEMASK_256MB",  value: 268435456}
+    {name: "PAGEMASK_4KB",    value: 4096,      mask: 0xFFF},
+    {name: "PAGEMASK_16KB",   value: 16384,     mask: 0x3FFF},
+    {name: "PAGEMASK_64KB",   value: 65536,     mask: 0xFFFF},
+    {name: "PAGEMASK_256KB",  value: 262144,    mask: 0x3FFFF},
+    {name: "PAGEMASK_1MB",    value: 1048576,   mask: 0xFFFFF},    
+    {name: "PAGEMASK_4MB",    value: 4194304,   mask: 0x3FFFFF},    
+    {name: "PAGEMASK_16MB",   value: 16777216,  mask: 0xFFFFFF},    
+    {name: "PAGEMASK_256MB",  value: 268435456, mask: 0xFFFFFFF}
 };
 
 /* Memory areas definition used in the config file. */
@@ -369,6 +372,19 @@ unsigned int kseg0_addr_to_physical(unsigned int addr){
     return (addr & 0x1FFFFFFF) >> 12;
 }
 
+/**
+ * @brief Calculate page alignment based on page size.
+ * @param page_size Page size to be used.
+ * @param mem_base Memory base
+ * @return Intermediate memory address where the mapping must take place. 
+ */
+
+int calculate_mem_base(const struct mem_sizes_def* page_size, unsigned int mem_base){
+        if (mem_base % page_size->value){
+            return (mem_base + page_size->value) & (~page_size->mask);
+        }
+        return mem_base;
+}
 
 /**
  * @brief Process a TLB entry writing the output file.
@@ -380,7 +396,7 @@ unsigned int kseg0_addr_to_physical(unsigned int addr){
  */
 int process_tlb_entry(int vm_number, 
                       unsigned int mem_size, 
-                      unsigned int mem_base, 
+                      unsigned int *mem_base, 
                       unsigned int va, 
                       FILE* outfile){
     
@@ -399,19 +415,21 @@ int process_tlb_entry(int vm_number,
         return EXIT_FAILURE;
     }
     
+    *mem_base = calculate_mem_base(page_size, *mem_base);
+    
     if(dual_entry){
-        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base));
+        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(*mem_base));
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
 
-        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base+(mem_size/2)));
+        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(*mem_base+(mem_size/2)));
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
     }else {
-        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(mem_base));
+        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(*mem_base));
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
@@ -448,8 +466,8 @@ int process_tlb_entry(int vm_number,
  */
 int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, char* vms_info){
     int vm_number = 1;
-    int vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS;
-    int vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS;
+    unsigned int vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS;
+    unsigned int vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS;
     int i, num_el, ret, aux, ram_size, flash_size, j, num_mm;
     unsigned int value;
     char auxstr[STRSZ], str[STRSZ], app_name[STRSZ];
@@ -461,7 +479,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
     strcpy(app_list, "");
     
     /* Generates a list of VM's flash and RAM sizes */
-    strcpy(vms_info, "VM name \tflash_size \tram_size\n");
+    strcpy(vms_info, "VM name \tflash_size \tram_size \t address_start\n");
     
     /* Write comment */
     if ( (ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) ) {
@@ -558,13 +576,10 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         }
 
         /* Create a TLB entry to the RAM memory */
-        if ((ret = process_tlb_entry(vm_number, ram_size, vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, outfile))){
+        if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, outfile))){
             return ret;
         }
         
-        /* Increment to the intermediate address of the next VM */
-        vm_ram_inter_addr += ram_size;
-            
         /* get FLASH size */
         if( !config_setting_lookup_string(vm_conf, "flash_size_bytes", &auxstrp)){
             fprintf(stderr, "Missing flash_size_bytes proprierty on virtual_machines group.\n");
@@ -576,12 +591,9 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         }
         
         /* Create a TLB entry to the FLASH memory */
-        if ((ret = process_tlb_entry(vm_number, flash_size, vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, outfile))){
+        if ((ret = process_tlb_entry(vm_number, flash_size, &vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, outfile))){
             return ret;
         }
-        
-        /* Increment to the intermediate address of the next VM */
-        vm_flash_inter_addr += flash_size;
         
         /* process the additional memory mapping */
         mem_maps = config_setting_lookup(vm_conf, "memory_maps");
@@ -608,15 +620,21 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
             }
             
             /* Create a TLB entry to this mapping */
-            if ((ret = process_tlb_entry(vm_number, page_size, base_addr, base_addr, outfile))){
+            if ((ret = process_tlb_entry(vm_number, page_size, &base_addr, base_addr, outfile))){
                 return ret;
             }
             
         }
         
-        snprintf(auxstr, STRSZ, "%d \t%d\n", flash_size, ram_size);
+        snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_flash_inter_addr);
         strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
         strcat(vms_info, str);
+        
+        /* Increment to the intermediate address of the next VM */
+        vm_ram_inter_addr += ram_size;
+        
+        /* Increment to the intermediate address of the next VM */
+        vm_flash_inter_addr += flash_size;
         
         vm_number++;
     }

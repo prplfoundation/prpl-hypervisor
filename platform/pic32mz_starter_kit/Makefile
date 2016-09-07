@@ -26,7 +26,9 @@ ETHERNET = -DETHERNET_SUPPORT
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
 # OR PORTING TO A NEW PLATFORM.
 ########################################################################################################
-APP_LIST = "tcp-listener"
+APP_LIST = ""
+
+SHELL := /bin/bash
 
 # Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
 BAUDRATE=115200
@@ -76,7 +78,7 @@ CC= $(CROSS_COMPILER)gcc
 
 APP = prplHypervisor
 
-all: lib kernel common pic32mz $(APP) bare_apps generate_firmware
+all: config_vms lib kernel common pic32mz $(APP) bare_apps generate_firmware
 
 include $(TOPDIR)sys/sys.mk
 include $(TOPDIR)arch/mips/common/common.mk
@@ -116,7 +118,7 @@ config_vms: make_genconf
 	$(eval APP_LIST:=$(shell ./genconf $(CFG_FILE) || (exit 1)))
 
 	
-clean: #config_vms
+clean: config_vms
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
