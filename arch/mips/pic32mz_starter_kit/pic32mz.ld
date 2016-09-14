@@ -22,13 +22,14 @@ ENTRY(_entry)
 
 MEMORY 
 {
-flash       (rx)  : ORIGIN = 0x9d000000, LENGTH = 2M    /* Flash area*/
-ram     (rw!x) : ORIGIN = 0x80000000, LENGTH = 512K /* RAM area. */
+flash       (rx)  : ORIGIN = 0x9d000000, LENGTH = 64k    /* Flash area*/
+ram     (rw!x) : ORIGIN = 0x80000000, LENGTH = 32K /* RAM area. */
 }
 
 /* define a global symbol _stack  */
 
 _stack = ORIGIN(ram) + LENGTH(ram);
+_stack_size = 1024;
 
 /* now define the output sections  */
 
@@ -86,4 +87,7 @@ SECTIONS
 
 }
     _end = .;
+    _heap_start = . ;
+    _heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - 4 - _stack_size;
+    
 

@@ -20,6 +20,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "malloc.h"
 #include "libc.h"
 
+extern _heap_start;
+extern _heap_size;
+
+
 /* new memory allocator implementation
    based on K&R The C Programming Language book 2nd. ed., p.149
 */
@@ -137,7 +141,7 @@ void *realloc(void *ptr, uint32_t size){
 uint32_t init_mem() {
   
   //Initialize heap           
-  HeapInit((void*)HEAP_ADDRESS, HEAP_SIZE);
+  HeapInit((void*)(( (uint32_t)(&_heap_start) + 4096) & 0xFFFFF000), ((int)(&_heap_size) & 0xFFFFF000));    
   
   return 0;
 }

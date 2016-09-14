@@ -26,6 +26,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <usb.h>
 #endif    
 
+extern _heap_start;
+extern _heap_size;
+
 
 #define STR(x) #x
 #define STR_VALUE(x) STR(x)
@@ -43,7 +46,7 @@ static void print_config(void)
         printf("\nCPU ID:        %s", CPU_ID);
         printf("\nARCH:          %s", CPU_ARCH);
         printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
-        printf("\nHeap size:     %dKbytes", HEAP_SIZE/1024);
+        printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
         printf("\nScheduler      %dms", QUANTUM/100000);
         printf("\nVMs:           %d\n", NVMACHINES);
 }

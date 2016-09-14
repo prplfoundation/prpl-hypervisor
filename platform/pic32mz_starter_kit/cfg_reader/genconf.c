@@ -306,24 +306,6 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
         }
     }
        
-    /* heap_size_bytes  */
-    if (config_lookup_int(&cfg, "system.heap_size_bytes", &value)){
-        snprintf(auxstr, STRSZ, "0x%x", value);
-        strings_cat(str, STRSZ, "#define HEAP_SIZE " , auxstr, "\n", NULL);
-        if ( (ret = write_to_conf_file(outfile, str)) ) {
-            return ret;
-        }
-    }
-
-    /* heap_address  */
-    if (config_lookup_int(&cfg, "system.heap_address", &value)){
-        snprintf(auxstr, STRSZ, "0x%x", value);
-        strings_cat(str, STRSZ, "#define HEAP_ADDRESS " , auxstr, "\n", NULL);
-        if ( (ret = write_to_conf_file(outfile, str)) ) {
-            return ret;
-        }
-    }
-    
     if ( (ret = insert_blank_line(outfile)) ){
         return ret;
     }
