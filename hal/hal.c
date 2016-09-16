@@ -40,7 +40,7 @@ static void print_config(void)
         printf("ARCH:          %s", CPU_ARCH);
         printf("SYSCLK:        %dMHz", CPU_SPEED/1000000);
         printf("Heap size:     %dKbytes", HEAP_SIZE/1024);
-        printf("Scheduler      %dms", QUANTUM/100000);
+        printf("Scheduler      %dms", QUANTUM_VM);
         printf("VMs:           %d\n", NVMACHINES);
 }
 

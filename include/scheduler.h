@@ -21,6 +21,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "types.h"
 #include "linkedlist.h"
 
+#define QUANTUM_VM 5
+
 struct vcpu_t;
 typedef struct vcpu_t vcpu_t;
 
