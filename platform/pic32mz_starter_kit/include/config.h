@@ -19,7 +19,7 @@
 #define CPU_FREQ 200000000
 #define MILISECOND (100000000/ 1000)
 #define UART_SPEED 115200
-#define QUANTUM (1 * MILISECOND)
+#define QUANTUM_SCHEDULER 5 
 
 /* VMs mapping */
 static const struct vmconf_t const VMCONF[] = {

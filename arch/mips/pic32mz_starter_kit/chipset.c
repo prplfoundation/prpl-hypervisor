@@ -21,6 +21,9 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include "pic32mz.h"
 #include "ethernet.h"
 
+/* Interval of interrupt injection on guests */
+#define QUANTUM (1 * MILISECOND)
+
 PIC32MZ_DEVCFG (
     _DEVCFG0_JTAG_DISABLE |      /* Disable JTAG port */
     _DEVCFG0_TRC_DISABLE,        /* Disable trace port */

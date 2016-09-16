@@ -307,7 +307,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     /* scheduler_quantum_ms  */
     if (config_lookup_int(&cfg, "system.scheduler_quantum_ms", &value)){
         snprintf(auxstr, STRSZ, "%d", value);
-        strings_cat(str, STRSZ, "#define QUANTUM (", auxstr, " * MILISECOND)", "\n", NULL);
+        strings_cat(str, STRSZ, "#define QUANTUM_SCHEDULER ", auxstr, " \n", NULL);
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
