@@ -184,9 +184,7 @@ System group properties description.
 | platform.platform_str | string | Platform description. | Any valid string. 
 | platform.system_clock | integer | Processor's clock in Hertz. | Positive integers
 | uart_speed | integer | UART 2 baudrate. | 115200, 57600 and 9600. Other baudrates may be used.
-| scheduler_quantum_ms | integer | Timer interval in millisecods for VM's timer interrupt injection. | Positive integers.
-| heap_size_bytes | integer | Size of the hypervisor heap in bytes. | Positive integers. 
-| heap_address | integer | Address of the heap. | Valid kseg0 addresses. 
+| scheduler_quantum_ms | integer | Timer interval in millisecods for the hypervisor scheduler timer (QUANTUM). | Positive integers.
 
 
 Example of a valid system configuration. 
