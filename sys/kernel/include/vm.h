@@ -22,6 +22,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <linkedlist.h>
 #include <tlb.h>
 
+
 /* Number of colums for VM's configuratio */
 #define VMCONF_NUMCOLUNS  6
 
@@ -35,12 +36,24 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define IDLEVCPU	5
 
 
-static uint32_t HF_Template[][VMCONF_NUMCOLUNS] = { 	0, 		132, 		2,		0	,	0, 	0, 
-						0, 		0x20000, 	0x20010,	PAGEMASK_64KB, 	0,    	0, 
-						0,		0x1FFFF,	0,		PAGEMASK_4KB,  	0x40,	2 };
+struct tlb_entries{
+    uint32_t entrylo0;
+    uint32_t entrylo1;
+    uint32_t pagemask;
+    uint32_t entryhi;
+    uint32_t coherency;
+};
+
+struct vmconf_t{
+    uint32_t ram_base;
+    uint32_t num_tlb_entries;
+    uint32_t os_type;
+    uint32_t vm_entry;
+    const struct tlb_entries const *tlb;
+};    
+
 
 static uint32_t TLBIndex = 1;
-
 
 /** Holds information about memory regions of a VM
  * 
@@ -63,13 +76,10 @@ typedef struct memVMMap{
 typedef struct vm_t {
 	unsigned int id;
 	unsigned int base_addr;
-	unsigned int size;	
 	linkedlist_t vcpus;
 	uint32_t os_type;
 	uint32_t ntlbent;
 	uint32_t init;	
-	//uint32_t gprshadownum;
-  
 	struct tlbentry *tlbentries;
 	memVMMap_t *vmmap;
 }vm_t;
@@ -77,7 +87,7 @@ typedef struct vm_t {
 
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer,  uint32_t pip, uint32_t ostype);
 void delete_vcpu(vcpu_t*);
-vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]);
+vm_t *create_vm(const struct vmconf_t const *vm);
 vm_t *get_vm(unsigned int);
 void delete_vm(vm_t*);
 

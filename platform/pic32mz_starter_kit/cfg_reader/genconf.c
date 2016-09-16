@@ -149,6 +149,13 @@ int initial_msg(FILE *f, char * conf_name){
     if (write_to_conf_file(f, " */\n\n"))
         return EXIT_FAILURE;
     
+    if (write_to_conf_file(f, "#ifndef __CONFIG_H\n#define __CONFIG_H\n\n"))
+        return EXIT_FAILURE;
+    
+    if (write_to_conf_file(f, "#include <vm.h>\n\n"))
+        return EXIT_FAILURE;
+    
+    
     return 0;
 }
 
@@ -383,15 +390,14 @@ int process_tlb_entry(int vm_number,
                       FILE* outfile){
     
     char str[STRSZ];
+    char straux[STRSZ];
     const struct mem_sizes_def* page_size;
     int dual_entry, ret;
-
-    /* TLB entry number */
-    snprintf(str, STRSZ, "\t%d,\t", vm_number);
-    if ( (ret = write_to_conf_file(outfile, str)) ) {
+    
+    if ( (ret = write_to_conf_file(outfile, "\t\t\t{\n")) ) {
         return ret;
     }
-    
+
     if ( (page_size = select_page_mask(mem_size, (const struct mem_sizes_def *)&PageSizes, sizeof(PageSizes)/sizeof(struct mem_sizes_def), &dual_entry)) == NULL){
         fprintf(stderr, "The memory size 0x%x does not fit any TLB entry size.\n", mem_size);
         return EXIT_FAILURE;
@@ -399,39 +405,53 @@ int process_tlb_entry(int vm_number,
     
     *mem_base = calculate_mem_base(page_size, *mem_base);
     
+    /* Write intermediate physical addresses entrylo0 and entrylo1 */
     if(dual_entry){
-        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(*mem_base));
+        sprintf(straux, "0x%05x", kseg0_addr_to_physical(*mem_base));
+        strings_cat(str, STRSZ, "\t\t\t\tentrylo0: ", straux, ",\n", NULL);
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
 
-        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(*mem_base+(mem_size/2)));
+        sprintf(straux, "0x%05x", kseg0_addr_to_physical(*mem_base+(mem_size/2)));
+        strings_cat(str, STRSZ, "\t\t\t\tentrylo1: ", straux, ",\n", NULL);        
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
     }else {
-        sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(*mem_base));
+        sprintf(straux, "0x%05x", kseg0_addr_to_physical(*mem_base));
+        strings_cat(str, STRSZ, "\t\t\t\tentrylo0: ", straux, ",\n", NULL);
         if ( (ret = write_to_conf_file(outfile, str)) ) {
             return ret;
         }
         
-        if ( (ret = write_to_conf_file(outfile, "      0,\t")) ) {
+        if ( (ret = write_to_conf_file(outfile, "\t\t\t\tentrylo1: 0,\n")) ) {
             return ret;
         }
     }
 
-    snprintf(str, STRSZ, "%13s,\t", page_size->name);
+    /* pagemask */
+    snprintf(straux, STRSZ, "%s", page_size->name);
+    strings_cat(str, STRSZ, "\t\t\t\tpagemask: ", straux, ",\n", NULL);
     if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
     
-    sprintf(str, "0x%05x,\t", kseg0_addr_to_physical(va));        
+    /* Virtual address */
+    sprintf(straux, "0x%05x", kseg0_addr_to_physical(va));        
+    strings_cat(str, STRSZ, "\t\t\t\tentryhi: ", straux, ",\n", NULL);
     if ( (ret = write_to_conf_file(outfile, str)) ) {
         return ret;
     }
 
-    if ( (ret = write_to_conf_file(outfile, "2,\\\n"))) {
+    /* FIXME: the cache coherency should be configurable. */
+    if ( (ret = write_to_conf_file(outfile, "\t\t\t\tcoherency: 2\n"))) {
+        return ret;
+    }
+    
+    /* Close the TLB entry group. */
+    if ( (ret = write_to_conf_file(outfile, "\t\t\t},\n"))) {
         return ret;
     }
     
@@ -474,13 +494,19 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         return EXIT_FAILURE;
     }
     
-    if ( (ret = write_to_conf_file(outfile, "#define VMCONF {\\\n")) ) {
+    if ( (ret = write_to_conf_file(outfile, "static const struct vmconf_t const VMCONF[] = {\n")) ) {
         return ret;
     }
     
     num_el = config_setting_length(setting);
     *vm_count = num_el;
     for (i=0;i<num_el;i++){
+        
+        snprintf(str, STRSZ, "\t{ /* VM#%d */\n", vm_number);
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
+            return ret;
+        }
+        
         config_setting_t *vm_conf = config_setting_get_elem(setting, i);
         
         /* get app_name */
@@ -493,13 +519,8 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         strncpy(app_name, auxstrp, STRSZ);
         
         /* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
-        snprintf(auxstr, STRSZ, "\t0x%x, \t", vm_ram_inter_addr);
+        snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
         if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
-            return ret;
-        }
-        
-        /* VM size not used. Keep zero. */
-        if ( (ret = write_to_conf_file(outfile, "0, \t")) ) {
             return ret;
         }
         
@@ -508,7 +529,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         aux = config_setting_length(mem_maps);
         /* RAM and FLASH mapping requires 2 additional TLB entries */
         aux += 2;
-        snprintf(auxstr, STRSZ, "0x%x, \t", aux);
+        snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
         if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
             return ret;
         }
@@ -527,13 +548,8 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
             fprintf(stderr, "Missing os_type proprierty on virtual_machines group.\n");
             return EXIT_FAILURE;
         }
-        strings_cat(str, STRSZ, auxstrp, ", \t", NULL);
+        strings_cat(str, STRSZ, "\t\tos_type: ", auxstrp, ",\n", NULL);
         if ( (ret = write_to_conf_file(outfile, str)) ) {
-            return ret;
-        }
-        
-        /* interrupt redirect not used. Keep 0*/
-        if ( (ret = write_to_conf_file(outfile, "0, \t")) ) {
             return ret;
         }
         
@@ -542,8 +558,14 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
             fprintf(stderr, "Missing vm_entry_point proprierty on virtual_machines group.\n");
             return EXIT_FAILURE;
         }
-        snprintf(str, STRSZ, "0x%x,\\\n", value);
+        snprintf(auxstr, STRSZ, "0x%x", value);
+        strings_cat(str, STRSZ, "\t\tvm_entry: ", auxstr, ",\n", NULL);
         if ( (ret = write_to_conf_file(outfile, str)) ) {
+            return ret;
+        }
+        
+        /* Generate the TLB entries to the current VM's configuration */
+        if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
             return ret;
         }
         
@@ -556,7 +578,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
             fprintf(stderr, "Invalide value for RAM_size_bytes: %s.\n", auxstrp);
             return EXIT_FAILURE;
         }
-
+        
         /* Create a TLB entry to the RAM memory */
         if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, outfile))){
             return ret;
@@ -608,6 +630,11 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
             
         }
         
+        /* Close the TLB array group  */
+        if ( (ret = write_to_conf_file(outfile, "\t\t}\n")) ) {
+            return ret;
+        }
+        
         snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_flash_inter_addr);
         strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
         strcat(vms_info, str);
@@ -619,9 +646,16 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         vm_flash_inter_addr += flash_size;
         
         vm_number++;
+        
+        /* Close the VM group  */
+        if ( (ret = write_to_conf_file(outfile, "\t},\n")) ) {
+            return ret;
+        }
+        
     }
     
-    if ( (ret = write_to_conf_file(outfile, "\t0, \t      0, \t        0, \t       0, \t       0, \t    0}\n")) ) {
+    /* Close VM's conf. */
+    if ( (ret = write_to_conf_file(outfile, "};\n")) ) {
         return ret;
     }
     
@@ -674,6 +708,11 @@ int rt_vm_list(FILE* outfile){
     if ( (ret = write_to_conf_file(outfile, "#define VMCONF_RT {0}\n\n")) ) {
         return ret;
     }
+    
+    if ( (ret = write_to_conf_file(outfile, "#endif\n\n")) ) {
+        return ret;
+    }
+    
     
     return 0;
 }
@@ -775,6 +814,8 @@ int main(int argc, char **argv)
         fclose(outfile);
         return(EXIT_FAILURE);
     }
+    
+    
     
     printf("%s\n", app_list);
      

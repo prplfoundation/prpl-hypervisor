@@ -18,8 +18,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
-#include "config.h"
-
 struct ll_node_t;
 struct linkedlist_t;
 

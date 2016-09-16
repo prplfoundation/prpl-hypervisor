@@ -19,8 +19,8 @@ CFG_FILE = samples_cfg/sample-2VMs.cfg
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
-# Code generation options - Comment undesired features.
-ETHERNET = -DETHERNET_SUPPORT -DUSB_SUPPORT
+# Optional Device Drivers
+DRIVERS = -DETHERNET_SUPPORT -DUSB_SUPPORT
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -52,7 +52,7 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
-CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
+CFLAGS += $(DRIVERS) -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
 # AS flags
 ASFLAGS = -EL -mvirt -mips32r2
 # LD flags

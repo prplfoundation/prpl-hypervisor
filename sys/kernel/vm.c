@@ -28,10 +28,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 
 
-uint32_t vmconf[][VMCONF_NUMCOLUNS] = VMCONF;
-uint32_t vmconf_rt[][VMCONF_NUMCOLUNS] = VMCONF_RT;
+static const struct vmconf_t const *vmconf = VMCONF;
 
-uint32_t idleconf[][VMCONF_NUMCOLUNS] = {0, 0, 0, IDLEVCPU, 0, (uint32_t)idlevcpu}; 
 
 void delete_vcpu(vcpu_t *vcpu) {
   ll_node_t *a;
@@ -55,60 +53,12 @@ vm_t *get_vm(unsigned int id) {
 void delete_vm(vm_t *dom) {
   ll_node_t *nd;
 
-  //free((void*)dom->base_addr);
   nd = (ll_node_t*)((unsigned int)dom - sizeof(ll_node_t));
   ll_remove(nd);
   free(nd);
  
- // flush_tlb();
-  
 }
 
-/* Cria mapeapmento das VM com base em dados carregados na memoria pelo loader. */
-void inMemoryLoad(){
-	static uint32_t *confaddr = (uint32_t*)0x80300000;
-	
-	/* Carrega configura a partir do endereço 0x80300000 */
-	while(*confaddr){
-		HF_Template[0][0] = *confaddr;
-		HF_Template[1][0] = TLBIndex;
-		HF_Template[1][1] = *confaddr/0x1000;
-		HF_Template[1][2] = *confaddr/0x1000+0x10;
-		HF_Template[2][0] = TLBIndex;
-
-		switch ( *(confaddr+1)){
-			case HELLFIRE:
-				HF_Template[0][3] = HELLFIRE;
-				break;
-			case BAREOS:
-				HF_Template[0][3] = BAREOS;
-				break;
-			case BAREOS_RT:
-				HF_Template[0][3] = BAREOS_RT;
-				break;
-			default:
-				Warning("Undentified VM 0x%x.", *(confaddr+1));
-		}
-		create_vm(HF_Template);
-		confaddr += 2;
-		TLBIndex++;
-	}
-}
-
-/** Initialize the RT VMs */
-initializeRTMachines(void){
-	unsigned int i;
-
-	Info("Initializing RT Virtual Machines");
-	if(vmconf_rt[0][0] != 0){
-		/* Create initialize the VM structure */
-		for(i=0; vmconf_rt[i][0]; i+=vmconf_rt[i][2]+1){
-			create_vm(&vmconf_rt[i]);
-		}	
-	}else{
-		//inMemoryLoad();
-	}
-}
 
 /** Initialize the VMs */
 void initializeMachines(void) {
@@ -116,23 +66,18 @@ void initializeMachines(void) {
 	
 
 	Info("Initializing Virtual Machines");
-	
-	/* Pode carregar a tabela de VMs a partir do arquivo config.h ou de configuração carregada na memória a partir do endereço 0x80000500 */
-	if(vmconf[0][0] != 0){
+
+    if(NVMACHINES > 0){
 		/* Create initialize the VM structure */
-		for(i=0; vmconf[i][0]; i+=vmconf[i][2]+1){
+        for(i=0; i<NVMACHINES; i++){
 			create_vm(&vmconf[i]);
 		}
-	}else{
-	//	inMemoryLoad();
 	}
-    
-	//create_vm(idleconf);
 }
 
 
 /** Create and initialize the structure of the VM abstraction */ 
-vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
+vm_t *create_vm(const struct vmconf_t const *vm) {
 	static uint32_t vm_id = 1;  /* vm_id is the guestid */	
 	static uint32_t tlbindex = 0; 	/* unique tlb entry */
 
@@ -142,7 +87,7 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	vcpu_t *vcpu;
 	
 	/* number of fix tlb entries */
-	uint32_t ntlbent = vm[0][2];
+    uint32_t ntlbent = vm->num_tlb_entries;
 
 	if(!(nd = (ll_node_t*) calloc(1, sizeof(ll_node_t) + sizeof(vm_t))))
 		return NULL;
@@ -150,17 +95,15 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	ret = (vm_t*)((unsigned int)nd + sizeof(ll_node_t));
     
 	//Memory map
-	ret->base_addr = vm[0][0];
-	ret->size = vm[0][1];
+    ret->base_addr = vm->ram_base;
 	
 	ret->id = vm_id++;  
-	ret->os_type = vm[0][3];
+	ret->os_type = vm->os_type;
 	ret->ntlbent = ntlbent;
 	ret->init = 1;
 
 	ret->tlbentries = NULL;
         
-#ifdef STATICTLB	
 	/* allocate a tlb entry to the VM */
 	if(ret->os_type != IDLEVCPU){
 		ret->tlbentries = (struct tlbentry *)calloc(1, sizeof(struct tlbentry)*(ntlbent)); 
@@ -171,73 +114,24 @@ vm_t *create_vm(uint32_t vm[][VMCONF_NUMCOLUNS]) {
 	}
 	/* fill the tlb entries to the VM */
 	for(i=0; i<ntlbent; i++, tlbindex++){
-		ret->tlbentries[i].guestid = vm[i+1][0];
+        ret->tlbentries[i].guestid = ret->id;
 		ret->tlbentries[i].index = tlbindex;
-		ret->tlbentries[i].entrylo0 = vm[i+1][1];
+		ret->tlbentries[i].entrylo0 = vm->tlb[i].entrylo0;
 		if(ret->tlbentries[i].entrylo0) 
 			ret->tlbentries[i].lo0flags = ENTRYLO_V | ENTRYLO_D;
-		ret->tlbentries[i].entrylo1 = vm[i+1][2];
+        ret->tlbentries[i].entrylo1 = vm->tlb[i].entrylo1;
 		if(ret->tlbentries[i].entrylo1)
 			ret->tlbentries[i].lo1flags = ENTRYLO_V | ENTRYLO_D;
-		ret->tlbentries[i].pagemask = vm[i+1][3];
-		ret->tlbentries[i].entryhi = vm[i+1][4];
-		ret->tlbentries[i].coherency = vm[i+1][5];
+        ret->tlbentries[i].pagemask = vm->tlb[i].pagemask;
+        ret->tlbentries[i].entryhi = vm->tlb[i].entryhi;
+        ret->tlbentries[i].coherency = vm->tlb[i].coherency;
 		ret->tlbentries[i].onhardware = 0;
 	}
-#else	
-	if(ret->os_type != IDLEVCPU){
-		ret->vmmap = (memVMMap_t *)calloc(1, sizeof(memVMMap_t)*(ntlbent)); 
-		memset(ret->vmmap, 0, sizeof(memVMMap_t)*ntlbent);
-	}else{
-		ret->vmmap = NULL;
-		ret->id = 0;
-	}
 
-	/* fill the tlb entries to the VM */
-	for(i=0; i<ntlbent; i++, tlbindex++){
-		ret->vmmap[i].phyGuestBase = vm[i+1][1];
-		ret->vmmap[i].vGuestBase = vm[i+1][4];
-		ret->vmmap[i].size = vm[i+1][2];
-		ret->vmmap[i].coherency = vm[i+1][5];
-	}
-#endif	
 	/* Set the VM entry Point and scheduler*/
-	switch(ret->os_type){
-		case BAREOS:
-			vcpu = create_vcpu(ret, vm[0][5], 0 ,0, vm[0][4], BAREOS);	
-			addVcpu_bestEffortList(vcpu);			
-			ll_append(&virtualmachines, nd);
-			break;
-		case GENERIC: 	
-			vcpu = create_vcpu(ret, 0x80000000, 0, 0, vm[0][4], GENERIC);
-			addVcpu_bestEffortList(vcpu);
-			ll_append(&virtualmachines, nd);
-			break;
-		case HELLFIRE:
-			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4], HELLFIRE);
-			addVcpu_bestEffortList(vcpu);
-			ll_append(&virtualmachines, nd);
-			break;
-		case BAREOS_RT:
-			vcpu = create_vcpu(ret, 0x801000f4, 0, 0, vm[0][4], BAREOS_RT);
-			addVcpu_servicesInitList(vcpu);		
-			ll_append(&virtualmachines_rt, nd);
-			break;
-		case LINUX:
-			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4], LINUX);
-			addVcpu_bestEffortList(vcpu);		
-			ll_append(&virtualmachines, nd);
-			break;
-		case IDLEVCPU:
-			vcpu = create_vcpu(ret, vm[0][5], 0, 0, vm[0][4], IDLEVCPU);
-			idle_vcpu = vcpu;		
-			ll_append(&virtualmachines, nd);
-			break;
-			
-		default:
-			Warning("OS type 0x%x supported!\n", ret->os_type);
-			break;
-	}
+    vcpu = create_vcpu(ret, vm->vm_entry, 0 ,0, 0, vm->os_type);	
+	addVcpu_bestEffortList(vcpu);			
+	ll_append(&virtualmachines, nd);
 	
 	nd->ptr = ret;
 		

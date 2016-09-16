@@ -15,6 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+#ifndef __GLOBALS_H
+#define __GLOBALS_H
+
 #include <types.h>
 #include <vm.h>
 #include <vcpu.h>
@@ -66,3 +69,5 @@ extern linkedlist_t rt_services_init_vcpu_list;
 
 #define curr_vcpu proc->curr_vcpu
 #define curr_vm   curr_vcpu->vm
+
+#endif
