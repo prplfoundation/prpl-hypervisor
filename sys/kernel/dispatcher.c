@@ -35,17 +35,7 @@ void dispatcher(){
 		}
 		vcpu_sgpr[curr_vcpu->gprshadowset]=curr_vcpu;		
 	}
-	/* First scheduling of a VM */
-#ifdef STATICTLB	
-	if(curr_vm->init){
-		/* Write entries to TLB*/
-		for(i=0;i<curr_vm->ntlbent;i++){
-			tlbEntryWrite(&curr_vm->tlbentries[i]);
-			curr_vm->tlbentries[i].onhardware = 1;
-		}
-		curr_vm->init=0;		
-	}
-#endif	
+
 	setGLowestGShadow(curr_vcpu->gprshadowset);	
 	setGuestID(curr_vm->id);
 	
@@ -53,11 +43,10 @@ void dispatcher(){
 	if(curr_vm->id!=0){
 		setGuestMode();
 	}
+	
 	//Initialize vcpu
 	if(curr_vcpu->init){
-		curr_vcpu->gp_registers[REG_SP]=curr_vcpu->sp;
-		curr_vcpu->gp_registers[REG_A0]=curr_vcpu->arg;
 		curr_vcpu->cp0_registers[9][0]=getCounter();
 		curr_vcpu->init = 0;
-	}	
+	}
 }

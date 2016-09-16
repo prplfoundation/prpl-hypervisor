@@ -15,6 +15,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/**
+ * @file vm.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * Create the VM and VCPU's data controle structures used internally by the hypervisor 
+ * to manage them. 
+ * 
+ * At this moment, a VM is associated with only one VCPU. 
+ */
 
 #include <vm.h>
 #include <hal.h>
@@ -28,9 +38,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 
 
-static const struct vmconf_t const *vmconf = VMCONF;
-
-
+/**
+ * @brief Remove a VCPU from the VCPU's list. 
+ * @param vcpu Pointer to the VCPU to be removed. 
+ */
 void delete_vcpu(vcpu_t *vcpu) {
   ll_node_t *a;
 
@@ -40,6 +51,11 @@ void delete_vcpu(vcpu_t *vcpu) {
   free(a);
 }
 
+/**
+ * @brief Get a VM based on its ID number. 
+ * @param id Identification number.
+ * @return A pointer the the VM data structure or NULL if not found. 
+ */
 vm_t *get_vm(unsigned int id) {
   ll_node_t *a;
   
@@ -50,35 +66,49 @@ vm_t *get_vm(unsigned int id) {
   return a ? a->ptr : NULL;
 }
 
-void delete_vm(vm_t *dom) {
+/**
+ * @brief Remove a VM from the VM's list.
+ * @param vm Pointer to the VM to be removed. .
+ */
+void delete_vm(vm_t *vm) {
   ll_node_t *nd;
 
-  nd = (ll_node_t*)((unsigned int)dom - sizeof(ll_node_t));
+  nd = (ll_node_t*)((unsigned int)vm - sizeof(ll_node_t));
   ll_remove(nd);
   free(nd);
- 
 }
 
 
-/** Initialize the VMs */
+/**
+ * @brief Responsable by the VM's data initialization.
+ * Called once during the hypervisor's startup. 
+ */
 void initializeMachines(void) {
 	unsigned int i;
-	
 
 	Info("Initializing Virtual Machines");
 
     if(NVMACHINES > 0){
-		/* Create initialize the VM structure */
         for(i=0; i<NVMACHINES; i++){
-			create_vm(&vmconf[i]);
+            /* VMCONF is automatically generated and it can be found at the config.h file. 
+             *   It is read during hypervisor startup for the VM and VCPU's configuration. 
+             */
+            create_vm(&VMCONF[i]);
 		}
-	}
+	}else{
+        Warning("There is no VM configuration. ");
+    }
 }
 
 
-/** Create and initialize the structure of the VM abstraction */ 
+/**
+ * @brief Create and initialize the data structure for a VM. 
+ * Use the VM's data information from VMCONF.
+ * @param vm Array of initial VM's configuration. See VMCONF at config.h file.
+ * @return Pointer to the VM data structure. 
+ */
 vm_t *create_vm(const struct vmconf_t const *vm) {
-	static uint32_t vm_id = 1;  /* vm_id is the guestid */	
+	static uint32_t vm_id = 1;  /* vm_id is the used as guestid */	
 	static uint32_t tlbindex = 0; 	/* unique tlb entry */
 
 	vm_t *ret;
@@ -86,7 +116,7 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
 	uint32_t i;
 	vcpu_t *vcpu;
 	
-	/* number of fix tlb entries */
+	/* Number of fix TLB entries */
     uint32_t ntlbent = vm->num_tlb_entries;
 
 	if(!(nd = (ll_node_t*) calloc(1, sizeof(ll_node_t) + sizeof(vm_t))))
@@ -94,7 +124,6 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
     
 	ret = (vm_t*)((unsigned int)nd + sizeof(ll_node_t));
     
-	//Memory map
     ret->base_addr = vm->ram_base;
 	
 	ret->id = vm_id++;  
@@ -104,15 +133,11 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
 
 	ret->tlbentries = NULL;
         
-	/* allocate a tlb entry to the VM */
-	if(ret->os_type != IDLEVCPU){
-		ret->tlbentries = (struct tlbentry *)calloc(1, sizeof(struct tlbentry)*(ntlbent)); 
-		memset(ret->tlbentries, 0, sizeof(struct tlbentry)*ntlbent);
-	}else{
-		ret->tlbentries = NULL;
-		ret->id = 0;
-	}
-	/* fill the tlb entries to the VM */
+	/* Allocate a TLB entry to the VM */
+	ret->tlbentries = (struct tlbentry *)calloc(1, sizeof(struct tlbentry)*(ntlbent)); 
+	memset(ret->tlbentries, 0, sizeof(struct tlbentry)*ntlbent);
+
+    /* Fill the TLB entries to the VM */
 	for(i=0; i<ntlbent; i++, tlbindex++){
         ret->tlbentries[i].guestid = ret->id;
 		ret->tlbentries[i].index = tlbindex;
@@ -125,11 +150,12 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
         ret->tlbentries[i].pagemask = vm->tlb[i].pagemask;
         ret->tlbentries[i].entryhi = vm->tlb[i].entryhi;
         ret->tlbentries[i].coherency = vm->tlb[i].coherency;
-		ret->tlbentries[i].onhardware = 0;
+        /* Write TLB on hardware */
+        tlbEntryWrite(&ret->tlbentries[i]);
 	}
 
 	/* Set the VM entry Point and scheduler*/
-    vcpu = create_vcpu(ret, vm->vm_entry, 0 ,0, 0, vm->os_type);	
+    vcpu = create_vcpu(ret, vm->vm_entry);	
 	addVcpu_bestEffortList(vcpu);			
 	ll_append(&virtualmachines, nd);
 	
@@ -139,11 +165,13 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
 }
 
 
-void machine_init_vm(vm_t *d) {
-  
-}
-
-vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer, uint32_t pip, uint32_t ostype){	
+/**
+ * @brief Create and initialize the data structure for a VCPU. 
+ * @param vm VM that is associated to this VCPU. 
+ * @param entry_point VCPU initial program counter address.
+ * @return Pointer to the VM data structure. 
+ */
+vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){	
 	static uint32_t vcpu_id=1;
 	static uint32_t shadow_gpr_to_assign = 0;
 	uint32_t num_shadow_gprs;
@@ -151,8 +179,6 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
 	vcpu_t *ret;
 	ll_node_t *nd;
 
-	Info("Creating VCPUs");
-        
 	if(!(nd = (ll_node_t *) calloc(1, sizeof(vcpu_t)+sizeof(ll_node_t))))
 		return NULL;
 
@@ -160,35 +186,24 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
 	
 	memset(ret, 0, sizeof(vcpu_t));
 
-	//Set vcpu id and gprshadowset
-	//ret->gprshadowset = vcpu_id;
-	
 	num_shadow_gprs = hal_lr_srsclt();
 	num_shadow_gprs = (num_shadow_gprs & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	
-    if (ostype == IDLEVCPU){
-        ret->gprshadowset = num_shadow_gprs;
-    }else
-        //Highest shadown gpr is used to 
-        if(shadow_gpr_to_assign==num_shadow_gprs){
-            ret->gprshadowset=shadow_gpr_to_assign-1;
-        }else{
-            ret->gprshadowset = shadow_gpr_to_assign;
-            shadow_gpr_to_assign++;
-        }
-	
-	ret->pip = pip;
-    if (ostype == IDLEVCPU){
-        ret->id = 0;  
+    /* Highest shadown gpr is used to the hypervisor */
+    if(shadow_gpr_to_assign==num_shadow_gprs){
+        ret->gprshadowset=shadow_gpr_to_assign-1;
     }else{
-        ret->id = vcpu_id;	
-        vcpu_id++;
+        ret->gprshadowset = shadow_gpr_to_assign;
+        shadow_gpr_to_assign++;
     }
 	
-	//Not initialized
+    ret->id = vcpu_id;	
+    vcpu_id++;
+	
+	/* Mark VCPU as not initialized */
 	ret->init=1;
 
-	/* initilize the VCPU cp0 registers with the guest cp0 status */
+	/* Initialize the VCPU with the default state of the Guest CP0 */
 	contextSave(ret);
 	
 	/* Initialize compare and count registers. */
@@ -196,16 +211,13 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* 
 	ret->cp0_registers[11][0] = 0;
 		
 	ret->pc  = entry_point;
-	ret->sp  = (uint32_t)stack_pointer;
-		
-	ret->arg = arg;
-		
-	//Vm pointer
+
+    /* Point to the VM owner */
 	ret->vm = vm;
 		
-	//Adding to local list of vm's vcpus
+	/* Adding to a global list of VCPUs */
 	nd->ptr = ret;
 	ll_append(&(vm->vcpus), nd);
 
-        return ret;
+    return ret;
 }

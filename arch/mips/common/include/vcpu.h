@@ -168,13 +168,9 @@ typedef struct vcpu_t {
 	uint32_t cp0_registers[32][4];
 	uint32_t gp_registers[34];	
 	uint32_t guestclt2;
-	uint32_t pip; /* pending interrupt pass-through */
 	vm_t *vm;
 	task_t task;   
 	uint32_t pc;
-	uint32_t sp;
-	uint32_t gp;
-	uint32_t arg;
 	uint32_t init;	
         uint32_t timer_interval;
 	message_buffer_t messages;

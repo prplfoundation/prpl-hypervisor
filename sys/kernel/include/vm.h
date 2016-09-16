@@ -15,6 +15,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/**
+ * @file vm.h
+ * 
+ * @section DESCRIPTION
+ * 
+ * Data structures and definitions associated with the virtual machine abstraction layer. 
+ */
+
 #ifndef __VM_H
 #define __VM_H
 
@@ -23,19 +31,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <tlb.h>
 
 
-/* Number of colums for VM's configuratio */
-#define VMCONF_NUMCOLUNS  6
-
-
-/* OS types */
+/* Identification for different operating system types */
 #define GENERIC		0
 #define BAREOS		1
-#define BAREOS_RT   	2
+#define BAREOS_RT   2
 #define	HELLFIRE	3
 #define LINUX		4
 #define IDLEVCPU	5
 
 
+/* TLB entry description used in the config.h file. Used only for initialization purposes. */
 struct tlb_entries{
     uint32_t entrylo0;
     uint32_t entrylo1;
@@ -44,6 +49,7 @@ struct tlb_entries{
     uint32_t coherency;
 };
 
+/* VM description used in the config.h file. Used only for initialization purposes. */
 struct vmconf_t{
     uint32_t ram_base;
     uint32_t num_tlb_entries;
@@ -52,27 +58,7 @@ struct vmconf_t{
     const struct tlb_entries const *tlb;
 };    
 
-
-static uint32_t TLBIndex = 1;
-
-/** Holds information about memory regions of a VM
- * 
- * Base guest virtual address and size are used to determine if it is allowed to a VM map a memory region. 
- */ 
-typedef struct memVMMap{
-	uint32_t phyGuestBase;
-	uint32_t vGuestBase;
-	uint32_t size;
-	uint32_t coherency;
-}memVMMap_t;
-
-
-/**
- * Holds information about a Virtual machine
- *
- * A domain represent a virtual machine instance, it's memory map,
- * it's virtual devices state and the Virtual Processing Units within it
- */
+/* Holds information about a Virtual machine on runtime.  */
 typedef struct vm_t {
 	unsigned int id;
 	unsigned int base_addr;
@@ -81,15 +67,15 @@ typedef struct vm_t {
 	uint32_t ntlbent;
 	uint32_t init;	
 	struct tlbentry *tlbentries;
-	memVMMap_t *vmmap;
 }vm_t;
 
 
-vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point, unsigned int arg, char* stack_pointer,  uint32_t pip, uint32_t ostype);
+void delete_vm(vm_t*);
+vm_t *get_vm(unsigned int);
 void delete_vcpu(vcpu_t*);
 vm_t *create_vm(const struct vmconf_t const *vm);
-vm_t *get_vm(unsigned int);
-void delete_vm(vm_t*);
+vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point);
+
 
 linkedlist_t virtualmachines;
 linkedlist_t virtualmachines_rt;

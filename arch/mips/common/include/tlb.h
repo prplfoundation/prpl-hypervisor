@@ -57,7 +57,6 @@ typedef struct tlbentry{
 	uint32_t pagemask;
 	uint32_t entryhi;
 	uint32_t coherency;
-	uint32_t onhardware;
 }tlbentry_t;
 
 void tlbEntryWrite(struct tlbentry *entry);
