@@ -47,6 +47,13 @@ SECTIONS
         _etext = .;
     } > flash
 
+    .__drivers_table_init :
+    {
+        __drivers_table_init_start = .;
+        *(.__drivers_table_init)
+        __drivers_table_init_end = .;
+    } > flash
+    
     .MIPS.abiflags : {
         __MIPS_abiflags_start = .;
         *(.MIPS.abiflags)

@@ -156,10 +156,10 @@ struct eth_port {
     eth_desc_t  *tx_desc;       /* pointer to the TX DMA descriptors */
 } eth_port;
 
-void en_watchdog(void);
+int32_t en_watchdog(void);
 void en_ll_output(uint8_t *frame, uint16_t size);
 int32_t en_ll_input(uint8_t *frame);
-int32_t en_init();
+static void en_init();
 
 /* Send/receive buffers unsed in the hypercalls */
 uint8_t tx_buf[MTU];

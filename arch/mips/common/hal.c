@@ -54,26 +54,12 @@ static void print_config(void)
 
 /** C code entry. Called from hal/$(BOARD)/boot.S */
 int32_t main(char * _edata, char* _data, char* _erodata){
-	// This is for delaying the output, otherwise it gets lost
-	volatile uint32_t x;
-	for (x = 0; x < 10000000; ++x);
-	for (x = 0; x < 10000000; ++x);
-	for (x = 0; x < 10000000; ++x);
-	for (x = 0; x < 10000000; ++x);
-	for (x = 0; x < 10000000; ++x);
-
     /* Specific hardware configuration. */
     hardware_config();
     
     /* UART start */
     init_uart(115200, 9600, 200000000);
 
-#ifdef USB_SUPPORT    
-    if(usb_start(HOST_MODE, FULL_SPEED)){ 
-        return 1;
-    }
-#endif    
-    
     print_config();
     
     /* First some paranoic checks!! */
@@ -131,18 +117,12 @@ int32_t main(char * _edata, char* _data, char* _erodata){
     
     /*Initialize vcpus and virtual machines*/
     initializeMachines();
-    
-    /* TODO: Enable configuration and execution of RT VCPUs*/
-    /*if(initializeRTMachines()){
-        return 1;
-    }*/
+
+    /* Initialize device drivers */    
+    drivers_init();
 
     /* Run scheduler .*/
     runScheduler();  
-    
-#ifdef ETHERNET_SUPPORT
-    en_init();
-#endif
     
     hal_start_hyper();
 

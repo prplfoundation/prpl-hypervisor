@@ -23,6 +23,7 @@
 #include <mips_cp0.h>
 #include <scheduler.h>
 #include <hal.h>
+#include <driver.h>
 
 
 
@@ -53,11 +54,14 @@ void usb_interrupt_enable(uint32_t general, uint32_t transmit, uint32_t receive)
 
 
     
-uint32_t usb_start(uint32_t operation_mode, uint32_t speed){
+void usb_start(){
+    uint32_t operation_mode = HOST_MODE;
+    uint32_t speed = FULL_SPEED;
+    
+    printf("\nInitializing USB device in Host mode.");
     
     if (operation_mode != HOST_MODE){
-        WARNINGS("Only Host Mode is supported");
-        return 1;
+        Warning("Only Host Mode is supported");
     }
     
     usb_status.state = IDLE;
@@ -109,7 +113,6 @@ uint32_t usb_start(uint32_t operation_mode, uint32_t speed){
     
     SESSION_ENABLE;
     
-    return 0;
 }
 
 void usb_device_attach(){
@@ -420,4 +423,6 @@ void data_packet_sent(uint8_t *data, uint32_t size){
     *(((uint8_t*)&USBENCTRL0bits)+2) = 0x2;
 
 }
+
+driver_init(usb_start);
 
