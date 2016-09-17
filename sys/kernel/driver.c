@@ -20,7 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * 
  * @section DESCRIPTION
  * 
- * Driver support implementation. Implements the driver_init() call that 
+ * Driver support implementation. Implements the driver_init() call. 
  *
  */
 

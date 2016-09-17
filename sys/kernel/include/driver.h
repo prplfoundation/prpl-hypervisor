@@ -21,8 +21,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * @section DESCRIPTION
  * 
  * Driver definitions. 
- * driver_init() call must be declared for every device driver indicating the initialization function. The initialization function will be 
- * called on hypervisor startup. 
+ * The macro driver_init() must be declared for all device drivers indicating its initialization function. The initialization function will be 
+ * called during hypervisor startup. 
  */
 
 #ifndef __DRIVER_H_
