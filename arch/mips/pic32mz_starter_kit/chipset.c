@@ -24,22 +24,6 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 /* Interval of interrupt injection on guests */
 #define QUANTUM (1 * MILISECOND)
 
-PIC32MZ_DEVCFG (
-    _DEVCFG0_JTAG_DISABLE |      /* Disable JTAG port */
-    _DEVCFG0_TRC_DISABLE,        /* Disable trace port */
-    _DEVCFG1_FNOSC_SPLL |        /* System clock supplied by SPLL */
-    _DEVCFG1_POSCMOD_DISABLE |   /* Primary oscillator disabled */
-    _DEVCFG1_CLKO_DISABLE,       /* CLKO output disable */
-
-    _DEVCFG2_FPLLIDIV_1 |        /* PLL input divider = 1 */
-    _DEVCFG2_FPLLRNG_5_10 |      /* PLL input range is 5-10 MHz */
-    _DEVCFG2_FPLLICLK_FRC |      /* Select FRC as input to PLL */
-    _DEVCFG2_FPLLMULT(50) |      /* PLL multiplier = 50x */
-    _DEVCFG2_FPLLODIV_2,         /* PLL postscaler = 1/2 */
-    _DEVCFG3_FETHIO |            /* Default Ethernet pins */
-    _DEVCFG3_USERID(0xffff));    /* User-defined ID */
-
-
 void hardware_config(){
     TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
     CNPUB =     (1 << 12);     /* enable pull-up */
