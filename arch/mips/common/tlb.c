@@ -20,11 +20,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "hypercall_defines.h"
 #include <vcpu.h>
 #include <globals.h>
+#include <mips_cp0.h>
 
 
 /** Get a random tlb index  */
 uint32_t tblGetRandomIndex(){
-	return hal_lr_random();
+	return mfc0(CP0_RANDOM, 0);
 }
 
 /** Write an entry to the tbl.
@@ -37,22 +38,22 @@ void tlbEntryWrite(struct tlbentry *entry){
 	setGuestRID(entry->guestid);
 	
 	/* write index */
-	hal_sr_index(entry->index);
+	mtc0(CP0_INDEX, 0, entry->index);
 	
 	/* write entrylo0 */
-	hal_sr_entrylo0((entry->entrylo0 << ENTRYLO_PFN_SHIFT) | entry->lo0flags | (entry->coherency << ENTRYLO_C_SHIFT));
+	mtc0(CP0_ENTRYLO0, 0, (entry->entrylo0 << ENTRYLO_PFN_SHIFT) | entry->lo0flags | (entry->coherency << ENTRYLO_C_SHIFT));
 
 	/* write entrylo1 */
-	hal_sr_entrylo1((entry->entrylo1 << ENTRYLO_PFN_SHIFT) | entry->lo1flags | (entry->coherency << ENTRYLO_C_SHIFT));
+	mtc0(CP0_ENTRYLO1, 0, (entry->entrylo1 << ENTRYLO_PFN_SHIFT) | entry->lo1flags | (entry->coherency << ENTRYLO_C_SHIFT));
 	
 	/* write pagemask */
-	hal_sr_pagemask(entry->pagemask << PAGEMASK_MASK_SHIFT);
+	mtc0(CP0_PAGEMASK, 0, entry->pagemask << PAGEMASK_MASK_SHIFT);
 	
 	/* write entryhi. */
 	/* FIXME: Ignoring ASID for now. Is it correct? */
-	hal_sr_entryhi((entry->entryhi << ENTRYHI_VPN2_SHIFT) & ENTRYHI_MASK);
+	mtc0(CP0_ENTRYHI, 0, (entry->entryhi << ENTRYHI_VPN2_SHIFT) & ENTRYHI_MASK);
 	
-	hal_tlb_commit();
+	tlb_commit();
 	
 }
 

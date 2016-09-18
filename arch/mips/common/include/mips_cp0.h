@@ -17,7 +17,21 @@
 #ifndef __MIPS_CP0_H__
 #define __MIPS_CP0_H__
 
+/* Read from CP0 */
+#define mfc0(reg, sel) ({ int32_t __value;                      \
+        asm volatile (                                          \
+        "mfc0   %0, $%1, %2"                                    \
+        : "=r" (__value) : "K" (reg), "K" (sel));               \
+        __value; })
 
+/* Write to CP0 */
+#define mtc0(reg, sel, value) asm volatile (                    \
+        "mtc0   %z0, $%1, %2"                                   \
+        : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
+
+#define tlb_commit() asm volatile ("tlbwi" : : )                                   \
+
+        
 /* CP0 registers */
 #define CP0_INDEX               0
 #define CP0_RANDOM              1
@@ -32,13 +46,20 @@
 #define CP0_BADVADDR            8
 #define CP0_COUNT               9
 #define CP0_ENTRYHI             10
+#define CP0_GUESTCTL1           10
+#define CP0_GUESTCTL2           10
+#define CP0_GUESTCTL3           10
 #define CP0_COMPARE             11
+#define CP0_GUESTCLT0EXT        11
 #define CP0_STATUS              12
 #define CP0_INTCTL              12
 #define CP0_SRSCTL              12
 #define CP0_SRSMAP              12
+#define CP0_SRSMAP2             12
 #define CP0_VIEW_IPL            12
 #define CP0_SRSMAP2             12
+#define CP0_GUESTCTL0           12
+#define CP0_GTOOFFSET           12
 #define CP0_CAUSE               13
 #define CP0_NESTEDEXC           13
 #define CP0_VIEW_RIPL           13

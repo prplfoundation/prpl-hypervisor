@@ -186,7 +186,7 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){
 	
 	memset(ret, 0, sizeof(vcpu_t));
 
-	num_shadow_gprs = hal_lr_srsclt();
+	num_shadow_gprs = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (num_shadow_gprs & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	
     /* Highest shadown gpr is used to the hypervisor */

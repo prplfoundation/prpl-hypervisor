@@ -1801,18 +1801,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define NVMCON2SET      PIC32MZ_PBASE (0x06A8)
 #define NVMCON2INV      PIC32MZ_PBASE (0x06AC)
 
-/* Read from CP0 */
-#define mfc0(reg, sel) ({ int32_t __value;                      \
-        asm volatile (                                          \
-        "mfc0   %0, $%1, %2"                                    \
-        : "=r" (__value) : "K" (reg), "K" (sel));               \
-        __value; })
-
-/* Write to CP0 */
-#define mtc0(reg, sel, value) asm volatile (                    \
-        "mtc0   %z0, $%1, %2"                                   \
-        : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
-
 /* Device configuration registers */
 #define _DEVCFG0                *(volatile uint32_t *) 0xbfc0ffcc
 #define _DEVCFG1                *(volatile uint32_t *) 0xbfc0ffc8

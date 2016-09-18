@@ -55,7 +55,7 @@ void restore_curr_vcpu_ctx(){
 
 /** Determine the next PC when an exception occurs on the branch delay slot. */
 uint32_t CalcNextPC(uint32_t epc){
-	uint32_t badinstrP = hal_lr_badinstrP();
+	uint32_t badinstrP = mfc0(CP0_BADVADDR, 2);
 	uint32_t npc;
 	uint32_t rs, rt, rd;
 	
@@ -205,7 +205,7 @@ uint32_t CalcNextPC(uint32_t epc){
 /** Implement the instruction emulation  */
 /* FIXME: must emulate all necessary registers. For now, just status reg. */
 uint32_t InstructionEmulation(uint32_t epc){
-	uint32_t badinstr = hal_lr_badinstr();
+	uint32_t badinstr = mfc0(CP0_BADVADDR, 2);
 	uint32_t regvalue;
 	uint32_t currentValue;
 	uint32_t rs, rt, rd;
@@ -275,14 +275,13 @@ uint32_t InstructionEmulation(uint32_t epc){
 						case MFC:
 							switch (rd){
 								case 0xf: /* read from COP0 15.*/
-									regvalue = (hal_lr_pid() & ~0xff00) | 0x8000;
+									regvalue = (mfc0(CP0_PRID,0) & ~0xff00) | 0x8000;
 									MoveToPreviousGuestGPR(rt, regvalue);
 									break;
 								case 0xc: /* read from COP0 12.*/
 									switch(SEL(badinstr)){
 										case 2:
-											regvalue = hal_lr_srsclt();
-											regvalue = regvalue & ~SRSCLT_HSS;
+											regvalue = mfc0(CP0_SRSCTL, 2) & ~SRSCLT_HSS;
 											MoveToPreviousGuestGPR(rt, regvalue);
 											break;
 										default:
@@ -291,7 +290,7 @@ uint32_t InstructionEmulation(uint32_t epc){
 									}
 									break;
 								case 0x19: /* read from COP0 25.*/
-									regvalue = hal_lr_pcr();
+									regvalue = mfc0(CP0_PERFCTL0, 0);
 									MoveToPreviousGuestGPR(rt, regvalue);
 									break;
 						

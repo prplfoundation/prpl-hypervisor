@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "hal.h"
 #include "kernel.h"
 #include<globals.h>
+#include <mips_cp0.h>
 
 #ifdef USB_SUPPORT    
 #include <usb.h>
@@ -136,9 +137,11 @@ int32_t main(char * _edata, char* _data, char* _erodata){
 
 /** Verify if the processor is in root mode */
 int32_t isRootMode(){
-	if( !(hal_lr_guestctl0() & GUESTCTL0_GM) || 
-		( (hal_lr_guestctl0() & GUESTCTL0_GM) &&  !( !(hal_lr_rdebug() & DEBUG_DM)
-		&& !(hal_lr_rstatus() & STATUS_ERL) && !(hal_lr_rstatus() & STATUS_EXL)))){
+        int guestctl0 = mfc0(CP0_GUESTCTL0, 6);
+        int status = mfc0(CP0_STATUS, 0);
+	if( !(guestctl0 & GUESTCTL0_GM) || 
+		( (guestctl0 & GUESTCTL0_GM) &&  !( !(mfc0(CP0_DEBUG2, 0) & DEBUG_DM)
+		&& !(status & STATUS_ERL) && !(status & STATUS_EXL)))){
 		return 1;
 	}
 
@@ -147,9 +150,7 @@ int32_t isRootMode(){
 
 /** Verify if the processor implements the VZ module */
 int32_t hasVZ(){
-	int32_t config3;
-	
-	config3 = hal_lr_rconfig3();
+	int32_t config3 = mfc0(CP0_CONFIG3, 3);
 	
 	if( !(config3 & CONFIG3_VZ) ){
 		return 0;
@@ -170,7 +171,7 @@ int32_t ConfigureGPRShadow(){
 	   Still, the hypervisor needs at least one GPR Shadow.
 	 */
     
-	srsclt_reg = hal_lr_srsclt();
+	srsclt_reg = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (srsclt_reg & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	if(num_shadow_gprs == 0){
 		/* panic */
@@ -179,10 +180,10 @@ int32_t ConfigureGPRShadow(){
 	/* Set the ESS field and PSS */
 	/* PSS is set to the highest page. The processor will change to the
 	   new GPR on the next eret*/
-	hal_sr_srsclt( num_shadow_gprs << SRSCTL_ESS_SHIFT | num_shadow_gprs << SRSCLT_PSS_SHIFT);
+        mtc0(CP0_SRSCTL, 2, num_shadow_gprs << SRSCTL_ESS_SHIFT | num_shadow_gprs << SRSCLT_PSS_SHIFT);
 	
 	/* Set the SRSMap register */
-	hal_sr_srsmap( num_shadow_gprs << SRSMAP_SSV7_SHIFT |
+	mtc0(CP0_SRSMAP, 3, num_shadow_gprs << SRSMAP_SSV7_SHIFT |
 			num_shadow_gprs << SRSMAP_SSV6_SHIFT |
 			num_shadow_gprs << SRSMAP_SSV5_SHIFT |
 			num_shadow_gprs << SRSMAP_SSV4_SHIFT |
@@ -192,12 +193,12 @@ int32_t ConfigureGPRShadow(){
 			num_shadow_gprs << SRSMAP_SSV0_SHIFT );
 	
 	/* Set the SRSMap2 */
-	hal_sr_srsmap2( num_shadow_gprs << SRSMAP2_SSV8_SHIFT |
+	mtc0(CP0_SRSMAP2, 5, num_shadow_gprs << SRSMAP2_SSV8_SHIFT |
 			 num_shadow_gprs << SRSMAP2_SSV9_SHIFT );
 			 
     
     //No virtual shadow registers to guests
-    hal_sr_guestctl3(0); //Shadow 0
+    mtc0(CP0_GUESTCTL3, 6, 0); //Shadow 0
 
     return 0;
 }
@@ -211,19 +212,19 @@ int32_t LowLevelProcInit(){
 
 	/* enable kseg0 cache for guest coprocessor 0 */
 	//MoveToGuestCP0(16, 0, (MoveFromGuestCP0(16, 0) & ~0x7) | 4);
-	hal_sr_intctl(hal_lr_intctl() | (INTCTL_VS << INTCTL_VS_SHIFT));
+	mtc0(CP0_INTCTL, 1, mfc0(CP0_INTCTL, 1) | (INTCTL_VS << INTCTL_VS_SHIFT));
 	
 	//Initializing some flags on guestCtl0
 	//GUESTCTL0_CP0 Allow guest access to some CP0 registers
 	//GUESTCTL0_GT Allow guest read acess to count and compare registers
 	//GUESTCTL0_CF Allow guest to read and write config registers
 	
-	hal_sr_guestctl0(hal_lr_guestctl0() | GUESTCTL0_CP0 | GUESTCTL0_GT | GUESTCTL0_CF |  GUESTCTL0_CG);
+	mtc0(CP0_GUESTCTL0, 6, mfc0(CP0_GUESTCTL0, 6) | GUESTCTL0_CP0 | GUESTCTL0_GT | GUESTCTL0_CF |  GUESTCTL0_CG);
 	
-	hal_sr_guestctl0Ext(hal_lr_guestctl0Ext() | GUESTCTL0EXT_CGI);
+	mtc0(CP0_GUESTCLT0EXT, 4, mfc0(CP0_GUESTCLT0EXT, 4) | GUESTCTL0EXT_CGI);
 	
 	//Disabling Exceptions when guest modifies own CP0 registers
-	hal_sr_guestctl0Ext(hal_lr_guestctl0Ext() | GUESTCTL0EXT_FCD);
+	mtc0(CP0_GUESTCLT0EXT, 4, mfc0(CP0_GUESTCLT0EXT, 4) | GUESTCTL0EXT_FCD);
 	
 	if (ConfigureGPRShadow()){
 	
@@ -237,25 +238,25 @@ int32_t LowLevelProcInit(){
 
 /** Return execCode field from cause register */
 uint32_t getCauseCode(){
-	uint32_t execcode = hal_lr_rcause();
+	uint32_t execcode = mfc0(CP0_CAUSE, 0);
     
 	return (execcode & CAUSE_EXECCODE) >> CAUSE_EXECCODE_SHIFT;
 }
 
 /** Return the Hypercall code */
 uint32_t getHypercallCode(){
-	uint32_t hypcode = hal_lr_badinstr();
+	uint32_t hypcode = mfc0(CP0_BADVADDR, 1);
 	
 	return (hypcode & HYPCODE) >> HYPCODE_SHIFT;	
 }
 
 uint32_t getCauseBD(){
-	return hal_lr_rcause() & CAUSE_BD;
+	return mfc0(CP0_CAUSE, 0) & CAUSE_BD;
 }
 
 /** Return GExecCode field from guestctl0 register */
 uint32_t getGCauseCode(){
-	uint32_t execcode = hal_lr_guestctl0();
+	uint32_t execcode = mfc0(CP0_GUESTCTL0, 6);
 	
 	return (execcode & CAUSE_EXECCODE) >> CAUSE_EXECCODE_SHIFT;
 }
@@ -263,7 +264,7 @@ uint32_t getGCauseCode(){
 
 /** Return the interrupt pending bits IP0:IP9 from cause register */
 uint32_t getInterruptPending(){
-	uint32_t pending = hal_lr_rcause();
+	uint32_t pending = mfc0(CP0_CAUSE, 0);
 	
 	if(((pending>>CAUSE_PCI_SHIFT) & 0x1)==1)
 		return PERFORMANCE_COUNTER_INT;
@@ -273,7 +274,7 @@ uint32_t getInterruptPending(){
 
 /** Set compare register for generate time interruption  */
 void confTimer(uint32_t quantum){
-	uint32_t count = hal_lr_rcount();
+	uint32_t count = mfc0(CP0_COUNT, 0);
 	
 	if(0xFFFFFFFF - count >= quantum){
 		count += quantum;
@@ -281,28 +282,27 @@ void confTimer(uint32_t quantum){
 		count =  quantum - (0xFFFFFFFF - count);
 	}
 	
-	
-	hal_sr_rcompare(count);
+	mtc0(CP0_COMPARE, 0, count);
 }
 
 /** Set the IM bits on the status reg */
 void setInterruptMask(uint32_t im){
-	hal_sr_rstatus(hal_lr_rstatus() | im);
+	mtc0(CP0_STATUS, 0, mfc0 (CP0_STATUS, 0)| im);
 }
 
 /** Clear the IM bits on the status reg */
 void clearInterruptMask(uint32_t im){
-	hal_sr_rstatus(hal_lr_rstatus() & (~im));
+	mtc0(CP0_STATUS, 0, mfc0(CP0_STATUS, 0) & (~im));
 }
 
 /** Enable global interrupt. IE bit in status register */
 void enableIE(){
-	hal_sr_rstatus(hal_lr_rstatus() | STATUS_IE);
+	mtc0(CP0_STATUS, 0, mfc0(CP0_STATUS, 0) | STATUS_IE);
 }
 
 /** Verify if the processor implements GuestID field */
 uint32_t hasGuestID(){
-	if (hal_lr_guestctl0() & GUESTCTL0_G1){
+	if (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_G1){
 		return 1;
 	}
 	return 0;
@@ -310,7 +310,7 @@ uint32_t hasGuestID(){
 
 /** Verify if the processor allow direct root mode */
 uint32_t isDirectRoot(){
-	if (hal_lr_guestctl0() & GUESTCTL0_DRG){
+	if (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_DRG){
 		return 1;
 	}
 	
@@ -319,35 +319,35 @@ uint32_t isDirectRoot(){
 
 /** set epc */
 void setEPC(uint32_t epc){
-	hal_sr_epc(epc);
+    mtc0(CP0_EPC, 0, epc);
 }
 
 /** get epc */
 uint32_t getEPC(){
-	return hal_lr_epc();
+	return mfc0(CP0_EPC, 0);
 }
 
 
 /** Set root GuestID*/
 void setGuestRID(uint32_t guestrid){
 	uint32_t reg;
-	reg = (hal_lr_guestclt1() & (~GUESTCTL1_RID)) | (guestrid << GUESTCTL1_RID_SHIFT);
-	hal_sr_guestclt1(reg);
+	reg = (mfc0(CP0_GUESTCTL1, 4) & (~GUESTCTL1_RID)) | (guestrid << GUESTCTL1_RID_SHIFT);
+	mtc0(CP0_GUESTCTL1, 4, reg);
 }
 
 /** Set GuestID */
 void setGuestID(uint32_t guestid){
-	hal_sr_guestclt1((hal_lr_guestclt1() & (~GUESTCTL1_ID)) | guestid);
+	mtc0(CP0_GUESTCTL1, 4, (mfc0(CP0_GUESTCTL1, 4) & (~GUESTCTL1_ID)) | guestid);
 }
 
 /** Get GuestID */
 uint32_t getGuestID(void){
-	return (hal_lr_guestclt1() & GUESTCTL1_ID);
+	return (mfc0(CP0_GUESTCTL1, 4) & GUESTCTL1_ID);
 }
 
 
 uint32_t isRootASID(){
-	if (hal_lr_guestctl0() & GUESTCTL0_RAD){
+	if (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_RAD){
 		return 1;
 	}
 	
@@ -357,20 +357,20 @@ uint32_t isRootASID(){
 /** Set the processor to Guest Mode */
 void setGuestMode(){
 	
-	hal_sr_guestctl0(hal_lr_guestctl0() | GUESTCTL0_GM | GUESTCTL0_CP0 | GUESTCTL0_GT | 1 << 12);
+	mtc0(CP0_GUESTCTL0, 6, mfc0(CP0_GUESTCTL0, 6) | GUESTCTL0_GM | GUESTCTL0_CP0 | GUESTCTL0_GT | 1 << 12);
 	
 }
 
 void setStatusReg(uint32_t bits){
-	hal_sr_rstatus(hal_lr_rstatus() | bits);
+	mtc0(CP0_STATUS, 0, mfc0(CP0_STATUS, 0) | bits);
 }
 
 uint32_t has1KPageSupport(){
-	return  hal_lr_rconfig3() & CONFIG3_SP;
+	return  mfc0(CP0_CONFIG3, 3) & CONFIG3_SP;
 }
 
 void Disable1KPageSupport(){
-	hal_sr_pagegrain(hal_lr_pagegrain() & ~PAGEGRAIN_ESP);
+	mtc0(CP0_PAGEGRAIN, 1, mfc0(CP0_PAGEGRAIN, 1) & ~PAGEGRAIN_ESP);
 }
 
 uint32_t isEnteringGuestMode(){
@@ -379,12 +379,12 @@ uint32_t isEnteringGuestMode(){
 	if(curr_vcpu == idle_vcpu)
 		return 1;
 	
-	status = hal_lr_rstatus();
+	status = mfc0(CP0_STATUS, 0);
 	
-	if ( (hal_lr_guestctl0() & GUESTCTL0_GM) &&
+	if ( (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_GM) &&
 	     !(status & STATUS_ERL) && 
 	     (status & STATUS_EXL) &&
-	     !(hal_lr_rdebug() & DEBUG_DM) ){
+	     !(mfc0(CP0_DEBUG2, 0) & DEBUG_DM) ){
 		return 1;
 	}
 	
@@ -392,7 +392,7 @@ uint32_t isEnteringGuestMode(){
 }
 
 uint32_t getBadVAddress(){
-	return hal_lr_badVAaddr();
+	return mfc0(CP0_BADVADDR, 0);
 }
 
 /** Read Reg from preview GPR Shadow */
@@ -770,23 +770,23 @@ void MoveToGuestCP0(uint32_t reg, uint32_t sel, uint32_t value){
 
 /** Set the Guest Lowest GPR Shadow */
 void setGLowestGShadow(uint32_t lowestshadow){
-	hal_sr_guestctl3(lowestshadow & 0xF);
+	mtc0(CP0_GUESTCTL3, 6, lowestshadow & 0xF);
 }
 
 /** Get the Guest Lowest GPR Shadow */
 uint32_t getGLowestGShadow(void){
-	return (hal_lr_guestctl3()&0xF);
+	return (mfc0(CP0_GUESTCTL3, 6)&0xF);
 }
 
 /**Set the Guest previous shadow set**/
 void setGuestPreviousShadowSet(uint32_t shadow_set){
-	uint32_t srsclt = hal_lr_srsclt();
+	uint32_t srsclt = mfc0(CP0_SRSCTL, 2);
 	srsclt = (srsclt & ~SRSCTL_PSS) | (shadow_set << SRSCLT_PSS_SHIFT);
-	hal_sr_srsclt(srsclt);
+	mtc0(CP0_SRSCTL, 2, srsclt);
 }
 
 uint32_t getGuestPreviousShadowSet(){
-	uint32_t srsclt = hal_lr_srsclt();
+	uint32_t srsclt = mfc0(CP0_SRSCTL, 2);
 	return ((srsclt&SRSCTL_PSS)>>SRSCLT_PSS_SHIFT);
 }
 /** Write value to Reg on GPR Shadow register*/
@@ -818,20 +818,20 @@ void MoveToGuestGPR(uint32_t gpr_id, uint32_t reg, uint32_t value){
 
 /** Returns the root.count */
 uint32_t getCounter(void){
-	return hal_lr_rcount();
+	return mfc0(CP0_COUNT, 0);
 }
 
 /* Set GTOffset*/
 void setGTOffset(int32_t gtoffset){
-	hal_sr_gtoffset(gtoffset);
+    mtc0(CP0_GTOOFFSET, 0, gtoffset);
 }
 
 void setGuestCTL2(uint32_t guestclt2){
-	hal_sr_guestctl2(guestclt2);
+    mtc0(CP0_GUESTCTL2, 5, guestclt2);
 }
 
 uint32_t getRandom(){
-	return hal_lr_random();
+    return mfc0(CP0_RANDOM, 0);
 }
 
 
