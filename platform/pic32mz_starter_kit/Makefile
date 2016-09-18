@@ -22,6 +22,7 @@ CROSS_COMPILER = mips-mti-elf-
 # Optional Device Drivers
 DRIVERS = -DETHERNET_SUPPORT -DUSB_SUPPORT
 
+
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
 # OR PORTING TO A NEW PLATFORM.
@@ -44,7 +45,7 @@ VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 LINKER_SCRIPT = ../../arch/mips/pic32mz_starter_kit/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS = -EL -O2 -mtune=m14k -mips32r2
+CFLAGS = -EL -O2 -mips32r5 -mmicromips 
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options
@@ -53,10 +54,8 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
 CFLAGS += $(DRIVERS) -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
-# AS flags
-ASFLAGS = -EL -mvirt -mips32r2
 # LD flags
-LDFLAGS = -EL
+LDFLAGS = -EL  
 
 ### Include dirs ###
 INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz_starter_kit/include \
@@ -85,7 +84,7 @@ include $(TOPDIR)arch/mips/common/common.mk
 include $(TOPDIR)arch/mips/pic32mz_starter_kit/pic32mz.mk
 
 $(APP): 
-	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -o $(APP).elf *.o ../../bin/ethernet.o
+	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o ../../bin/ethernet.o
 	$(OBJDUMP) --disassemble --reloc $(APP).elf > $(APP).lst
 	$(OBJDUMP) -h $(APP).elf > $(APP).sec
 	$(OBJDUMP) -s $(APP).elf > $(APP).cnt

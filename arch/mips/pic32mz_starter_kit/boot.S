@@ -14,7 +14,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 */
-
+    
     .section .exception
     .org    0xf8
 _ebase:
@@ -28,9 +28,7 @@ _imgptr:
 _isr:
     .set noreorder
     .set noat
-        /*la   $gp, _gp
-        la  $sp, _stack    */
-
+    .set  nomicromips
         add $a1,$a0,0
         li $a0, 0        /* init parameter is 0. Its not the first execution of exceptionHandler */
         mfc0 $a1, $9    
@@ -43,6 +41,7 @@ _isr:
 isr_return:
     eret
     nop
+    .set  micromips 
 .end _isr
 
 
@@ -54,6 +53,7 @@ isr_return:
 _entry:
     .set noreorder
     .set noat
+    .set  nomicromips 
     
     la  $gp, _gp
     la  $sp, _stack
@@ -89,6 +89,7 @@ $COPY_DATA:
 $L1:
     beq $zero, $zero, $L1
     nop
+    .set micromips
 .end _entry
 
 	
