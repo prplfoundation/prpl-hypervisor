@@ -118,11 +118,8 @@ uint32_t GuestExitException(){
 			break;
 	}
 	
-	/* Determines the next EPC */
-	epc = CalcNextPC(epc);	
-	curr_vcpu->pc = epc;
+	curr_vcpu->pc = epc+4;
 	return ret;
-		
 }
 
 /** Determine the cause and invoke the correct handler */

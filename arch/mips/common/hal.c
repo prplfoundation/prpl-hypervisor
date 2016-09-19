@@ -15,20 +15,27 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#include "libc.h"
-#include "types.h"
-#include "boot.h"
-#include "hal.h"
-#include "kernel.h"
-#include<globals.h>
+/**
+ * @file hal.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * Functions for access and configuration of the CP0 and Guest CP0. 
+ * Supports the M5150 processor core. 
+ */
+
+#include <libc.h>
+#include <types.h>
+#include <hal.h>
+#include <kernel.h>
+#include <globals.h>
 #include <mips_cp0.h>
 
-#ifdef USB_SUPPORT    
-#include <usb.h>
-#endif    
 
-
-/** Verify if the processor is in root mode */
+/**
+ * @brief Verify if the processor is in root-kernel mode. 
+ * @return 1 for root-kernel mode, 0 otherwise.
+ */
 int32_t isRootMode(){
         int guestctl0 = mfc0(CP0_GUESTCTL0, 6);
         int status = mfc0(CP0_STATUS, 0);
@@ -41,7 +48,11 @@ int32_t isRootMode(){
 	return 0;
 }
 
-/** Verify if the processor implements the VZ module */
+
+/**
+ * @brief Verify if the processor implements the VZ module . 
+ * @return 1 VZ module available, 0 otherwise.
+ */
 int32_t hasVZ(){
 	int32_t config3 = mfc0(CP0_CONFIG3, 3);
 	
@@ -52,9 +63,13 @@ int32_t hasVZ(){
 	return 1;
 }
 
-/** Set the GPR Shadow Bank.
-  * The next exception will be handle in the new GPR.
-  */   
+
+/**
+ * @brief Set the GPR Shadow Bank. 
+ *      The hypervisor uses the highest GPR shadow page. The others GPR shadows keep the VM's context.
+ * 
+ * @return 0 for error or 1 for success.
+ */
 int32_t ConfigureGPRShadow(){
 	int32_t srsclt_reg;
 	int32_t guestsrsclt_reg;
@@ -62,17 +77,16 @@ int32_t ConfigureGPRShadow(){
 
 	/* Configure the GPR Shadow. The hypervisor will use the highest shadow page. 
 	   Still, the hypervisor needs at least one GPR Shadow.
-	 */
-    
+        */
 	srsclt_reg = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (srsclt_reg & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	if(num_shadow_gprs == 0){
 		/* panic */
 		return 1;
 	}
+	
 	/* Set the ESS field and PSS */
-	/* PSS is set to the highest page. The processor will change to the
-	   new GPR on the next eret*/
+	/* PSS is set to the highest page. The processor will change to the new GPR on the next eret */
         mtc0(CP0_SRSCTL, 2, num_shadow_gprs << SRSCTL_ESS_SHIFT | num_shadow_gprs << SRSCLT_PSS_SHIFT);
 	
 	/* Set the SRSMap register */
@@ -90,13 +104,19 @@ int32_t ConfigureGPRShadow(){
 			 num_shadow_gprs << SRSMAP2_SSV9_SHIFT );
 			 
     
-    //No virtual shadow registers to guests
-    mtc0(CP0_GUESTCTL3, 6, 0); //Shadow 0
+        /* No virtual shadow registers to guests */
+        mtc0(CP0_GUESTCTL3, 6, 0); 
 
     return 0;
 }
 
-/**Low level Processor inicialization */
+
+/**
+ * @brief Low level processor initialization. 
+ *      Called once during hypervisor Initialization.
+ * 
+ * @return 1 for error or 0 for success.
+ */
 int32_t LowLevelProcInit(){
 
         /* First some paranoic checks!! */
@@ -143,7 +163,6 @@ int32_t LowLevelProcInit(){
 	mtc0(CP0_GUESTCLT0EXT, 4, mfc0(CP0_GUESTCLT0EXT, 4) | GUESTCTL0EXT_FCD);
 	
 	if (ConfigureGPRShadow()){
-	
 		return 1;
 	}
 		
@@ -152,25 +171,46 @@ int32_t LowLevelProcInit(){
 	return 0;
 }
 
-/** Return execCode field from cause register */
+
+/**
+ * @brief Extract the execCode field from cause register
+ * 
+ * @return ExecCode value.
+ */
 uint32_t getCauseCode(){
 	uint32_t execcode = mfc0(CP0_CAUSE, 0);
     
 	return (execcode & CAUSE_EXECCODE) >> CAUSE_EXECCODE_SHIFT;
 }
 
-/** Return the Hypercall code */
+
+/**
+ * @brief Extract the hypercall code from hypercall instruction. 
+ * 
+ * @return Hypercall code.
+ */
 uint32_t getHypercallCode(){
 	uint32_t hypcode = mfc0(CP0_BADVADDR, 1);
 	
 	return (hypcode & HYPCODE) >> HYPCODE_SHIFT;	
 }
 
+
+/**
+ * @brief Checks if the exception happend on a branch delay slot. 
+ * 
+ * @return 0 for non branch delay slot, otherwise greater than 0.
+ */
 uint32_t getCauseBD(){
 	return mfc0(CP0_CAUSE, 0) & CAUSE_BD;
 }
 
-/** Return GExecCode field from guestctl0 register */
+
+/**
+ * @brief Extracts the  Guest ExecCode field from guestctl0 register. 
+ * 
+ * @return Guest ExecCode.
+ */
 uint32_t getGCauseCode(){
 	uint32_t execcode = mfc0(CP0_GUESTCTL0, 6);
 	
@@ -178,7 +218,11 @@ uint32_t getGCauseCode(){
 }
 
 
-/** Return the interrupt pending bits IP0:IP9 from cause register */
+/**
+ * @brief Extracts the interrupt pending bits (IP0:IP9) from cause register.
+ * 
+ * @return Interrupt pending bits.
+ */
 uint32_t getInterruptPending(){
 	uint32_t pending = mfc0(CP0_CAUSE, 0);
 	
@@ -188,7 +232,11 @@ uint32_t getInterruptPending(){
 		return (pending & CAUSE_IP);
 }	
 
-/** Set compare register for generate time interruption  */
+
+/**
+ * @brief Set the Compare register to the next timer interruption.
+ * 
+ */
 void confTimer(uint32_t quantum){
 	uint32_t count = mfc0(CP0_COUNT, 0);
 	
@@ -201,22 +249,39 @@ void confTimer(uint32_t quantum){
 	mtc0(CP0_COMPARE, 0, count);
 }
 
-/** Set the IM bits on the status reg */
+
+/**
+ * @brief Set the IM bits on the status reg.
+ * 
+ */
 void setInterruptMask(uint32_t im){
 	mtc0(CP0_STATUS, 0, mfc0 (CP0_STATUS, 0)| im);
 }
 
-/** Clear the IM bits on the status reg */
+
+/**
+ * @brief Clear the IM bits on the status reg .
+ * 
+ */
 void clearInterruptMask(uint32_t im){
 	mtc0(CP0_STATUS, 0, mfc0(CP0_STATUS, 0) & (~im));
 }
 
-/** Enable global interrupt. IE bit in status register */
+
+/**
+ * @brief Enable global interrupt. IE bit in status register.
+ * 
+ */
 void enableIE(){
 	mtc0(CP0_STATUS, 0, mfc0(CP0_STATUS, 0) | STATUS_IE);
 }
 
-/** Verify if the processor implements GuestID field */
+
+/**
+ * @brief Verify if the processor implements GuestID field.
+ * 
+ * @return 1 for guestid supported, 0 otherwise.
+ */
 uint32_t hasGuestID(){
 	if (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_G1){
 		return 1;
@@ -224,7 +289,12 @@ uint32_t hasGuestID(){
 	return 0;
 }
 
-/** Verify if the processor allow direct root mode */
+
+/**
+ * @brief Verify if the processor allow direct root mode.
+ * 
+ * @return 1 for direct root supported, 0 otherwise.
+ */
 uint32_t isDirectRoot(){
 	if (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_DRG){
 		return 1;
@@ -233,35 +303,60 @@ uint32_t isDirectRoot(){
 	return 0;
 }
 
-/** set epc */
+
+/**
+ * @brief Set CP0 EPC. 
+ * 
+ */
 void setEPC(uint32_t epc){
     mtc0(CP0_EPC, 0, epc);
 }
 
-/** get epc */
+
+/**
+ * @brief Get CP0 EPC. 
+ * 
+ * @return EPC address.
+ */
 uint32_t getEPC(){
 	return mfc0(CP0_EPC, 0);
 }
 
 
-/** Set root GuestID*/
+/**
+ * @brief Set root GuestID mode. 
+ * 
+ */
 void setGuestRID(uint32_t guestrid){
 	uint32_t reg;
 	reg = (mfc0(CP0_GUESTCTL1, 4) & (~GUESTCTL1_RID)) | (guestrid << GUESTCTL1_RID_SHIFT);
 	mtc0(CP0_GUESTCTL1, 4, reg);
 }
 
-/** Set GuestID */
+
+/**
+ * @brief Set GuestID. 
+ * 
+ */
 void setGuestID(uint32_t guestid){
 	mtc0(CP0_GUESTCTL1, 4, (mfc0(CP0_GUESTCTL1, 4) & (~GUESTCTL1_ID)) | guestid);
 }
 
-/** Get GuestID */
+
+/**
+ * @brief Get GuestID. 
+ * 
+ */
 uint32_t getGuestID(void){
 	return (mfc0(CP0_GUESTCTL1, 4) & GUESTCTL1_ID);
 }
 
 
+/**
+ * @brief Check if the processor uses root ASID. 
+ * 
+ * @return 1 for root ASID supported, 0 otherwise
+ */
 uint32_t isRootASID(){
 	if (mfc0(CP0_GUESTCTL0, 6) & GUESTCTL0_RAD){
 		return 1;
@@ -270,30 +365,51 @@ uint32_t isRootASID(){
 	return 0;
 }
 
-/** Set the processor to Guest Mode */
+
+/**
+ * @brief Set the processor to Guest Mode. 
+ * 
+ */
 void setGuestMode(){
 	
 	mtc0(CP0_GUESTCTL0, 6, mfc0(CP0_GUESTCTL0, 6) | GUESTCTL0_GM | GUESTCTL0_CP0 | GUESTCTL0_GT | 1 << 12);
 	
 }
 
+/**
+ * @brief Set specific bits on CP0 STATUS reg.. 
+ * 
+ */
 void setStatusReg(uint32_t bits){
 	mtc0(CP0_STATUS, 0, mfc0(CP0_STATUS, 0) | bits);
 }
 
+
+/**
+ * @brief Check if the processor supports 1k page size. 
+ * 
+ * @return 0 for not supported, greather than 0 for supported. 
+ */
 uint32_t has1KPageSupport(){
 	return  mfc0(CP0_CONFIG3, 3) & CONFIG3_SP;
 }
 
+
+/**
+ * @brief Disable 1K page support to keep compatibility with 4K page size. 
+ * 
+ */
 void Disable1KPageSupport(){
 	mtc0(CP0_PAGEGRAIN, 1, mfc0(CP0_PAGEGRAIN, 1) & ~PAGEGRAIN_ESP);
 }
 
-uint32_t isEnteringGuestMode(){
+
+/**
+ * @brief Check if the processor will enter in guest mode on next eret instruction.
+ * @return 1 is entering in guest mode, 0 no entering in guest mode. 
+ */
+int32_t isEnteringGuestMode(){
 	uint32_t status;
-	
-	if(curr_vcpu == idle_vcpu)
-		return 1;
 	
 	status = mfc0(CP0_STATUS, 0);
 	
@@ -307,11 +423,20 @@ uint32_t isEnteringGuestMode(){
 	return 0;
 }
 
+
+/**
+ * @brief Get bad instruction address .
+ * @return Bad instruction address. 
+ */
 uint32_t getBadVAddress(){
 	return mfc0(CP0_BADVADDR, 0);
 }
 
-/** Read Reg from preview GPR Shadow */
+
+/**
+ * @brief Read Reg from preview GPR Shadow .
+ * @return GPR value. 
+ */
 uint32_t MoveFromPreviousGuestGPR(uint32_t reg){
 	uint32_t temp;
 	
@@ -388,7 +513,11 @@ uint32_t MoveFromPreviousGuestGPR(uint32_t reg){
 	return temp;
 }
 
-/** Write value to Reg on preview GPR Shadow */
+
+/**
+ * @brief Write value to Reg on preview GPR Shadow.
+ * @return GPR value. 
+ */
 void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value){
 	uint32_t temp = value;
 
@@ -461,299 +590,76 @@ void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value){
 	}
 }
 
-/** Read Reg from previous Guest CP0 */
-uint32_t MoveFromGuestCP0(uint32_t reg, uint32_t sel){
-	uint32_t temp;
 
-	switch(reg){
-		case 4:
-			asm volatile ("mfgc0 %[temp], $4, 0": [temp] "=r"(temp) :);
-			break;
-		case 5:
-			asm volatile ("mfgc0 %[temp], $5, 0": [temp] "=r"(temp) :);
-			break;
-		case 6:
-			asm volatile ("mfgc0 %[temp], $6, 0": [temp] "=r"(temp) :);
-			break;
-		case 8:
-			asm volatile ("mfgc0 %[temp], $8, 0": [temp] "=r"(temp) :);
-			break;
-			
-		case 9:
-			asm volatile ("mfgc0 %[temp], $9, 0": [temp] "=r"(temp) :);
-			break;
-		case 10:
-			switch(sel){
-				case 4: asm volatile ("mfgc0 %[temp], $10, 4": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		case 11:
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $11, 0": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		case 12: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $12, 0": [temp] "=r"(temp) :);
-					break;
-				case 1: asm volatile ("mfgc0 %[temp], $12, 1": [temp] "=r"(temp) :);
-					break;
-				case 2: asm volatile ("mfgc0 %[temp], $12, 2": [temp] "=r"(temp) :);
-					break;
-				case 3: asm volatile ("mfgc0 %[temp], $12, 3": [temp] "=r"(temp) :);
-					break;
-				case 6: asm volatile ("mfgc0 %[temp], $12, 6": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		case 13: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $13, 0": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		case 14: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $14, 0": [temp] "=r"(temp) :);
-					break;
-				case 2: asm volatile ("mfgc0 %[temp], $14, 2": [temp] "=r"(temp) :);
-					break;					
-			}
-			break;
-		case 15: 
-			switch(sel){
-				case 1: asm volatile ("mfgc0 %[temp], $15, 1": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-			
-		case 16: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $16, 0": [temp] "=r"(temp) :);
-					break;
-				case 3: asm volatile ("mfgc0 %[temp], $16, 3": [temp] "=r"(temp) :);
-					break;
-					
-			}
-			break;
-		case 17: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $17, 0": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		case 28: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $28, 0": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		case 30: 
-			switch(sel){
-				case 0: asm volatile ("mfgc0 %[temp], $30, 0": [temp] "=r"(temp) :);
-					break;
-			}
-			break;
-		default:
-			printf("Register not found. mfgc0 %d\n", reg);
-			break;
-	}
-	return temp;
-}
-
-/** Write value to GestCP0 */
-void MoveToGuestCP0(uint32_t reg, uint32_t sel, uint32_t value){
-	uint32_t temp = value;
-	
-	switch(reg){
-		case 4: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $4, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 5: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $5, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 6: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $6, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 8: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $8, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 9: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $9, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 10: 
-			switch(sel){
-				case 4: asm volatile ("mtgc0 %[temp], $10, 4": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-			
-		case 11: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $11, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 12: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $12, 0": : [temp] "r"(temp) );
-					break;
-				case 1: asm volatile ("mtgc0 %[temp], $12, 1": : [temp] "r"(temp) );
-					break;
-				case 2: asm volatile ("mtgc0 %[temp], $12, 2": : [temp] "r"(temp) );
-					break;
-				case 3: asm volatile ("mtgc0 %[temp], $12, 3": : [temp] "r"(temp) );
-					break;
-				case 6: asm volatile ("mtgc0 %[temp], $12, 6": : [temp] "r"(temp) );
-					break;
-					
-			}
-			
-			break;
-		case 13: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $13, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 14: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $14, 0": : [temp] "r"(temp) );
-					break;
-				case 2: asm volatile ("mtgc0 %[temp], $14, 2": : [temp] "r"(temp) );
-					break;
-					
-			}
-			break;
-			
-		case 15: 
-			switch(sel){
-				case 1: asm volatile ("mtgc0 %[temp], $15, 1": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 16: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $16, 0": : [temp] "r"(temp) );
-					break;
-				case 3: asm volatile ("mtgc0 %[temp], $16, 3": : [temp] "r"(temp) );
-					break;
-					
-			}
-			break;
-		case 17: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $17, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-			
-		case 28: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $28, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		case 30: 
-			switch(sel){
-				case 0: asm volatile ("mtgc0 %[temp], $30, 0": : [temp] "r"(temp) );
-					break;
-			}
-			break;
-		default:
-			printf("Register not found mtgc0 %d.\n", reg );
-			break;
-	}
-
-}
-
-/** Set the Guest Lowest GPR Shadow */
-void setGLowestGShadow(uint32_t lowestshadow){
+/**
+ * @brief Set the Lowest GPR Shadow.
+ * @return GPR value. 
+ */
+void setLowestGShadow(uint32_t lowestshadow){
 	mtc0(CP0_GUESTCTL3, 6, lowestshadow & 0xF);
 }
 
-/** Get the Guest Lowest GPR Shadow */
-uint32_t getGLowestGShadow(void){
+
+/**
+ * @brief Get the Lowest GPR Shadow.
+ * @return Lowest guest GPR shadow. 
+ */
+uint32_t getLowestGShadow(void){
 	return (mfc0(CP0_GUESTCTL3, 6)&0xF);
 }
 
-/**Set the Guest previous shadow set**/
-void setGuestPreviousShadowSet(uint32_t shadow_set){
+
+/**
+ * @brief Set the previous shadow set.
+ */
+void setPreviousShadowSet(uint32_t shadow_set){
 	uint32_t srsclt = mfc0(CP0_SRSCTL, 2);
 	srsclt = (srsclt & ~SRSCTL_PSS) | (shadow_set << SRSCLT_PSS_SHIFT);
 	mtc0(CP0_SRSCTL, 2, srsclt);
 }
 
-uint32_t getGuestPreviousShadowSet(){
+/**
+ * @brief Get the previous  GPR Shadow.
+ * @return Previous guest GPR shadow. 
+ */
+uint32_t getPreviousShadowSet(){
 	uint32_t srsclt = mfc0(CP0_SRSCTL, 2);
 	return ((srsclt&SRSCTL_PSS)>>SRSCLT_PSS_SHIFT);
 }
-/** Write value to Reg on GPR Shadow register*/
-uint32_t MoveFromGuestGPR(uint32_t gpr_id, uint32_t reg){
-	
-	uint32_t value;
-	uint32_t shadow_set = getGuestPreviousShadowSet();
-	
-	setGuestPreviousShadowSet(gpr_id);
-	
-	value = MoveFromPreviousGuestGPR(reg);
-	
-	setGuestPreviousShadowSet(shadow_set);
-	
-	return value;
-}
 
-/** Write value to Reg on GPR Shadow register*/
-void MoveToGuestGPR(uint32_t gpr_id, uint32_t reg, uint32_t value){
-	
-	uint32_t shadow_set = getGuestPreviousShadowSet();
-	
-	setGuestPreviousShadowSet(gpr_id);
-	
-	MoveToPreviousGuestGPR(reg,value);
-	
-	setGuestPreviousShadowSet(shadow_set);	
-}
 
-/** Returns the root.count */
+/**
+ * @brief Return the CP0 COUNTER.
+ * @return CP0 COUNTER. 
+ */
 uint32_t getCounter(void){
 	return mfc0(CP0_COUNT, 0);
 }
 
-/* Set GTOffset*/
+
+/**
+ * @brief Set CP0 GTOffset .
+ */
 void setGTOffset(int32_t gtoffset){
     mtc0(CP0_GTOOFFSET, 0, gtoffset);
 }
 
+
+/**
+ * @brief Set CP0 GuestCLT2 .
+ */
 void setGuestCTL2(uint32_t guestclt2){
     mtc0(CP0_GUESTCTL2, 5, guestclt2);
 }
 
+
+/**
+ * @brief Get CP0 Random .
+ * @return Random value.
+ */
 uint32_t getRandom(){
     return mfc0(CP0_RANDOM, 0);
 }
 
-
-/*Invoked when there is not ready VCPU to perform.*/
-void idlevcpu(){
-    while(1){};
-}
 
 

@@ -23,184 +23,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 
 processor_t *proc;
-//vcpu_t *last_vcpu;
 vcpu_t *idle_vcpu;
 vcpu_t *target_vcpu;
 
-//Last vcpu that used the sgpr set
 vcpu_t * vcpu_sgpr[8];
-
-void vcpu_set_pc(vcpu_t *v, uint32_t pc) {
-  v->pc = pc;
-}
-
-void vcpu_set_k0(vcpu_t *v, uint32_t value) {
-  //Set on guest id shadow register
-}
-
-void save_curr_vcpu_ctx(){
-	
-	//Save curr_vcpu context
-	
-	curr_vcpu->pc = getEPC();
-			
-}
-
-void restore_curr_vcpu_ctx(){
-	
-	//Restore curr_vcpu context
-	
-	setEPC(curr_vcpu->pc);	
-}
-
-/** Determine the next PC when an exception occurs on the branch delay slot. */
-uint32_t CalcNextPC(uint32_t epc){
-	uint32_t badinstrP = mfc0(CP0_BADVADDR, 2);
-	uint32_t npc;
-	uint32_t rs, rt, rd;
-	
-	epc+=4;
-	
-	if(!getCauseBD()){
-		return epc;
-	}
-	
-	printf("branch delay!!");
-	
-	rs = RS(badinstrP);
-	rt = RT(badinstrP);
-	rd = RD(badinstrP);
-	
-	switch(OPCODE(badinstrP)){
-		case ESPECIAL:
-			switch(FUNC(badinstrP)) {
-				case JALR:
-					debugs("jalr");
-					MoveToPreviousGuestGPR(rd, epc+8);
-				case JR:
-					debugs("jr");
-					npc = MoveFromPreviousGuestGPR(rs);
-					break;
-				default:
-					npc = epc+4;
-					break;
-			}
-			break;
-
-		case ESPECIAL1:
-			switch (rt) {
-				case BLTZ:
-					debugs("bltz");
-					npc = rs < 0 ? epc + (SIMED(badinstrP) << 2) : epc + 8;
-					break;
-					
-				case BGEZ:
-					debugs("bgez");
-					npc = rs >= 0 ?  epc + (SIMED(badinstrP) << 2) : epc + 8;
-					break;
-					
-				case BLTZAL:
-					debugs("bltzal");
-					if (rs < 0) {
-						MoveToPreviousGuestGPR(31, epc+8);
-						npc = epc + (SIMED(badinstrP) << 2);
-					} else{
-						npc = epc + 8;
-					}
-					break;
-					
-				case BGEZAL:
-					debugs("bgezal");
-					if (rs >= 0) {
-						MoveToPreviousGuestGPR(31, epc+8);
-						npc = epc + (SIMED(badinstrP) << 2);
-					}else{
-						npc = epc + 8;
-					}
-					break;
-					
-					default:
-						npc = epc+4;
-						break;
-			}
-			break;
-			
-		case JAL:
-			debugs("jal");
-			MoveToPreviousGuestGPR(31, epc+8);
-			
-		case J:
-			debugs("j");
-			npc = JT(badinstrP) | UPPERPC(epc);
-			break;
-
-		case BEQ:
-			debugs("beq");
-			npc = rs == rt ? epc + (SIMED(badinstrP) << 2) : epc + 8;
-			break;
-
-		case BNE:
-			debugs("bne");
-			npc = rs != rt ? epc + (SIMED(badinstrP) << 2) : epc + 8;
-			break;
-
-		case BLEZ:
-			debugs("blez");
-			npc = rs <= 0 ? epc + (SIMED(badinstrP) << 2) : epc + 8;		
-			break;
-
-		case BGTZ:
-			debugs("bgtz");
-			npc = rs > 0 ? epc + (SIMED(badinstrP) << 2) : epc + 8;
-			break;
-
-		case BEQL:
-			debugs("beql");
-			if (rs == rt) {
-				MoveToPreviousGuestGPR(31, epc+8);
-				npc = epc + (SIMED(badinstrP) << 2);
-			} else{
-				npc = epc + 8;
-			}
-			break;
-
-		case BNEL:
-			debugs("bnel");
-			if (rs != rt) {
-				MoveToPreviousGuestGPR(31, epc+8);
-				npc = epc + (SIMED(badinstrP) << 2);
-			}else{
-				npc = epc + 8;
-			}
-			break;
-
-		case BLEZL:
-			debugs("blezl");
-			if (rs <= 0) {
-				MoveToPreviousGuestGPR(31, epc+8);
-				npc = epc + (SIMED(badinstrP) << 2);
-			}else{
-				npc = epc + 8;
-			}
-			break;
-
-		case BGTZL:
-			debugs("bgtzl");
-			if (rs > 0) {
-				MoveToPreviousGuestGPR(31, epc+8);
-				npc = epc + (SIMED(badinstrP) << 2);
-			}else{
-				npc = epc + 8;
-			}
-			break;
-
-		default:
-			npc = epc+4;
-			break;
-	}
-	
-	return npc;
-}
 
 /** Implement the instruction emulation  */
 /* FIXME: must emulate all necessary registers. For now, just status reg. */
@@ -241,9 +67,9 @@ uint32_t InstructionEmulation(uint32_t epc){
 								case 0x0C:
 									switch(SEL(badinstr)){
 										case 0:
-											currentValue = MoveFromGuestCP0(rd ,0);
+											currentValue = mfgc0(rd ,0);
 											regvalue = (regvalue & STATUS_MASK) | (currentValue & !STATUS_MASK);
-											MoveToGuestCP0(rd, 0, regvalue);
+											mtgc0(rd, 0, regvalue);
 											flag = 1;
 											break;
 										case 3: /* srsctl */
@@ -257,7 +83,7 @@ uint32_t InstructionEmulation(uint32_t epc){
 								case 0x09:
 									switch(SEL(badinstr)){
 										case 0:
-											currentValue = MoveFromGuestCP0(0x9, 0);
+											currentValue = mfgc0(0x9, 0);
 											currentValue = (~currentValue) + 1;
 											setGTOffset(currentValue);
 											break;
@@ -341,22 +167,22 @@ void contextSave(vcpu_t *vcpu, uint32_t counter, uint32_t guestcount){
         vcputosave->rootcount = counter;
 	
         /* Save the guest.cp0 registers */
-        vcputosave->cp0_registers[4][0] = MoveFromGuestCP0(4,0);	
-        vcputosave->cp0_registers[6][0] = MoveFromGuestCP0(6,0);
-        vcputosave->cp0_registers[8][0] = MoveFromGuestCP0(8,0);
-        vcputosave->cp0_registers[11][0] = MoveFromGuestCP0(11,0);
-        vcputosave->cp0_registers[12][0] = MoveFromGuestCP0(12,0);
-        vcputosave->cp0_registers[12][1] = MoveFromGuestCP0(12,1);	
-        vcputosave->cp0_registers[12][2] = MoveFromGuestCP0(12,2);
-        vcputosave->cp0_registers[12][3] = MoveFromGuestCP0(12,3);
-        vcputosave->cp0_registers[13][0] = MoveFromGuestCP0(13,0);
-        vcputosave->cp0_registers[14][0] = MoveFromGuestCP0(14,0);
-        vcputosave->cp0_registers[14][2] = MoveFromGuestCP0(14,2);
-        vcputosave->cp0_registers[15][0] = MoveFromGuestCP0(15,1);
-        vcputosave->cp0_registers[16][0] = MoveFromGuestCP0(16,0);
-        vcputosave->cp0_registers[17][0] = MoveFromGuestCP0(17,0);
-        vcputosave->cp0_registers[16][3] = MoveFromGuestCP0(16,3);
-        vcputosave->cp0_registers[30][0] = MoveFromGuestCP0(30,0);
+        vcputosave->cp0_registers[4][0] = mfgc0(4,0);	
+        vcputosave->cp0_registers[6][0] = mfgc0(6,0);
+        vcputosave->cp0_registers[8][0] = mfgc0(8,0);
+        vcputosave->cp0_registers[11][0] = mfgc0(11,0);
+        vcputosave->cp0_registers[12][0] = mfgc0(12,0);
+        vcputosave->cp0_registers[12][1] = mfgc0(12,1);	
+        vcputosave->cp0_registers[12][2] = mfgc0(12,2);
+        vcputosave->cp0_registers[12][3] = mfgc0(12,3);
+        vcputosave->cp0_registers[13][0] = mfgc0(13,0);
+        vcputosave->cp0_registers[14][0] = mfgc0(14,0);
+        vcputosave->cp0_registers[14][2] = mfgc0(14,2);
+        vcputosave->cp0_registers[15][0] = mfgc0(15,1);
+        vcputosave->cp0_registers[16][0] = mfgc0(16,0);
+        vcputosave->cp0_registers[17][0] = mfgc0(17,0);
+        vcputosave->cp0_registers[16][3] = mfgc0(16,3);
+        vcputosave->cp0_registers[30][0] = mfgc0(30,0);
         
         vcputosave->pc = getEPC();
     }
@@ -389,7 +215,7 @@ void contextRestore(){
     
     if (currentVCPU != idle_vcpu ){
 
-	MoveToGuestCP0(12, 0, currentVCPU->cp0_registers[12][0]);
+	mtgc0(12, 0, currentVCPU->cp0_registers[12][0]);
 
 	/* Restoring Guest Time. See documentation! */
 	if(currentVCPU->cp0_registers[11][0]!=0){
@@ -399,10 +225,10 @@ void contextRestore(){
 		setGTOffset(gtoffset);
 		
 		/* Restore compare */
-		MoveToGuestCP0(11, 0, currentVCPU->cp0_registers[11][0]);
+		mtgc0(11, 0, currentVCPU->cp0_registers[11][0]);
 		
 		/* read guest.count */ 
-		guestcount = MoveFromGuestCP0(9,0);
+		guestcount = mfgc0(9,0);
 		
 		/* Set Guest.Cause->TI.*/
 		if(guestcount > currentVCPU->cp0_registers[9][0]){
@@ -420,7 +246,7 @@ void contextRestore(){
 		}
 	}else{
 		/* Restore compare */
-		MoveToGuestCP0(11, 0, currentVCPU->cp0_registers[11][0]);
+		mtgc0(11, 0, currentVCPU->cp0_registers[11][0]);
 	}
 
 
@@ -430,26 +256,23 @@ void contextRestore(){
 	
 	//Warning("p 0x%x", pending);
 	
-	MoveToGuestCP0(4, 0, currentVCPU->cp0_registers[4][0]);
-	MoveToGuestCP0(6, 0, currentVCPU->cp0_registers[6][0]);
-	MoveToGuestCP0(5, 0, currentVCPU->cp0_registers[5][0]);
-	MoveToGuestCP0(8, 0, currentVCPU->cp0_registers[8][0]);
-	MoveToGuestCP0(13, 0, currentVCPU->cp0_registers[13][0]);
-	MoveToGuestCP0(12, 1, currentVCPU->cp0_registers[12][1]);
-	MoveToGuestCP0(12, 2, currentVCPU->cp0_registers[12][2]);
-	MoveToGuestCP0(12, 3, currentVCPU->cp0_registers[12][3]);
-	MoveToGuestCP0(14, 0, currentVCPU->cp0_registers[14][0]);
-	MoveToGuestCP0(14, 2, currentVCPU->cp0_registers[14][2]);	
-	MoveToGuestCP0(15, 1, currentVCPU->cp0_registers[15][0]);	
-	MoveToGuestCP0(16, 0, currentVCPU->cp0_registers[16][0]);
-	MoveToGuestCP0(17, 0, currentVCPU->cp0_registers[17][0]);
-	MoveToGuestCP0(16, 3, currentVCPU->cp0_registers[16][3]);
-	MoveToGuestCP0(30, 0, currentVCPU->cp0_registers[30][0]);
+	mtgc0(4, 0, currentVCPU->cp0_registers[4][0]);
+	mtgc0(6, 0, currentVCPU->cp0_registers[6][0]);
+	mtgc0(5, 0, currentVCPU->cp0_registers[5][0]);
+	mtgc0(8, 0, currentVCPU->cp0_registers[8][0]);
+	mtgc0(13, 0, currentVCPU->cp0_registers[13][0]);
+	mtgc0(12, 1, currentVCPU->cp0_registers[12][1]);
+	mtgc0(12, 2, currentVCPU->cp0_registers[12][2]);
+	mtgc0(12, 3, currentVCPU->cp0_registers[12][3]);
+	mtgc0(14, 0, currentVCPU->cp0_registers[14][0]);
+	mtgc0(14, 2, currentVCPU->cp0_registers[14][2]);	
+	mtgc0(15, 1, currentVCPU->cp0_registers[15][0]);	
+	mtgc0(16, 0, currentVCPU->cp0_registers[16][0]);
+	mtgc0(17, 0, currentVCPU->cp0_registers[17][0]);
+	mtgc0(16, 3, currentVCPU->cp0_registers[16][3]);
+	mtgc0(30, 0, currentVCPU->cp0_registers[30][0]);
 	
     }
-	/* config interrupt pass-through (PIP) */
-	//MoveToGuestCP0(12, 6, (MoveFromGuestCP0(12, 6) | currentVCPU->pip));
-	//MoveToGuestCP0(10, 5, (MoveFromGuestCP0(10, 5) & ~(0xff << 10)) | pending);
     
 	if(currentVCPU->guestclt2){
 		setGuestCTL2(currentVCPU->guestclt2);

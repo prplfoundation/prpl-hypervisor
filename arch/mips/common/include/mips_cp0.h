@@ -29,7 +29,31 @@
         "mtc0   %z0, $%1, %2"                                   \
         : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
 
-#define tlb_commit() asm volatile ("tlbwi" : : )                                   \
+/* Read from Guest CP0 */
+#define mfgc0(reg, sel) ({ int32_t __value;                      \
+        asm volatile (                                          \
+        "mfgc0   %0, $%1, %2"                                    \
+        : "=r" (__value) : "K" (reg), "K" (sel));               \
+        __value; })
+
+/* Write to Guest CP0 */
+#define mtgc0(reg, sel, value) asm volatile (                    \
+        "mtgc0   %z0, $%1, %2"                                   \
+        : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
+
+/* */
+#define wrpgpr(reg, value) asm volatile (                    \
+        "wrpgpr   $%0, %1"                                   \
+        : : "K" (reg), "r" ((uint32_t) (value)))
+        
+#define rdpgpr(reg) ({ int32_t __value;                      \
+        asm volatile (                                          \
+        "mfgc0   %0, $%1"                                    \
+        : "=r" (__value) : "K" (reg));               \
+        __value; })
+
+        
+#define tlb_commit() asm volatile ("tlbwi" : : )
 
         
 /* CP0 registers */
@@ -131,5 +155,84 @@
 #define CAUSE_CPU               (11 << 2)
 #define CAUSE_Ov                (12 << 2)
 #define CAUSE_Tr                (13 << 2)
+
+/* COP0 register definition */
+#define CPO_CONFIG              0
+#define CPO_CONFIG1             0x01
+#define CPO_CONFIG2             0x02
+#define CPO_CONFIG3             0x03
+#define CPO_CONFIG4             0x04
+#define CPO_CONFIG5             0x05
+#define CPO_CONFIG7             0x07
+#define CP0_STATUS              12
+
+
+#define CONFIG3_VZ      (1<<23)
+#define CONFIG3_VINT    (1<<5)
+#define CONFIG3_VEIC    (1<<6)
+#define CONFIG3_SP      (1<<4)
+
+#define GUESTCTL0_GM    (1<<31)
+#define GUESTCTL0_CP0   (1<<28)
+#define GUESTCTL0_GT    (1<<25)
+#define GUESTCTL0_CG    (1<<24)
+#define GUESTCTL0_CF    (1<<23)
+#define GUESTCTL0_G1    (1<<22)
+#define GUESTCTL0_DRG   (1<<8)
+#define GUESTCTL0_RAD   (1<<9)
+#define GUESTCTL0_PIP14 (1<<14)
+#define GUESTCTL0_PIP   (0xff<<10)
+
+
+#define GUESTCTL0EXT_MG  (1<<0)
+#define GUESTCTL0EXT_BG  (1<<1)
+#define GUESTCTL0EXT_OG  (1<<2)
+#define GUESTCTL0EXT_FCD (1<<3)
+#define GUESTCTL0EXT_CGI (1<<4)
+
+#define DEBUG_DM        (1<<30)
+#define STATUS_IM7      (1<<15)
+#define CAUSE_WP        (1<<22)
+#define CONFIG_K0        0x7
+#define CAUSE_EXECCODE  (0x1F << 2)
+#define CAUSE_IP         0x3FF00
+#define INTCTL_VS        0x2
+#define PAGEGRAIN_ESP   (1<<28)
+#define SRSCLT_PSS      (0xF<<6)
+#define SRSCLT_HSS      (0xF<<26)
+
+#define CONFIG_K0_UNCACHED      0x2
+#define SRSCTL_HSS              (0xF << 26)
+#define SRSCTL_PSS              (0xF << 6)
+#define GUESTCTL1_RID           (0xFF << 16)
+#define GUESTCTL1_ID            0xFF
+#define SRSCTL_HSS_SHIFT        26
+#define SRSCTL_ESS_SHIFT        12
+#define SRSCLT_PSS_SHIFT        6
+#define SRSMAP_SSV0_SHIFT       0
+#define SRSMAP_SSV1_SHIFT       4
+#define SRSMAP_SSV2_SHIFT       8
+#define SRSMAP_SSV3_SHIFT       12
+#define SRSMAP_SSV4_SHIFT       16
+#define SRSMAP_SSV5_SHIFT       20
+#define SRSMAP_SSV6_SHIFT       24
+#define SRSMAP_SSV7_SHIFT       28
+#define SRSMAP2_SSV8_SHIFT      0
+#define SRSMAP2_SSV9_SHIFT      4
+#define CAUSE_EXECCODE_SHIFT    2
+#define CAUSE_IP_SHIFT          8
+#define CAUSE_PCI_SHIFT         26
+#define CAUSE_IPL_SHIFT         10
+#define INTCTL_VS_SHIFT         5
+#define STATUS_IM_SHIFT         8
+#define GUESTCTL1_RID_SHIFT     16
+#define GUESTCLT2_GRIPL_SHIFT   24
+#define VIEWIPL_IPL_SHIFT       2
+
+//Hypercall fields
+#define HYPCODE  (0x3FF<<11)
+
+#define HYPCODE_SHIFT  11
+
 
 #endif 

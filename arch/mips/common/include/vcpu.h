@@ -189,7 +189,4 @@ extern vcpu_t *idle_vcpu;
 
 uint32_t InstructionEmulation();
 
-void vcpu_set_pc(vcpu_t *v, uint32_t pc);
-void vcpu_set_k0(vcpu_t *v, uint32_t value);
-
 #endif

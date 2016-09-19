@@ -21,7 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 void dispatcher(){	
 	int i;
-	setGuestPreviousShadowSet(curr_vcpu->gprshadowset);
+	setPreviousShadowSet(curr_vcpu->gprshadowset);
 		
 	//Check if needs to save GP registers context
 	if(vcpu_sgpr[curr_vcpu->gprshadowset] != NULL && vcpu_sgpr[curr_vcpu->gprshadowset] != curr_vcpu){
@@ -36,7 +36,7 @@ void dispatcher(){
 		vcpu_sgpr[curr_vcpu->gprshadowset]=curr_vcpu;		
 	}
 
-	setGLowestGShadow(curr_vcpu->gprshadowset);	
+	setLowestGShadow(curr_vcpu->gprshadowset);	
 	setGuestID(curr_vm->id);
 	
 	/* Avoid to enter in guest mode for hypervisor tasks. */
