@@ -30,34 +30,6 @@
 
 
 /**
- * @brief Interrupt handler for the SW1 button.
- */
-void sw1_button_handler(){
-    IFSCLR(3) = 1 << 23;
-    IECCLR(3) = 1<<23;
-    SoftReset();
-}
-
-/**
- * @brief Driver init. Registers the interrupt handler routine and configures the RB12 pin
- * associated to the SW1 button. 
- */
-void sw1_button_interrupt_init(){
-    uint32_t offset;
-    
-    offset = register_interrupt(sw1_button_handler);
-    OFF(119) = offset;
-    
-    CNCONBSET = 0x8000;
-    CNENBSET = 1<<12;
-    IPC(29) = 0x1f<<24;
-    IFSCLR(3) = 1<<23;
-    IECSET(3) = 1<<23;
-    
-    printf("Software reset interrupt (SW1) registered at offset 0x%x.", offset);
-}
-
-/**
  * @brief Performs a software reset to the board. 
  * 
  */
@@ -80,6 +52,38 @@ void SoftReset(){
     
     /* prevent any unwanted code execution until reset occurs*/
     while(1) ;  
+}
+
+/**
+ * @brief Interrupt handler for the SW1 button.
+ */
+void sw1_button_handler(){
+    IFSCLR(3) = 1 << 23;
+    IECCLR(3) = 1<<23;
+    SoftReset();
+}
+
+
+/**
+ * @brief Driver init. Registers the interrupt handler routine and configures the RB12 pin
+ * associated to the SW1 button. 
+ */
+void sw1_button_interrupt_init(){
+    uint32_t offset;
+
+    TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
+    CNPUB =     (1 << 12);     /* enable pull-up */
+    
+    offset = register_interrupt(sw1_button_handler);
+    OFF(119) = offset;
+    
+    CNCONBSET = 0x8000;
+    CNENBSET = 1<<12;
+    IPC(29) = 0x1f<<24;
+    IFSCLR(3) = 1<<23;
+    IECSET(3) = 1<<23;
+    
+    printf("Software reset interrupt (SW1) registered at offset 0x%x.", offset);
 }
 
 driver_init(sw1_button_interrupt_init);

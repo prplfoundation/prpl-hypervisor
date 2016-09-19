@@ -42,12 +42,12 @@ PLATFORM_DIR=platform/pic32mz_starter_kit/
 
 VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 
-LINKER_SCRIPT = ../../arch/mips/pic32mz_starter_kit/pic32mz.ld
+LINKER_SCRIPT = ../../arch/mips/pic32mz/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
 CFLAGS = -EL -O2 -mips32r5 -mmicromips 
 #MIPZ VZ support
-CFLAGS += -Wa,-mvirt
+CFLAGS += -Wa,-mvirt 
 #flointing pointing options
 CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
@@ -58,11 +58,12 @@ CFLAGS += $(DRIVERS) -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
 LDFLAGS = -EL  
 
 ### Include dirs ###
-INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz_starter_kit/include \
+INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz/include \
            -I$(TOPDIR)arch/mips/common/include \
            -I$(TOPDIR)sys/lib/include \
            -I$(TOPDIR)sys/kernel/include \
-           -I$(TOPDIR)platform/pic32mz_starter_kit/include
+           -I$(TOPDIR)platform/pic32mz_starter_kit/include \
+           -I$(TOPDIR)/include
 
 BUILDDIR=build/hypervisor
  
@@ -77,11 +78,12 @@ CC= $(CROSS_COMPILER)gcc
 
 APP = prplHypervisor
 
-all: config_vms lib kernel common pic32mz $(APP) bare_apps generate_firmware
+all: config_vms lib kernel common pic32mz platform $(APP) bare_apps generate_firmware
 
 include $(TOPDIR)sys/sys.mk
 include $(TOPDIR)arch/mips/common/common.mk
-include $(TOPDIR)arch/mips/pic32mz_starter_kit/pic32mz.mk
+include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
+include src/platform.mk
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o ../../bin/ethernet.o

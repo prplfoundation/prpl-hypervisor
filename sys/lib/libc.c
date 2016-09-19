@@ -15,8 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#include "libc.h"
-#include "uart.h"
+#include <libc.h>
 #include <config.h>
 #include <stdarg.h>
 

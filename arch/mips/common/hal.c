@@ -55,12 +55,10 @@ static void print_config(void)
 
 /** C code entry. Called from hal/$(BOARD)/boot.S */
 int32_t main(char * _edata, char* _data, char* _erodata){
-    /* Specific hardware configuration. */
-    hardware_config();
     
-    /* UART start */
-    init_uart(115200, 9600, 200000000);
-
+    /* Specific board configuration. */
+    early_platform_init();    
+    
     print_config();
     
     /* First some paranoic checks!! */

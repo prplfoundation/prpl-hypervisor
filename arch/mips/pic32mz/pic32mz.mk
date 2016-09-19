@@ -15,11 +15,8 @@
 
 pic32mz:
 	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        $(TOPDIR)arch/mips/pic32mz_starter_kit/chipset.c \
-		$(TOPDIR)arch/mips/pic32mz_starter_kit/flash.c \
-		$(TOPDIR)arch/mips/pic32mz_starter_kit/interrupts.c \
-		$(TOPDIR)arch/mips/pic32mz_starter_kit/uart.c \
-		$(TOPDIR)arch/mips/pic32mz_starter_kit/usb.c \
-		$(TOPDIR)arch/mips/pic32mz_starter_kit/boot.S \
-		$(TOPDIR)arch/mips/pic32mz_starter_kit/reset.c
-
+	        $(TOPDIR)arch/mips/pic32mz/chipset.c \
+		$(TOPDIR)arch/mips/pic32mz/flash.c \
+		$(TOPDIR)arch/mips/pic32mz/interrupts.c \
+		$(TOPDIR)arch/mips/pic32mz/usb.c \
+		$(TOPDIR)arch/mips/pic32mz/boot.S
