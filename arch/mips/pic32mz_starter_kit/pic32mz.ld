@@ -40,6 +40,8 @@ SECTIONS
         *(.exception)
         . = 0x200;
         *(.vector0)
+        . = 0x220;
+        *(.vector_1)
         . = 0x1000;
         _text = .;
         *(.text)

@@ -21,6 +21,26 @@
 #include<hal.h>
 #include<globals.h>
 #include <config.h>
+#include <driver.h>
+
+#define MAX_NUM_INTERRUPTS 10
+#define VECTOR_1_OFFSET 0x220
+
+typedef void  handler_vector_t();
+
+handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS];
+
+uint32_t register_interrupt(handler_vector_t * handler){
+    uint32_t i;
+    for(i=0; i<MAX_NUM_INTERRUPTS; i++){
+        if(interrupt_handlers[MAX_NUM_INTERRUPTS] == NULL){
+            interrupt_handlers[i] = handler;
+            return VECTOR_1_OFFSET + i*32;
+        }
+    }
+    return 0;
+}
+
 
 static uint32_t tick_count = 0;
 
@@ -53,11 +73,6 @@ uint32_t InterruptHandler(){
     /*TODO: Only timer interrupt supported. This must be rewrite due to EIC support. */
     
     ret = timer_int_handler();
-    
-    /* Check for sw1 button pressed*/
-    if (!(PORTB & (1 << 12))) {
-        SoftReset();
-    }
     
 #ifdef ETHERNET_SUPPORT        
         if(tick_count%500==0){

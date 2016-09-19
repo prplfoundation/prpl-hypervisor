@@ -29,14 +29,9 @@ _isr:
     .set noreorder
     .set noat
     .set  nomicromips
-        add $a1,$a0,0
-        li $a0, 0        /* init parameter is 0. Its not the first execution of exceptionHandler */
-        mfc0 $a1, $9    
-        mfgc0 $a2, $9
         la $k1, exceptionHandler
         jalr $k1
         nop
-    
     
 isr_return:
     eret
@@ -44,6 +39,20 @@ isr_return:
     .set  micromips 
 .end _isr
 
+.section .vector_1
+.global _vector_1
+.ent _vector_1
+_vector_1:
+    .set noat
+    .set  nomicromips
+    la $k1, interrupt_handlers
+    lw $k1, 0($k1)
+    jalr $k1
+    nop
+    eret
+    nop
+    .set  micromips 
+.end _vector_1
 
     .set at
     .align 2

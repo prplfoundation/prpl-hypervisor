@@ -28,6 +28,7 @@ void hardware_config(){
     TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
     CNPUB =     (1 << 12);     /* enable pull-up */
     
+   
     /* SPI1 pin map */
     ANSELBCLR = 0x0008; /* pin B3 used as output for CS */
     TRISBCLR = 0x0008;
@@ -88,8 +89,6 @@ void configure_timer(){
     
     Info("Starting Hypervisor Execution");
     
-  //  start_vm_timer(1500000);
-    
     asm volatile ("ei");
     /* Wait for the first timer interrupt */ 
     while(1){
@@ -98,31 +97,8 @@ void configure_timer(){
 }
 
 
-/* Performs software reset to the board. */
-void SoftReset(){
-    
-    printf("\nReset button (sw1) pressed. Performing software reset.");
-    udelay(1000000);
-    
-    NVMKEY = 0x0;
-    NVMKEY = 0xAA996655;
-    NVMKEY = 0x556699AA;
-
-    RSWRST |= 1;
-    
-    /* read RSWRST register to trigger reset */
-    volatile int* p = &RSWRST;
-    *p;
-    
-    /* prevent any unwanted code execution until reset occurs*/
-    while(1) ;  
-}
 
 /* Critical error ocurred. Waiting for reset */
 void WaitforReset(){
-    while(1){
-        if (!(PORTB & (1 << 12))) {
-            SoftReset();
-        }
-    }
+    while(1){};
 }
