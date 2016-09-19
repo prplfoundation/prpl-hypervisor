@@ -31,9 +31,75 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <mips_cp0.h>
 
 
-static uint32_t counttimerInt = 0;
-static uint32_t guestexit = 0;
+extern _heap_start;
+extern _heap_size;
 
+
+#define STR(x) #x
+#define STR_VALUE(x) STR(x)
+
+
+static void print_config(void)
+{
+        printf("\n===========================================================");
+        printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
+        printf("\nCopyright (c) 2016, prpl Foundation");
+        printf("\n===========================================================");
+        printf("\nCPU ID:        %s", CPU_ID);
+        printf("\nARCH:          %s", CPU_ARCH);
+        printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
+        printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
+        printf("\nScheduler      %dms", QUANTUM_SCHEDULER);
+        printf("\nVMs:           %d\n", NVMACHINES);
+}
+
+
+/** C code entry. Called from hal/$(BOARD)/boot.S */
+int32_t hyper_init(char * _edata, char* _data, char* _erodata){
+    
+    /* Specific board configuration. */
+    early_platform_init();    
+    
+    print_config();
+    
+    /* Now inialize the hardware */
+    /* Processor inicialization */
+    if(LowLevelProcInit()){
+        return 1;
+    }
+            
+    /* Initialize memory */
+    /* Register heap space on the allocator */ 
+     if(init_mem()){        
+        return 1;
+    }
+    
+    /*Initialize processor structure*/
+    if(initProc()){
+        return 1;
+    } 
+    
+    if(initializeShedulers()){
+        return 1;
+    }
+    
+    /*Initialize vcpus and virtual machines*/
+    initializeMachines();
+
+    /* Initialize device drivers */    
+    drivers_init();
+
+    /* Run scheduler .*/
+    runScheduler();  
+    
+    hal_start_hyper();
+
+    /* configure system timer */
+    configure_timer();
+    
+    /* Should never reach this point !!! */
+    return 0;
+}
 
 /** Handle guest exceptions */
 uint32_t GuestExitException(){
@@ -99,57 +165,6 @@ void configureGuestExecution(uint32_t exCause){
 
 	
     contextRestore();
-}
-
-
-/** First routine executed after an exception or after the sucessfull execution of the main() routine.
-    @param init	flag to signalize first execution after main();
-*/
-int32_t initialize_RT_services(int32_t init, uint32_t counter){
-	uint32_t ret = 0;
-	uint32_t runNextRtInitMachine = 0;
-	
-	if(!init){
-		switch(HandleExceptionCause()){
-			case PROGRAM_ENDED:
-				//Remove vcpu from vm list
-				ll_remove(curr_vm->vcpus.head);				
-				free(curr_vcpu);				
-				runNextRtInitMachine = 1;			
-				break;
-			case SUCEEDED:
-				runNextRtInitMachine = 0;
-				break;								
-			case ERROR:
-				//PANIC
-				Critical("Error on RT services initialization.");
-				Critical("Hypervisor execution stopped.");
-				WaitforReset();
-				break;						
-			default:
-				break;
-		}
-	}else{
-		setStatusReg(STATUS_EXL);
-		runNextRtInitMachine = 1;	
-	}
-	
-	//Check if there are RT machines to be initialized
-	if(runNextRtInitMachine){		
-		if(rt_services_init_vcpu_list.count>0){
-			curr_vcpu = rt_services_init_vcpu_list.head->ptr;
-			ll_remove(rt_services_init_vcpu_list.head);
-			exceptionHandler_addr = initialize_RT_services;	
-		}else{
-			//If there`s no RT Init VM remaining			
-			runScheduler();		
-			exceptionHandler_addr = exceptionHandler;
-		}
-	}
-	
-	configureGuestExecution(RESCHEDULE);	
-
-	return ret;
 }
 
 

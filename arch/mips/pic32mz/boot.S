@@ -92,7 +92,7 @@ $COPY_DATA:
 
     # jump to main
    /* mfc0 $a0, $13*/
-    jal main
+    jal hyper_init
     nop
 
 $L1:

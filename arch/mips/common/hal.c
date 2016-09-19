@@ -27,111 +27,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <usb.h>
 #endif    
 
-extern _heap_start;
-extern _heap_size;
-
-
-#define STR(x) #x
-#define STR_VALUE(x) STR(x)
-
-
-void* exceptionHandler_addr = exceptionHandler;
-
-
-static void print_config(void)
-{
-        printf("\n===========================================================");
-        printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
-        printf("\nCopyright (c) 2016, prpl Foundation");
-        printf("\n===========================================================");
-        printf("\nCPU ID:        %s", CPU_ID);
-        printf("\nARCH:          %s", CPU_ARCH);
-        printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
-        printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
-        printf("\nScheduler      %dms", QUANTUM_SCHEDULER);
-        printf("\nVMs:           %d\n", NVMACHINES);
-}
-
-
-/** C code entry. Called from hal/$(BOARD)/boot.S */
-int32_t main(char * _edata, char* _data, char* _erodata){
-    
-    /* Specific board configuration. */
-    early_platform_init();    
-    
-    print_config();
-    
-    /* First some paranoic checks!! */
-    
-    /* Verify if the processor implements the VZ module */
-    if(!hasVZ()){
-        /* panic */
-        return 1;
-    }
-
-    /* is it in root mode ?  */
-    if(!isRootMode()){
-        /* panic */
-        return 1;
-    }
-    
-    /* This implementation relies on the GuestID field  */
-    if(isRootASID()){ 
-        return -1;
-    }
-    
-    /* This implementation relies on the GuestID field */
-    if(!hasGuestID()){
-        /* panic */
-        return 1;
-    }
-
-    if(has1KPageSupport()){
-        /* Self Protection agains a variant that may implements 1K PageSupport. */
-        Disable1KPageSupport();     
-    }
-
-
-    /* Now inialize the hardware */
-    /* Processor inicialization */
-    if(LowLevelProcInit()){
-        //panic
-        return 1;
-    }
-            
-    /* Initialize memory */
-    /* Register heap space on the allocator */ 
-     if(init_mem()){        
-        return 1;
-    }
-    
-    /*Initialize processor structure*/
-    if(initProc()){
-        return 1;
-    } 
-    
-    if(initializeShedulers()){
-        return 1;
-    }
-    
-    /*Initialize vcpus and virtual machines*/
-    initializeMachines();
-
-    /* Initialize device drivers */    
-    drivers_init();
-
-    /* Run scheduler .*/
-    runScheduler();  
-    
-    hal_start_hyper();
-
-    /* configure system timer */
-    configure_timer();
-    
-    /* Should never reach this point !!! */
-    return 0;
-}
-
 
 /** Verify if the processor is in root mode */
 int32_t isRootMode(){
@@ -203,25 +98,48 @@ int32_t ConfigureGPRShadow(){
 
 /**Low level Processor inicialization */
 int32_t LowLevelProcInit(){
-	uint32_t status;
-	/* Processor User Guide 9.2.4 - Coprocessor 0 inicialization */
-        /* FIXME: This should be done before load data to SRAM. */
-       // hal_sr_rconfig( ((hal_lr_rconfig() & ~CONFIG_K0)) | 4);
 
-	/* enable kseg0 cache for guest coprocessor 0 */
-	//MoveToGuestCP0(16, 0, (MoveFromGuestCP0(16, 0) & ~0x7) | 4);
+        /* First some paranoic checks!! */
+    
+        /* Verify if the processor implements the VZ module */
+        if(!hasVZ()){
+            /* panic */
+            return 1;
+        }
+
+        /* is it in root mode ?  */
+        if(!isRootMode()){
+            /* panic */
+            return 1;
+        }
+    
+        /* This implementation relies on the GuestID field  */
+        if(isRootASID()){ 
+            return -1;
+        }
+    
+        /* This implementation relies on the GuestID field */
+        if(!hasGuestID()){
+            /* panic */
+            return 1;
+        }
+
+        if(has1KPageSupport()){
+            /* Self Protection agains a variant that may implements 1K PageSupport. */
+            Disable1KPageSupport();     
+        }
+        
 	mtc0(CP0_INTCTL, 1, mfc0(CP0_INTCTL, 1) | (INTCTL_VS << INTCTL_VS_SHIFT));
 	
-	//Initializing some flags on guestCtl0
-	//GUESTCTL0_CP0 Allow guest access to some CP0 registers
-	//GUESTCTL0_GT Allow guest read acess to count and compare registers
-	//GUESTCTL0_CF Allow guest to read and write config registers
-	
+	/* Initializing guestCtl0 options
+	GUESTCTL0_CP0 Allow guest access to some CP0 registers
+	GUESTCTL0_GT Allow guest read acess to count and compare registers
+	GUESTCTL0_CF Allow guest to read and write config registers */
 	mtc0(CP0_GUESTCTL0, 6, mfc0(CP0_GUESTCTL0, 6) | GUESTCTL0_CP0 | GUESTCTL0_GT | GUESTCTL0_CF |  GUESTCTL0_CG);
 	
 	mtc0(CP0_GUESTCLT0EXT, 4, mfc0(CP0_GUESTCLT0EXT, 4) | GUESTCTL0EXT_CGI);
 	
-	//Disabling Exceptions when guest modifies own CP0 registers
+	/* Disabling Exceptions when guest modifies own CP0 registers */
 	mtc0(CP0_GUESTCLT0EXT, 4, mfc0(CP0_GUESTCLT0EXT, 4) | GUESTCTL0EXT_FCD);
 	
 	if (ConfigureGPRShadow()){
