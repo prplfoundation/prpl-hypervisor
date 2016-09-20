@@ -23,25 +23,18 @@ _imgptr:
     .word   -1
 
     .section .vector0
-    .global _isr
-    .ent _isr
 _isr:
     .set noreorder
     .set noat
     .set  nomicromips
-        la $k1, exceptionHandler
+        la $k1, general_exception_handler
         jalr $k1
         nop
-    
-isr_return:
-    eret
-    nop
+        eret
+        nop
     .set  micromips 
-.end _isr
 
 .section .vector_1
-.global _vector_1
-.ent _vector_1
 _vector_1:
     .set noat
     .set  nomicromips
@@ -52,13 +45,70 @@ _vector_1:
     eret
     nop
     .set  micromips 
-.end _vector_1
+
+.section .vector_2
+_vector_2:
+    .set noat
+    .set  nomicromips
+    la $k1, interrupt_handlers
+    lw $k1, 4($k1)
+    jalr $k1
+    nop
+    eret
+    nop
+    .set  micromips 
+
+.section .vector_3
+_vector_3:
+    .set noat
+    .set  nomicromips
+    la $k1, interrupt_handlers
+    lw $k1, 8($k1)
+    jalr $k1
+    nop
+    eret
+    nop
+    .set  micromips 
+
+.section .vector_4
+_vector_4:
+    .set noat
+    .set  nomicromips
+    la $k1, interrupt_handlers
+    lw $k1, 12($k1)
+    jalr $k1
+    nop
+    eret
+    nop
+    .set  micromips 
+
+.section .vector_5
+_vector_5:
+    .set noat
+    .set  nomicromips
+    la $k1, interrupt_handlers
+    lw $k1, 16($k1)
+    jalr $k1
+    nop
+    eret
+    nop
+    .set  micromips 
+
+.section .vector_6
+_vector_6:
+    .set noat
+    .set  nomicromips
+    la $k1, interrupt_handlers
+    lw $k1, 20($k1)
+    jalr $k1
+    nop
+    eret
+    nop
+    .set  micromips 
 
     .set at
     .align 2
-    .text
-    .global _entry
-    .ent    _entry
+    .section .entry
 _entry:
     .set noreorder
     .set noat
@@ -90,8 +140,6 @@ $COPY_DATA:
     bnez    $v1, $COPY_DATA
     nop
 
-    # jump to main
-   /* mfc0 $a0, $13*/
     jal hyper_init
     nop
 
@@ -99,9 +147,9 @@ $L1:
     beq $zero, $zero, $L1
     nop
     .set micromips
-.end _entry
 
 
+.text
 .global save_sgpr_ctx
 .ent save_sgpr_ctx
 save_sgpr_ctx:

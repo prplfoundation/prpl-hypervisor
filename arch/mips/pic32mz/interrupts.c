@@ -17,11 +17,11 @@
 
 
 #include<pic32mz.h>
-#include<vcpu.h>
-#include<hal.h>
-#include<globals.h>
-#include <config.h>
 #include <driver.h>
+#include <mips_cp0.h>
+#include <vcpu.h>
+#include <config.h>
+#include <globals.h>
 
 #define MAX_NUM_INTERRUPTS 10
 #define VECTOR_1_OFFSET 0x220
@@ -33,7 +33,7 @@ handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS];
 uint32_t register_interrupt(handler_vector_t * handler){
     uint32_t i;
     for(i=0; i<MAX_NUM_INTERRUPTS; i++){
-        if(interrupt_handlers[MAX_NUM_INTERRUPTS] == NULL){
+        if(interrupt_handlers[i] == NULL){
             interrupt_handlers[i] = handler;
             return VECTOR_1_OFFSET + i*32;
         }
@@ -41,57 +41,26 @@ uint32_t register_interrupt(handler_vector_t * handler){
     return 0;
 }
 
+void interrupt_init(){
+    uint32_t temp_CP0, offset;
+    
+    /* All interrupt levels are handled at GPR shadow 7 
+    Other GPR shadows are used for VM execution. */
+    PRISS = 7<<28 | 7<<24 | 7<<20 | 7<<16 | 7<<12 | 7<<8 | 7<<4;
 
-static uint32_t tick_count = 0;
-
-uint32_t timer_int_handler(){
+    /* Configure the processor to vectored interrupt mode. */
+    mtc0 (CP0_EBASE, 1, 0x9d000000);    /* Set an EBase value of 0x9D000000 */
+    temp_CP0 = mfc0(CP0_CAUSE, 0);      /* Get Cause */
+    temp_CP0 |= CAUSE_IV;               /* Set Cause IV */
+    mtc0(CP0_CAUSE, 0, temp_CP0);       /* Update Cause */
+    INTCONSET = INTCON_MVEC;            /* Set the MVEC bit - Vetored interrupt mode. */
+    temp_CP0 = mfc0(CP0_STATUS, 0);     /* Get Status */
+    temp_CP0 &= ~STATUS_BEV;            /* Clear Status IV */
+    temp_CP0 &= ~STATUS_EXL; 
+    mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
     
-    uint32_t ret = SUCEEDED;
-    
-    if (IFS(0) & 0x1000000){
-        //curr_vcpu->guestclt2 = (((hal_lr_rcause() & 0x1fc00)>>10) << GUESTCLT2_GRIPL_SHIFT);
-        IFSCLR(0) = 0x1000000;
-        //putchar('*');
-    }
-    if (IFS(0) & 0x00004000){
-        IFSCLR(0) = 0x00004000;
-        /* insert timer interrupt on guest*/
-        curr_vcpu->guestclt2 = curr_vcpu->guestclt2 | (3 << GUESTCLT2_GRIPL_SHIFT);
-        if ((tick_count++)%QUANTUM_SCHEDULER==0){
-            ret = RESCHEDULE;
-        }
-    }
-    
-    return ret;
+    printf("\nPIC32mz in Vectored Interrupt Mode.");
 }
 
+driver_init(interrupt_init);
 
-/** Hardware interrupt handle */
-uint32_t InterruptHandler(){
-    uint32_t ret;
-    
-    /*TODO: Only timer interrupt supported. This must be rewrite due to EIC support. */
-    
-    ret = timer_int_handler();
-    
-#ifdef ETHERNET_SUPPORT        
-        if(tick_count%500==0){
-            en_watchdog();
-        }
-#endif    
-        
-#ifdef USB_SUPPORT        
-        if(tick_count%100==0){
-            usb_device_attach();
-        }
-        
-        if(IFS(4) & (1<<4)){
-            /* clear global USB interrupt bit */
-            IFSCLR(4) = (1<<4);
-            usb_int_handler();
-        }
-#endif
-    
-    
-    return ret;
-}

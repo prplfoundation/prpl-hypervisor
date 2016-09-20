@@ -156,7 +156,7 @@ hypcall_enable_timer:
         .ent hyp_ipc_send_message
 hyp_ipc_send_message:
         .set noreorder 
-        hypcall 0x300
+        hypcall 0x2
         jr $ra
         nop
         .end hyp_ipc_send_message
@@ -165,7 +165,7 @@ hyp_ipc_send_message:
         .ent hyp_ipc_receive_message
 hyp_ipc_receive_message:
         .set noreorder 
-        hypcall 0x301
+        hypcall 0x1
         sw $v1, 0($a0)
         jr $ra
         nop
@@ -206,7 +206,7 @@ hyp_flash_write:
         .ent hyp_get_guest_id        
 hyp_get_guest_id:
         .set noreorder 
-        hypcall 0x200
+        hypcall 0
         jr $ra
         nop
         .set reorder        
@@ -216,7 +216,7 @@ hyp_get_guest_id:
         .ent guest_is_up        
 guest_is_up:
         .set noreorder 
-        hypcall 0x003
+        hypcall 0x3
         jr $ra
         nop
         .set reorder        

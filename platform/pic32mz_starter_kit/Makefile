@@ -78,12 +78,13 @@ CC= $(CROSS_COMPILER)gcc
 
 APP = prplHypervisor
 
-all: config_vms lib kernel common pic32mz platform $(APP) bare_apps generate_firmware
+all: config_vms lib kernel common pic32mz platform drivers $(APP) bare_apps generate_firmware
 
 include $(TOPDIR)sys/sys.mk
 include $(TOPDIR)arch/mips/common/common.mk
 include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
-include src/platform.mk
+include board/board.mk
+include $(TOPDIR)/drivers/drivers.mk
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o ../../bin/ethernet.o

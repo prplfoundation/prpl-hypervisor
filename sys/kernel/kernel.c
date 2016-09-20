@@ -31,7 +31,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <mips_cp0.h>
 
 
-extern _heap_start;
 extern _heap_size;
 
 
@@ -55,7 +54,7 @@ static void print_config(void)
 
 
 /** C code entry. Called from hal/$(BOARD)/boot.S */
-int32_t hyper_init(char * _edata, char* _data, char* _erodata){
+int32_t hyper_init(){
     
     /* Specific board configuration. */
     early_platform_init();    
@@ -94,15 +93,15 @@ int32_t hyper_init(char * _edata, char* _data, char* _erodata){
     
     hal_start_hyper();
 
-    /* configure system timer */
-    configure_timer();
+    /* start system timer */
+    start_timer();
     
     /* Should never reach this point !!! */
     return 0;
 }
 
 /** Handle guest exceptions */
-uint32_t GuestExitException(){
+static uint32_t GuestExitException(){
 	uint32_t guestcause = getGCauseCode();
 	uint32_t epc = getEPC();
 	uint32_t ret = SUCEEDED;
@@ -112,43 +111,17 @@ uint32_t GuestExitException(){
 			ret =  InstructionEmulation(epc);
 	    	break;
 	    case 0x2:
-			ret = HypercallHandler();			
+			ret = hypercall_execution();			
 			break;
 		default:
 			break;
 	}
 	
 	curr_vcpu->pc = epc+4;
+        setEPC(curr_vcpu->pc);
 	return ret;
 }
 
-/** Determine the cause and invoke the correct handler */
-uint32_t HandleExceptionCause(){
-	uint32_t CauseCode = getCauseCode();
-
-	switch (CauseCode){
-		/* Interrupt */
-	case 	0:	
-			return InterruptHandler();
-		/* GuestExit */
-	case	0x1b:	
-			return GuestExitException();
-	/* TLB load, store or fetch exception */
-	case	0x3:						
-	case 	0x2:
-			Warning("\nTLB miss: VCPU: %d EPC 0x%x", curr_vcpu->id, getEPC());
-			return ERROR;
-        
-        /*FIXME: The processors is with strange case code after bootloader initialization. 
-         The cause is cleaned after the first timer interruption. */
-        case    0x1d: return SUCEEDED;
-        case    0x15: return SUCEEDED;
-	default:
-		/* panic */
-		Warning("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), curr_vcpu->id);
-		return ERROR;
-	}
-}
 
 void configureGuestExecution(uint32_t exCause){
 	
@@ -165,41 +138,23 @@ void configureGuestExecution(uint32_t exCause){
 }
 
 
-int32_t exceptionHandler(int32_t init, uint32_t counter, uint32_t guestcounter){
-	uint32_t ret, temp=0;
-        
-        contextSave(NULL, counter, guestcounter);	
-        ret = HandleExceptionCause();
-        
-        
-        
-	switch(ret){
-		case SUCEEDED:
-			break;
-		case RESCHEDULE:				
-			runScheduler();
-			break;
-		case CHANGE_TO_TARGET_VCPU:
-			curr_vcpu=target_vcpu;
-			break;
-		case PROGRAM_ENDED:		
-			if(remove_vm_and_runBestEffortScheduler()<0){
-				//printPerformanceCounters();		
-				Warning("The last VM ended!");
-				Warning("No more VMs to execute.");
-			}
-			ret = RESCHEDULE;
-			
-			break;
-        case ERROR:                        
-		default:
-                        Critical("Critical error ocurred. Hypervisor stopped.");
-                        dumpCP0();
-                        WaitforReset();
-			break;
-	}
-	
-	configureGuestExecution(ret);
+void general_exception_handler(){
+        uint32_t CauseCode = getCauseCode();
 
-	return 0;
+        switch (CauseCode){
+        case    GUESTEXITEXCEPTION:   
+                        GuestExitException();
+                        break;
+
+        /* TLB load, store or fetch exception */
+        case    0x3:                                            
+        case    0x2:
+                        Warning("\nTLB miss: VCPU: %d EPC 0x%x", curr_vcpu->id, getEPC());
+                        while(1);
+        default:
+                /* panic */
+                Warning("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), curr_vcpu->id);
+                while(1);
+        }
+        
 }

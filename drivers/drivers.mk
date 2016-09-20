@@ -13,10 +13,8 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-pic32mz:
-	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        $(TOPDIR)arch/mips/pic32mz/timer.c \
-		$(TOPDIR)arch/mips/pic32mz/flash.c \
-		$(TOPDIR)arch/mips/pic32mz/interrupts.c \
-		$(TOPDIR)arch/mips/pic32mz/usb.c \
-		$(TOPDIR)arch/mips/pic32mz/boot.S
+DRIVER_INCLUDE=-I$(TOPDIR)/drivers/include/
+
+drivers:
+	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) \
+	        $(TOPDIR)/drivers/inter-vm-comm.c

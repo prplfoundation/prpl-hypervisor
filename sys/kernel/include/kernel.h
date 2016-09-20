@@ -45,31 +45,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define PERFORMANCE_COUNTER_INT (1<<31)
 
-
-/* Hypercalls 10 bits (1024 codes) */
-//========================
-
-/* ADD VCPU
- *  a0 = Service Address
- *  a1 =   
- */
-#define HCALL_ADD_VCPU  0x100
-
-/* GET VM ID
- *  v0 = Vm id
- */  
-#define HCALL_GET_VM_ID 0x200
-
-/* SEND MESSAGE 
-*   a0 = Vm id
-*   a1 = Message pointer
-*   v0 = (0) Sucess / (1) Failed */
-#define HCALL_SEND_MSG  0x300
+#define GUESTEXITEXCEPTION      0x1b
 
 
-uint32_t HandleExceptionCause();
-int32_t initialize_RT_services(int32_t,uint32_t);
-int32_t exceptionHandler();
-uint32_t InterruptHandler();
+void general_exception_handler();
+void configureGuestExecution(uint32_t exCause);
 
 #endif

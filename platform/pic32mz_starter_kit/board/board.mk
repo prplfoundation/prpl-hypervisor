@@ -15,6 +15,6 @@
 
 platform:
 	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        src/reset.c \
-		src/uart.c \
-		src/platform.c
+	        board/reset.c \
+		board/uart.c \
+		board/board.c

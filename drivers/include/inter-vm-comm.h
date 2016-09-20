@@ -15,42 +15,27 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#ifndef _HYPERCALL_DEFINES_H_
-#define _HYPERCALL_DEFINES_H_
+/* GET VM ID 
+ * v0 = identification number.
+ */
+#define HCALL_GET_VM_ID 0
 
+/* RECEIVE MESSAGE 
+ *   a0 = Process ID
+ *   a1 = Target message pointer 
+ *   v0 = Message size */
+#define HCALL_IPC_RECV_MSG  1
 
+/* SEND MESSAGE 
+ *   a0 = Target process ID
+ *   a1 = Source message pointer 
+ *   a2 = Message size 
+ *   v0 = true/false (Succeded/failed)*/
+#define HCALL_IPC_SEND_MSG  2
 
-/** CONTROL HYPERCALLS**/
-#define HCALL_HALT_GUEST 0x001
-#define HCALL_START_TIMER_GUEST 0x002
+/* Check if guest is UP. 
+ * v0 = identification number.
+ */
+#define HCALL_GUEST_UP 3
 
-
-/* PUF hypercalls */
-#define HCALL_PUF_SHARED_MEMORY 0x150
-
-
-/** FLASH hypercalls **/
-#define HCALL_FLASH_READ  0x151  /* a0 = destination buffer */
-#define HCALL_FLASH_WRITE 0x152  /* a0 = source buffer */
-
-
-#define ETH_GET_MAC    0x153  /* a0 = destination buffer */
-#define ETH_LINK_STATE 0x12
-#define ETH_RECV_FRAME 0x11
-#define ETH_SEND_FRAME 0x10
-
-#define USB_VM_REGISTER 0x20
-#define USB_VM_GET_DESCRIPTOR 0x21
-#define USB_VM_SEND_DATA 0x23
-
-#define HCALL_READ_DEVCFG3 0x170
-
-typedef void hypercall_t();
-
-#define HCALL_TABLE_SIZE 30
-#define HCALL_CODE_INVALID       -1
-#define HCALL_CODE_USED          -2
-#define HCALL_NOT_IMPLEMENTED    -3
-
-#endif
 

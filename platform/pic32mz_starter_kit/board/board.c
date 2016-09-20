@@ -45,7 +45,6 @@ void early_platform_init(){
     RPF5R = 5;  /* pin F5 as SPI1 data output */
 
     /* SPI config settings */
-
     SPI1BRG = 4; /* Set clock divider to selected_clock/10: selected_clk/(2*(4+1)) */
     SPI1CON = 0x8120; /* enable SPI / master mode / data transition from high to low clk */
 }

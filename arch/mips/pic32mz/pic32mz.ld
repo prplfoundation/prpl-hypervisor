@@ -42,10 +42,21 @@ SECTIONS
         *(.vector0)
         . = 0x220;
         *(.vector_1)
+        . = 0x240;
+        *(.vector_2)
+        . = 0x260;
+        *(.vector_3)
+        . = 0x280;
+        *(.vector_4)
+        . = 0x300;
+        *(.vector_5)
+        . = 0x320;
+        *(.vector_6)
         . = 0x1000;
+        *(.entry)
         _text = .;
         *(.text)
-            *(.text.*)
+        *(.text.*)
         _etext = .;
     } > flash
 

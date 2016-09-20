@@ -83,7 +83,7 @@ void sw1_button_interrupt_init(){
     IFSCLR(3) = 1<<23;
     IECSET(3) = 1<<23;
     
-    printf("Software reset interrupt (SW1) registered at offset 0x%x.", offset);
+    printf("\nSoftware reset interrupt (SW1) registered at offset 0x%x.", offset);
 }
 
 driver_init(sw1_button_interrupt_init);
