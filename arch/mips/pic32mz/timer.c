@@ -31,6 +31,7 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include <config.h>
 #include <hal.h>
 #include <pic32mz.h>
+#include <mips_cp0.h>
 
 /* Interval of interrupt injection on guests */
 #define QUANTUM (1 * MILISECOND)
@@ -55,6 +56,7 @@ static void timer_interrupt_handler(){
     }else{
         setGuestCTL2(3 << GUESTCLT2_GRIPL_SHIFT);
     }
+    
     tick_count++;
     
     temp_CP0 = mfc0(CP0_COUNT, 0);

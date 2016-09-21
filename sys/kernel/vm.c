@@ -36,6 +36,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <tlb.h>
 #include <types.h>
 #include <globals.h>
+#include <mips_cp0.h>
 
 
 /**
@@ -115,7 +116,7 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
 	ll_node_t* nd;
 	uint32_t i;
 	vcpu_t *vcpu;
-	
+    
 	/* Number of fix TLB entries */
     uint32_t ntlbent = vm->num_tlb_entries;
 
@@ -123,7 +124,6 @@ vm_t *create_vm(const struct vmconf_t const *vm) {
 		return NULL;
     
 	ret = (vm_t*)((unsigned int)nd + sizeof(ll_node_t));
-    
     ret->base_addr = vm->ram_base;
 	
 	ret->id = vm_id++;  

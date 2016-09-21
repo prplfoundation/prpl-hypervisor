@@ -77,8 +77,5 @@ vm_t *create_vm(const struct vmconf_t const *vm);
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point);
 
 
-linkedlist_t virtualmachines;
-linkedlist_t virtualmachines_rt;
-
 #endif
 

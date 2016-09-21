@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <rw_regs.h>
 #include <globals.h>
 #include <hal.h>
+#include <mips_cp0.h>
 
 processor_t *proc;
 vcpu_t *idle_vcpu;

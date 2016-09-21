@@ -18,12 +18,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _HAL_H_
 #define _HAL_H_
 
-#include <mips_cp0.h>
-
-#ifdef ETHERNET_SUPPORT
-#include <ethernet.h>
-#endif 
-
 int32_t isRootMode();
 int32_t hasVZ();
 int32_t ConfigureGPRShadow();

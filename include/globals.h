@@ -57,15 +57,8 @@ extern vcpu_t *vcpu_sgpr[8];
 
 /* Best effort vcpu list */
 extern linkedlist_t be_vcpu_list;
-extern linkedlist_t be_vcpu_list_waiting;
+extern linkedlist_t virtualmachines;
 
-/* Real Time vcpu lists */
-extern linkedlist_t rt_vcpu_inactive_list;
-extern linkedlist_t rt_vcpu_active_list;
-extern linkedlist_t rt_vcpu_waiting_list;
-
-/* Real time services initialization vcpu list */
-extern linkedlist_t rt_services_init_vcpu_list;
 
 #define curr_vcpu proc->curr_vcpu
 #define curr_vm   curr_vcpu->vm

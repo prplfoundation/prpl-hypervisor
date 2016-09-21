@@ -31,6 +31,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <tlb.h>
 #include <driver.h>
 #include <hypercall_defines.h>
+#include <mips_cp0.h>
 
 
 /**

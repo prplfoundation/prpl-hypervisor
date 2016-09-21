@@ -35,7 +35,7 @@ extern __drivers_table_init_end;
 /**
  * @brief Walk in the driver's function table calling all initialization functions. 
  */
-void drivers_init(){
+void drivers_initialization(){
     uint32_t i;
     for(i=(uint32_t)(&__drivers_table_init_start); i<(int)(&__drivers_table_init_end); i+=sizeof(uint32_t*)){
         ((initcall_t*)*(uint32_t*)i)();

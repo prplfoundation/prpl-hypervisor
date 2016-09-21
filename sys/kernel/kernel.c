@@ -86,7 +86,7 @@ int32_t hyper_init(){
     initializeMachines();
 
     /* Initialize device drivers */    
-    drivers_init();
+    drivers_initialization();
 
     /* Run scheduler .*/
     runScheduler();  
