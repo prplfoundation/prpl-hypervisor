@@ -30,7 +30,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <tlb.h>
 #include <driver.h>
-#include <inter-vm-comm.h>
+#include <hypercall_defines.h>
 
 
 /**
