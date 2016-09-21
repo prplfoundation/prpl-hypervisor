@@ -108,6 +108,6 @@ SECTIONS
 }
     _end = .;
     _heap_start = . ;
-    _heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - 4 - _stack_size;
+    _heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - _stack_size;
     
 
