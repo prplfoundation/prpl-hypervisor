@@ -22,11 +22,30 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define ETH_FRAME_SZ 1518
 
+#define MILISECOND (100000000/ 1000)
+
 uint8_t frame_buf[ETH_FRAME_SZ];
+
+static uint32_t link_state = 0;
+
+uint32_t calc_wait_time(uint32_t time, uint32_t ms_delay){
+    uint32_t now = mfc0(CP0_COUNT, 0);
+    if ( (now - time) > (ms_delay * MILISECOND)){
+        return 1;
+    }
+    return 0;
+}
 
 
 int32_t eth_link_state(struct pico_device *dev){
-        return hyper_eth_link_state();
+    return link_state;
+}
+
+void eth_watchdog(uint32_t *time, uint32_t ms_delay){
+    if (calc_wait_time(*time, ms_delay)){
+            link_state = hyper_eth_link_check();
+            *time = mfc0(CP0_COUNT, 0);
+    }
 }
 
 void eth_get_mac(uint8_t *mac){

@@ -237,7 +237,7 @@ read_devcofg3:
     .ent hyper_eth_send
 hyper_eth_send:
     .set noreorder 
-    hypcall 0x010
+    hypcall 0x5
     jr $ra
     nop
     .set reorder
@@ -247,7 +247,7 @@ hyper_eth_send:
         .ent hyper_eth_recv
 hyper_eth_recv:
         .set noreorder 
-        hypcall 0x011
+        hypcall 0x6
         jr $ra
         nop
         .set reorder
@@ -257,22 +257,22 @@ hyper_eth_recv:
         .ent hyper_eth_mac
 hyper_eth_mac:
         .set noreorder 
-        hypcall 0x153
+        hypcall 0x7
         jr $ra
         nop
         .set reorder
 .end hyper_eth_mac
 
         
-        .global hyper_eth_link_state
-        .ent hyper_eth_link_state
-hyper_eth_link_state:
+        .global hyper_eth_link_check
+        .ent hyper_eth_link_check
+hyper_eth_link_check:
         .set noreorder 
-        hypcall 0x12
+        hypcall 0x4
         jr $ra
         nop
         .set reorder
-.end hyper_eth_link_state
+        .end hyper_eth_link_check
 
         
         .global spinlock

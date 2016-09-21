@@ -26,6 +26,10 @@ typedef void hypercall_t();
 #define HCALL_NOT_IMPLEMENTED    -3
 
 
+/*************************/
+/* InterVM Communication */
+/*************************/
+
 /* GET VM ID 
  * v0 = identification number.
  */
@@ -49,6 +53,31 @@ typedef void hypercall_t();
  */
 #define HCALL_GUEST_UP 3
 
+/*************************/
+/*  ETHERNET HYPERCALLS  */
+/*************************/
+
+/* Stablished and monitore ethernet state . 
+ * v0 = 0 (link down) or 1 (link up).
+ */
+#define HCALL_ETHERNET_WATCHDOG 4
+
+/* Send a frame throught the ethernet.
+ * A0 = buffer pointer.
+ * A1 = buffer size.
+ */ 
+#define HCALL_ETHERNET_SEND     5
+
+/* Recv a frame from the ethernet.
+ * A0 = buffer pointer.
+ * V0 = buffer size.
+ */ 
+#define HCALL_ETHERNET_RECV     6
+
+/* Returns the MAC address.
+ * A0 = buffer pointer.
+ */ 
+#define HCALL_ETHERNET_GET_MAC  7
 
 #if 0
 /* PUF hypercalls */

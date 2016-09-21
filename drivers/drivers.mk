@@ -13,8 +13,9 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-DRIVER_INCLUDE=-I$(TOPDIR)/drivers/include/
+DRIVER_INCLUDE=-I$(TOPDIR)drivers/include/
 
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) \
-	        $(TOPDIR)/drivers/inter-vm-comm.c
+	        $(TOPDIR)drivers/inter-vm-comm.c
+	     

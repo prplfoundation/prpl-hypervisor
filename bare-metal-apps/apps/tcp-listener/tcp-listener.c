@@ -170,6 +170,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 int main()
 {
     uint8_t mac[6];
+    uint32_t timer = 0;
     
     /* Obtain the ethernet MAC address */
     eth_get_mac(mac);
@@ -219,8 +220,10 @@ int main()
         printf("Failed to listen on socket!\n");
 
     while (1){
+        eth_watchdog(&timer, 500);
         /* pooling picoTCP stack */
         pico_stack_tick();
+        
     }
 
     return 0;

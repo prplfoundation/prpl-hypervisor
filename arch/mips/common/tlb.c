@@ -57,43 +57,45 @@ void tlbEntryWrite(struct tlbentry *entry){
 	
 }
 
-/** Create a temporary tlb entry for hypercall
+/** Create a temporary tlb entry mapped to non cachable area.
  *  Uses the VM base address as virtual address to map the page.
-	@param address hypercall address event
-	@param baseaddr virtual machine base address
-	@param size guest data size
-*/
-uint32_t tlbCreateEntry(uint32_t address, uint32_t baseaddr, uint32_t size, uint32_t tlbindex){	
-	struct tlbentry entry;
-	
-	/* this is a root entry */
-	entry.guestid = 0;
-
-	/* FIXME: highest tlb entry reserved for hypercalls mapping. Depending on the hardware the highest can be 0xf. */
-	entry.index = tlbindex;
-	
-	entry.entrylo0 = ((baseaddr - 0x80000000) + (address - 0x80000000)) >> 12;
-	
-	entry.lo0flags = ENTRYLO_V | ENTRYLO_D;
-	
-	/* check if the address + size exceeds the page limits, maps the next page */
-	if((address/0x1000) < ((address+size)/0x1000)){
-		entry.entrylo1 = ((baseaddr - 0x80000000) + address + size - 0x80000000) >> 12;
-		entry.lo1flags = ENTRYLO_V | ENTRYLO_D;
-	}else {
-		entry.entrylo1 = 0;
-		entry.lo1flags = 0;
-	}
-	
-	entry.pagemask = PAGEMASK_4KB;
-	
-	entry.entryhi = (baseaddr - 0x80000000) >> 12;
-
-	/*FIXME: using no cached memory to direct access to guest data */
-	entry.coherency = 2;
-	
-	tlbEntryWrite(&entry);
-	
-	return (address & 0xFFF) + baseaddr - 0x80000000;
+ *    @param address hypercall address event
+ *    @param baseaddr virtual machine base address
+ *    @param size guest data size
+ *    @param use_cache Determines if the page will be mapped to KSEG1 or KSEG2
+ *    @return Mapped address. 
+ */
+uint32_t tlbCreateEntry(uint32_t address, uint32_t baseaddr, uint32_t size, uint32_t tlbindex, uint32_t use_cache){ 
+    struct tlbentry entry;
+    uint32_t KSEG = use_cache? 0x80000000 : 0xA0000000;
+    
+    /* this is a root entry */
+    entry.guestid = 0;
+    
+    /* FIXME: highest tlb entry reserved for hypercalls mapping. Depending on the hardware the highest can be 0xf. */
+    entry.index = tlbindex;
+    
+    entry.entrylo0 = ((baseaddr - 0x80000000) + (address - 0x80000000)) >> 12;
+    
+    entry.lo0flags = ENTRYLO_V | ENTRYLO_D;
+    
+    /* check if the address + size exceeds the page limits, maps the next page */
+    if((address/0x1000) < ((address+size)/0x1000)){
+        entry.entrylo1 = ((baseaddr - 0x80000000) + address + size - 0x80000000) >> 12;
+        entry.lo1flags = ENTRYLO_V | ENTRYLO_D;
+    }else {
+        entry.entrylo1 = 0;
+        entry.lo1flags = 0;
+    }
+    
+    entry.pagemask = PAGEMASK_4KB;
+    
+    entry.entryhi = (baseaddr - KSEG) >> 12;
+    
+    /*FIXME: using no cached memory to direct access to guest data */
+    entry.coherency = 2;
+    
+    tlbEntryWrite(&entry);
+    
+    return (address & 0xFFF) + baseaddr - KSEG;
 }
-

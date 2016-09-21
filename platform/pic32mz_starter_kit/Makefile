@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = samples_cfg/sample-2VMs.cfg
+CFG_FILE = samples_cfg/sample-1VM.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -87,7 +87,7 @@ include board/board.mk
 include $(TOPDIR)/drivers/drivers.mk
 
 $(APP): 
-	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o ../../bin/ethernet.o
+	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o ../../bin/pic32mz-ethernet.o
 	$(OBJDUMP) --disassemble --reloc $(APP).elf > $(APP).lst
 	$(OBJDUMP) -h $(APP).elf > $(APP).sec
 	$(OBJDUMP) -s $(APP).elf > $(APP).cnt

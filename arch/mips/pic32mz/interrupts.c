@@ -22,13 +22,14 @@
 #include <vcpu.h>
 #include <config.h>
 #include <globals.h>
+#include <driver.h>
 
 #define MAX_NUM_INTERRUPTS 10
 #define VECTOR_1_OFFSET 0x220
 
 typedef void  handler_vector_t();
 
-handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS];
+handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS] = {NULL};
 
 uint32_t register_interrupt(handler_vector_t * handler){
     uint32_t i;
