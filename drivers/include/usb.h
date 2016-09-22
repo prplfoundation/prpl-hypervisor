@@ -111,6 +111,7 @@ struct usb_transfer_status_t{
 
 struct usb_status_t{
     volatile uint32_t state;
+    uint32_t descriptor_available;
     uint32_t connected;
     uint32_t debounce;
     uint32_t wait_debounce;
@@ -131,8 +132,6 @@ struct descriptor_receive{
     uint32_t descr_sz;
     uint32_t tranfer_sz;
 };
-
-
 
 
 struct descriptor_decoded{
@@ -174,7 +173,7 @@ struct descriptor_decoded{
 #define USB_INTERRUPT_CLEAR IFSCLR(4) = (1<<4)
 
 /* Enable USB interrupts */
-#define USB_INTERRUPT_ENABLE  OFF(132) = 0x200; IPCSET(33) = 0x1F; IECSET(4) = (1<<4)
+#define USB_INTERRUPT_ENABLE  IPCSET(33) = 0x1F; IECSET(4) = (1<<4)
 
 /* Clear USB DMA interrupt */
 #define USB_DMA_INTERRUPT_CLEAR IFSCLR(4) = (1<<5)

@@ -79,6 +79,12 @@ typedef void hypercall_t();
  */ 
 #define HCALL_ETHERNET_GET_MAC  7
 
+
+#define USB_VM_POLLING              8
+#define USB_VM_GET_DESCRIPTOR       9
+#define USB_VM_SEND_DATA            10
+
+
 #if 0
 /* PUF hypercalls */
 #define HCALL_PUF_SHARED_MEMORY 0x150

@@ -24,6 +24,7 @@
 #include <scheduler.h>
 #include <hal.h>
 #include <driver.h>
+#include <hypercall_defines.h>
 
 
 
@@ -40,10 +41,16 @@ void usb_send_data(uint8_t* buf, uint32_t size){
     usb_transfer_status.state = TRANSFER_START;   
 }
 
+uint32_t get_descriptor(){
+    uint8_t *buf  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
 
-uint32_t get_descriptor(uint8_t* buf, uint32_t size){
-    memcpy(buf, &descriptor, sizeof(struct descriptor_decoded));
-    return sizeof(struct descriptor_decoded);
+    uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
+    
+    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, curr_vm->base_addr, size, 0xf, CACHEABLE);
+    
+    memcpy(frame_ptr_mapped, &descriptor_data, sizeof(struct descriptor_receive));
+    
+    MoveToPreviousGuestGPR(REG_V0, size);
 }
 
 void usb_interrupt_enable(uint32_t general, uint32_t transmit, uint32_t receive){
@@ -54,69 +61,8 @@ void usb_interrupt_enable(uint32_t general, uint32_t transmit, uint32_t receive)
 
 
     
-void usb_start(){
-    uint32_t operation_mode = HOST_MODE;
-    uint32_t speed = FULL_SPEED;
-    
-    printf("\nInitializing USB device in Host mode.");
-    
-    if (operation_mode != HOST_MODE){
-        Warning("Only Host Mode is supported");
-    }
-    
-    usb_status.state = IDLE;
-    
-    usb_transfer_status.state = TRANSFER_INT_VM;
-    
-    OVERCURRENT_PIN_ENABLE;
-    
-    /* USBID pin (RPF3) pin in PULL DOWN */
-    USBID_PIN_PULL_DOWN_F;
-    
-    /* Enable USB general interrutps  */
-    USBCRCONbits.USBIE = 1;
-    
-    /* 10ms reset USB */
-    USBEOFRSTbits.SOFRST = 0x3;
-    udelay(10000);
-    USBEOFRSTbits.SOFRST = 0;
-    
-    /* Interrupts disable */
-    usb_interrupt_enable(0, 0, 0);
-    
-    /* Speed select */
-    USBCSR0bits.HSEN = speed;
-    
-    /* USB ID override enable */
-    USBCRCONbits.USBIDOVEN = 1;
-    
-    /* USB ID monitoring */
-    USBCRCONbits.PHYIDEN = 1;
-    
-    /* USB ID value */ 
-    USBCRCONbits.USBIDVAL = 0;
-    /* Harmony code is writting twice here. Lets do the same. */
-    USBCRCONbits.USBIDVAL = 0;
-    
-    /* Configure interrupt vectors, clear and enable interrupts */
-    USB_INTERRUPT_CLEAR;
-    USB_INTERRUPT_ENABLE;
-    
-    USB_DMA_INTERRUPT_CLEAR;
-    USB_DMA_INTERRUPT_ENABLE;
-    
-    ENABLE_POWER_SUPPLY;
 
-    usb_interrupt_enable(0xb0, 1, 0);
-    
-    while(!IS_VALID_VBUS);
-    
-    SESSION_ENABLE;
-    
-}
-
-void usb_device_attach(){
-    
+void usb_polling(){
     if(usb_status.state == RUNNING){
         update_transfer_state_machine();
         
@@ -124,10 +70,12 @@ void usb_device_attach(){
         update_state_machine();
     }
     
-    
+    MoveToPreviousGuestGPR(REG_V0, usb_status.descriptor_available);
 }
 
 void usb_int_handler(){
+    IFSCLR(4) = (1<<4);
+    
     /* USB interrupts are not persistent (clear on read) */
     uint32_t interrupts = USBCSR2bits.INTERRUPTS;
     
@@ -142,11 +90,13 @@ void usb_int_handler(){
         usb_status.state = IDLE;
         usb_transfer_status.state = TRANSFER_IDLE;
         usb_status.connected = 0;
+        usb_status.descriptor_available = 0;
     }
     
     if (interrupts & USB_VBUSERR_INT){
         usb_status.state = VBUSERROR;
         usb_status.connected = 0;
+        usb_status.descriptor_available = 0;
     }
     
     if(USBCSR0bits.EP0IF){
@@ -271,6 +221,7 @@ void update_state_machine(){
             }else{
                 usb_status.state=RUNNING;
                 memcpy(&descriptor, &descriptor_data, sizeof(descriptor));
+                usb_status.descriptor_available = 1;
             }
             break;
             
@@ -423,6 +374,85 @@ void data_packet_sent(uint8_t *data, uint32_t size){
     *(((uint8_t*)&USBENCTRL0bits)+2) = 0x2;
 
 }
+
+
+void usb_start(){
+    uint32_t operation_mode = HOST_MODE;
+    uint32_t speed = FULL_SPEED;
+    uint32_t offset;
+    
+    printf("\nInitializing USB device in Host mode.");
+    
+    if (operation_mode != HOST_MODE){
+        Warning("Only Host Mode is supported");
+    }
+    
+    offset = register_interrupt(usb_int_handler);
+    OFF(132) = offset;
+    
+    printf("USB interrupt vector at 0x%x", offset);
+    
+    if (register_hypercall(usb_polling, USB_VM_POLLING) < 0){
+        printf("\nError registering the HCALL_GET_VM_ID hypercall");
+        return;
+    }
+    
+    if (register_hypercall(get_descriptor, USB_VM_GET_DESCRIPTOR) < 0){
+        printf("\nError registering the HCALL_GET_VM_ID hypercall");
+        return;
+    }
+    
+    usb_status.state = IDLE;
+    
+    usb_transfer_status.state = TRANSFER_INT_VM;
+    
+    OVERCURRENT_PIN_ENABLE;
+    
+    /* USBID pin (RPF3) pin in PULL DOWN */
+    USBID_PIN_PULL_DOWN_F;
+    
+    /* Enable USB general interrutps  */
+    USBCRCONbits.USBIE = 1;
+    
+    /* 10ms reset USB */
+    USBEOFRSTbits.SOFRST = 0x3;
+    udelay(10000);
+    USBEOFRSTbits.SOFRST = 0;
+    
+    /* Interrupts disable */
+    usb_interrupt_enable(0, 0, 0);
+    
+    /* Speed select */
+    USBCSR0bits.HSEN = speed;
+    
+    /* USB ID override enable */
+    USBCRCONbits.USBIDOVEN = 1;
+    
+    /* USB ID monitoring */
+    USBCRCONbits.PHYIDEN = 1;
+    
+    /* USB ID value */ 
+    USBCRCONbits.USBIDVAL = 0;
+    /* Harmony code is writting twice here. Lets do the same. */
+    USBCRCONbits.USBIDVAL = 0;
+    
+    /* Configure interrupt vectors, clear and enable interrupts */
+    USB_INTERRUPT_CLEAR;
+    USB_INTERRUPT_ENABLE;
+    
+    USB_DMA_INTERRUPT_CLEAR;
+    USB_DMA_INTERRUPT_ENABLE;
+    
+    ENABLE_POWER_SUPPLY;
+    
+    usb_interrupt_enable(0xb0, 1, 0);
+    
+    while(!IS_VALID_VBUS);
+    
+    SESSION_ENABLE;
+    
+}
+
 
 driver_init(usb_start);
 

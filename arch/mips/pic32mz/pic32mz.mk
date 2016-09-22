@@ -18,5 +18,4 @@ pic32mz:
 	        $(TOPDIR)arch/mips/pic32mz/timer.c \
 		$(TOPDIR)arch/mips/pic32mz/flash.c \
 		$(TOPDIR)arch/mips/pic32mz/interrupts.c \
-		$(TOPDIR)arch/mips/pic32mz/usb.c \
 		$(TOPDIR)arch/mips/pic32mz/boot.S

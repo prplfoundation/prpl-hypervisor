@@ -331,11 +331,22 @@ hyper_usb_vm_register:
     .ent hyper_usb_get_descr
 hyper_usb_get_descr:
     .set noreorder 
-    hypcall 0x21
+    hypcall 9
     jr $ra
     nop
     .set reorder                
 .end hyper_usb_get_descr
+
+.global hyper_usb_polling
+.ent hyper_usb_polling
+hyper_usb_polling:
+.set noreorder 
+hypcall 8
+jr $ra
+nop
+.set reorder                
+.end hyper_usb_polling
+
 
 .global hyper_usb_send_data
 .ent hyper_usb_send_data
