@@ -34,7 +34,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <tlb.h>
 #include <mips_cp0.h>
 
-/* Hypercalls table */
+/**
+ * @brief Hypercalls table 
+ *
+ * The hypercall table is small to keep small footprint as well. It can be increased 
+ * throught HCALL_TABLE_START_SIZE 
+ */
 static hypercall_t* hypercall_table[HCALL_TABLE_SIZE];
 
 /**
@@ -44,8 +49,6 @@ static hypercall_t* hypercall_table[HCALL_TABLE_SIZE];
  * @return Greater than zero on success, otherwise error code. 
  */
 int32_t register_hypercall(hypercall_t* hyper, uint32_t code){
-    /* The hypercall table is small to keep small footprint as well. It can be increased 
-     throught HCALL_TABLE_START_SIZE */
     if (code > HCALL_TABLE_SIZE-1 || code < 0){
         return HCALL_CODE_INVALID;
     }
