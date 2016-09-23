@@ -20,8 +20,9 @@ CFG_FILE = samples_cfg/sample-2VMs.cfg
 CROSS_COMPILER = mips-mti-elf-
 
 # Optional Device Drivers
-DRIVERS = -DETHERNET_SUPPORT -DUSB_SUPPORT
-
+CONFIG_INTERVMCOMM = yes
+CONFIG_PIC32MZ_USB = yes
+CONFIG_PIC32MZ_ETHERNET = yes
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -53,7 +54,7 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
-CFLAGS += $(DRIVERS) -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
+CFLAGS += -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
 # LD flags
 LDFLAGS = -EL  
 
@@ -86,8 +87,13 @@ include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
 include board/board.mk
 include $(TOPDIR)/drivers/drivers.mk
 
+ifeq ($(CONFIG_PIC32MZ_ETHERNET),yes)
+    OBJ = ../../bin/pic32mz-ethernet.o
+endif
+    
+
 $(APP): 
-	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o ../../bin/pic32mz-ethernet.o
+	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o $(OBJ)
 	$(OBJDUMP) --disassemble --reloc $(APP).elf > $(APP).lst
 	$(OBJDUMP) -h $(APP).elf > $(APP).sec
 	$(OBJDUMP) -s $(APP).elf > $(APP).cnt

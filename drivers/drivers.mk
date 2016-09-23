@@ -15,8 +15,14 @@
 
 DRIVER_INCLUDE=-I$(TOPDIR)drivers/include/
 
+ifeq ($(CONFIG_INTERVMCOMM),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/inter-vm-comm.c
+endif 
+
+ifeq ($(CONFIG_PIC32MZ_USB),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/usb.c
+endif 
+
 drivers:
-	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) \
-	        $(TOPDIR)drivers/inter-vm-comm.c \
-	        $(TOPDIR)drivers/usb.c
+	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
 	     
