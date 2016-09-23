@@ -51,7 +51,7 @@ static void timer_interrupt_handler(){
     
     if (tick_count%QUANTUM_SCHEDULER==0){
         contextSave(NULL, temp_CP0, ret);           
-        runScheduler();
+        run_scheduler();
         configureGuestExecution(RESCHEDULE);    
     }else{
         setGuestCTL2(3 << GUESTCLT2_GRIPL_SHIFT);

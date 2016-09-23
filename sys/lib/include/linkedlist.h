@@ -15,30 +15,18 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#ifndef LINKED_LIST_H
-#define LINKED_LIST_H
+#ifndef __LINKED_LIST_H
+#define __LINKED_LIST_H
 
-struct ll_node_t;
-struct linkedlist_t;
+#include<types.h>
 
-typedef struct ll_node_t {
-  unsigned int priority;
-  void *ptr;
-  struct linkedlist_t *list;
-  struct ll_node_t *next;
-  struct ll_node_t *prev;
-} ll_node_t;
-
-typedef struct linkedlist_t {  
-  ll_node_t *head;
-  ll_node_t *tail;
-  unsigned int count;
-} linkedlist_t;
-
-void ll_append(linkedlist_t*, ll_node_t*);
-void ll_remove(ll_node_t*);
-ll_node_t* ll_get(linkedlist_t*, unsigned int);
-void ll_init(linkedlist_t*);
-
+struct list_t {
+    void *elem;                 /*!< pointer to list node data */
+    struct list_t *next;              /*!< pointer to the next list node */
+};
+ 
+int32_t list_append(struct list_t **lst, void *item);
+int32_t list_remove_all(struct list_t **lst);
+int32_t list_count(struct list_t *lst);
 
 #endif /* !LINKED_LIST_H */

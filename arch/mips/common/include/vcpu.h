@@ -21,7 +21,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <scheduler.h>
 #include <vm.h>
-//#include <irq.h>
 
 #define NUM_ASIDS 64
 
@@ -76,46 +75,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define WAIT 		0x20
 
 
-//It`s not clear how the decoding is done
-//Verify that
-//#define WAIT 		0x10
-
-//MIPS REGISTERS
-
-#define REG_ZERO 0
-#define REG_AT   1
-#define REG_V0   2
-#define REG_V1   3
-#define REG_A0   4
-#define REG_A1   5
-#define REG_A2   6
-#define REG_A3   7
-#define REG_T0   8
-#define REG_T1   9
-#define REG_T2   10
-#define REG_T3   11
-#define REG_T4   12
-#define REG_T5   13
-#define REG_T6   14
-#define REG_T7   15
-#define REG_S0   16
-#define REG_S1   17
-#define REG_S2   18
-#define REG_S3   19
-#define REG_S4   20
-#define REG_S5   21
-#define REG_S6   22
-#define REG_S7   23
-#define REG_T8   24
-#define REG_T9   25
-#define REG_K0   26 
-#define REG_K1   27
-#define REG_GP   28 
-#define REG_SP   29
-#define REG_FP   30
-#define REG_RA   31
-
-
 /* Mask bits for instruction emulation */
 #define STATUS_MASK	0x005FFFFF
 
@@ -141,6 +100,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 struct vm_t;
 typedef struct vm_t vm_t;
+
 
 /** Struct for message exchange 
     It is a circular buffer. Message_list is a char matrix statically allocated.
@@ -169,7 +129,6 @@ typedef struct vcpu_t {
 	uint32_t gp_registers[34];	
 	uint32_t guestclt2;
 	vm_t *vm;
-	task_t task;   
 	uint32_t pc;
 	uint32_t init;	
         uint32_t timer_interval;

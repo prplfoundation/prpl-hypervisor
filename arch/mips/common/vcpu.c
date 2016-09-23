@@ -23,12 +23,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 #include <mips_cp0.h>
 
-processor_t *proc;
-vcpu_t *idle_vcpu;
-vcpu_t *target_vcpu;
-
-vcpu_t * vcpu_sgpr[8];
-
 /** Implement the instruction emulation  */
 /* FIXME: must emulate all necessary registers. For now, just status reg. */
 uint32_t InstructionEmulation(uint32_t epc){
@@ -56,7 +50,7 @@ uint32_t InstructionEmulation(uint32_t epc){
 							Warning("Wait emulation ignored.");
 							break;
 						default:
-							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 							break;
 					}
 					break;
@@ -77,7 +71,7 @@ uint32_t InstructionEmulation(uint32_t epc){
 											Warning("Write to CP0 SRSCTL ignored");
 											break;
 										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 											break;
 									}
 								break;
@@ -89,13 +83,13 @@ uint32_t InstructionEmulation(uint32_t epc){
 											setGTOffset(currentValue);
 											break;
 										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 											break;
 									}
 								break;
 								
 								default:
-									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 									break;
 							}
 							break;
@@ -112,7 +106,7 @@ uint32_t InstructionEmulation(uint32_t epc){
 											MoveToPreviousGuestGPR(rt, regvalue);
 											break;
 										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 											break;
 									}
 									break;
@@ -122,26 +116,26 @@ uint32_t InstructionEmulation(uint32_t epc){
 									break;
 						
 								default:
-									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 									break;
 							}
 							break;
 						default:
-							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 							break;
 					}
 					break;
 				default:
-					Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+					Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 					break;
 			}
 			break;
 			/* Cache instructions */
 		case CACHE:
-			Warning("Cache instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, curr_vcpu->id);
+			Warning("Cache instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 			break;
 		default:
-			Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x", badinstr, epc, curr_vcpu->id);
+			Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x", badinstr, epc, vcpu_executing->id);
 			break;
 	}
 
@@ -156,10 +150,10 @@ void contextSave(vcpu_t *vcpu, uint32_t counter, uint32_t guestcount){
 	if(vcpu){
 		vcputosave = vcpu;
 	}else{
-		vcputosave = curr_vcpu;
+		vcputosave = vcpu_executing;
 	}
 	
-	if (vcputosave->init == 0 && vcputosave != idle_vcpu){
+	if (vcputosave->init == 0){
         /* already Initialized VCPU - save the context */
 	
         vcputosave->cp0_registers[9][0] = guestcount;
@@ -208,14 +202,12 @@ uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount){
 /* FIXME: must restore all necessary registers. For now, just status reg. */
 void contextRestore(){
 
-	vcpu_t *currentVCPU = curr_vcpu;
+	vcpu_t *currentVCPU = vcpu_executing;
 	int32_t gtoffset;
 	uint32_t guestcount;
 	uint32_t currentCountRoot;
 	uint32_t pending;
     
-    if (currentVCPU != idle_vcpu ){
-
 	mtgc0(12, 0, currentVCPU->cp0_registers[12][0]);
 
 	/* Restoring Guest Time. See documentation! */
@@ -273,7 +265,6 @@ void contextRestore(){
 	mtgc0(16, 3, currentVCPU->cp0_registers[16][3]);
 	mtgc0(30, 0, currentVCPU->cp0_registers[30][0]);
 	
-    }
     
 	if(currentVCPU->guestclt2){
 		setGuestCTL2(currentVCPU->guestclt2);
@@ -284,19 +275,4 @@ void contextRestore(){
     
 	setEPC(currentVCPU->pc);
     
-}
-
-
-uint32_t initProc() {
-  
-  int i;
-  proc=(processor_t *)malloc(sizeof(processor_t));
-  for(i=0;i<8;i++){
-	vcpu_sgpr[i]=NULL;
-  }
-  
-  Info("Initializing Physical Processor.");
-  
-  return 0;
-  
 }

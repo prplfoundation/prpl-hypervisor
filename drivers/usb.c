@@ -46,7 +46,7 @@ uint32_t get_descriptor(){
 
     uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
     
-    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, curr_vm->base_addr, size, 0xf, CACHEABLE);
+    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, vm_executing->base_addr, size, 0xf, CACHEABLE);
     
     memcpy(frame_ptr_mapped, &descriptor_data, sizeof(struct descriptor_receive));
     
@@ -267,10 +267,6 @@ void update_transfer_state_machine(){
             /* This state means a device was connected and his descriptor was read. 
              Send an interrupt to the registered VM. */
             usb_transfer_status.state = TRANSFER_IDLE;
-            vcpu = (vcpu_t*)get_registered_vm();
-            if (vcpu){
-                vcpu->guestclt2 |= ( 0x9<< GUESTCLT2_GRIPL_SHIFT);
-            }
             
             break;
         case TRANSFER_IDLE:

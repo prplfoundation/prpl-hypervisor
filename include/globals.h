@@ -21,7 +21,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <vm.h>
 #include <vcpu.h>
-//#include <pic32mz.h>
 
 #define CRITICAL(x) printf(x); while(1){};
 
@@ -43,24 +42,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define Critical(A,...)
 #endif
 
-void print_here(void);
+extern struct scheduler_info_t scheduler_info;
 
-/* Exception handler addr */
-extern void* exceptionHandler_addr;
-extern uint32_t lastguestcount;
-
-/* Processor and vcpu */
-extern processor_t* proc; 
-extern vcpu_t *idle_vcpu;
-extern vcpu_t *target_vcpu;
-extern vcpu_t *vcpu_sgpr[8];
-
-/* Best effort vcpu list */
-extern linkedlist_t be_vcpu_list;
-extern linkedlist_t virtualmachines;
-
-
-#define curr_vcpu proc->curr_vcpu
-#define curr_vm   curr_vcpu->vm
+#define vcpu_executing ((vcpu_t*)scheduler_info.vcpu_executing_nd->elem)
+#define vm_executing   ((vm_t*)vcpu_executing->vm)
 
 #endif

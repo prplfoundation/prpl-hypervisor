@@ -39,7 +39,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * V0 guest register will be replaced with the VM id. 
  */
 void get_vm_id(){
-    MoveToPreviousGuestGPR(REG_V0,curr_vcpu->vm->id);
+	MoveToPreviousGuestGPR(REG_V0, vcpu_executing->vm->id);
 }
 
 /**
@@ -50,7 +50,7 @@ void get_vm_id(){
 void guest_is_up(){
     vcpu_t* vcpu;
     uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
-    vcpu = (vcpu_t*)get_vcpu_from_id(target_id,&be_vcpu_list);
+    vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
     if(!vcpu){
         MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
     }else{
@@ -68,7 +68,7 @@ void guest_is_up(){
  */
 void intervm_send_msg(){
     vcpu_t* vcpu;
-                       
+    
     /* Getting parameters from guest */
     uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
     char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1); 
@@ -81,7 +81,7 @@ void intervm_send_msg(){
     }
                         
     /* Try to locate the destiny VCPU */
-    vcpu = (vcpu_t*)get_vcpu_from_id(target_id,&be_vcpu_list);
+    vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
 
      /* destination vcpu not found */
      if(vcpu == NULL){
@@ -99,13 +99,13 @@ void intervm_send_msg(){
         vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
         MoveToPreviousGuestGPR(REG_V0, MESSAGE_FULL);
         return;
-     }                                
+     }     
      
      /* copy message to message queue */
-     char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, curr_vm->base_addr, message_size, 0xf, CACHEABLE);
+     char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_executing->base_addr, message_size, 0xf, CACHEABLE);
      memcpy(vcpu->messages.message_list[vcpu->messages.in].message,message_ptr_mapped,message_size);
      vcpu->messages.message_list[vcpu->messages.in].size = message_size;
-     vcpu->messages.message_list[vcpu->messages.in].source_id = curr_vcpu->id;
+     vcpu->messages.message_list[vcpu->messages.in].source_id = vm_executing->id;
                         
      vcpu->messages.num_messages++;
      vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
@@ -126,7 +126,7 @@ void intervm_send_msg(){
  *   v0 = Message size 
  */
 void intervm_recv_msg(){
-    vcpu_t* vcpu = curr_vcpu;
+    vcpu_t* vcpu = vcpu_executing;
     uint32_t messagesz;
 
     /* No messages in the receiver queue */
@@ -141,7 +141,7 @@ void intervm_recv_msg(){
 
     /* Copy the message the receiver */
     messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
-    char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, curr_vm->base_addr, messagesz, 0xf, CACHEABLE);
+    char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_executing->base_addr, messagesz, 0xf, CACHEABLE);
     memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
     
     /* Return the message size to the receiver */

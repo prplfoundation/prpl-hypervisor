@@ -11,79 +11,104 @@ FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATS
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
+This code was written by Sergio Johann Filho at Embedded System Group (GSE) at PUCRS/Brazil.
 
 */
 
-#include <linkedlist.h>
+
+/**
+ * @file list.c
+ * 
+ * @section LICENSE
+ *
+ * @section DESCRIPTION
+ * 
+ * List manipulation primitives and auxiliary functions. List structures are allocated
+ * dynamically at runtime, which makes them very flexible. Memory is allocated / deallocated
+ * on demand, so additional memory management penalties are incurred.
+ */
+
+
 #include <libc.h>
 #include <malloc.h>
+#include <linkedlist.h>
+ 
 
+/**
+ * @brief Appends a new node to the end of the list.
+ * 
+ * @param lst is a pointer to a list structure.
+ * @param item is a pointer to data belonging to the list node.
+ * 
+ * @return 0 when successful and -1 otherwise.
+ */
+int32_t list_append(struct list_t **lst, void *item)
+{
+	struct list_t *t1, *t2;
+ 
+	t1 = (struct list_t *)malloc(sizeof(struct list_t));
+	
+	if(t1==NULL){
+		return -1;
+	}
+	
+	t1->elem = item;
+	t1->next = NULL;
+	
+	if(*lst==NULL){
+		*lst = t1;
+		return 0;
+	}
+	
+	t2 = *lst;
+	while (t2->next){
+		t2 = t2->next;
+	}
+	
+	t2->next = t1;
+	
+	return 0;
+}
+ 
+ 
+/**
+ * @brief Removes all elements of the list.
+ * 
+ * @param lst is a referece to a pointer to a list structure.
+ * 
+ * @return 0 when successful and -1 otherwise.
+ */
+int32_t list_remove_all(struct list_t **lst)
+{
+	struct list_t *aux;
+	
+	while(*lst){
+		aux = *lst;
+		*lst = (*lst)->next;
+		free(aux->elem);
+		free(aux);
+	}
+	
+	return 0;
+}
+ 
 
-void ll_init(linkedlist_t* ll){
-	ll->head = NULL;
-	ll->tail = NULL;
-	ll->count = 0;	
+/**
+ * @brief Returns the number of nodes in a list.
+ * 
+ * @param lst is a pointer to a list structure.
+ * 
+ * @return The number of elements in the list.
+ */
+int32_t list_count(struct list_t *lst)
+{
+	struct list_t *t1;
+	int32_t i = 0;
+ 
+	t1 = lst;
+	while ((t1 = t1->next))
+		i++;
+ 
+	return i;
 }
 
-void ll_append(linkedlist_t* ll, ll_node_t* n) {
-  ll_node_t **a;
-  n->next=NULL;
-
-  if(ll && n) {
-       
-    for(a = &(ll->tail); *a && ((*a)->priority > n->priority); a = &((*a)->prev));
-    
-    n->prev = *a;
-    *a = n;
-
-    if(n->prev) {
-      n->next = n->prev->next;
-      n->prev->next = n;
-    } else {
-      n->next = ll->head;
-      ll->head = n;
-    }
-
-    ll->count++;
-    n->list = ll;
-    
-  }
-}
-
-void ll_remove(ll_node_t *n) {
-  linkedlist_t *ll;
-
-  if(n && (ll = n->list)) {
-    
-    if(n->list != ll) {      
-      return;
-    }
-
-    ll->count--;
-
-    if(n->prev)
-      n->prev->next = n->next;
-    else
-      ll->head = n->next;
-
-    if(n->next)
-      n->next->prev = n->prev;
-    else
-      ll->tail = n->prev;
-
-    n->list = NULL;
-  }
-}
-
-ll_node_t *ll_get(linkedlist_t* ll, unsigned int i) {
-  ll_node_t *ret;
-  
-  if(ll) {
-    for(ret = ll->head ; ret && i; i--, ret = ret->next);
-
-    return ret;
-  }
-
-  return NULL;
-}

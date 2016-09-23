@@ -26,9 +26,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __VM_H
 #define __VM_H
 
-#include <vcpu.h>
 #include <linkedlist.h>
 #include <tlb.h>
+#include <vcpu.h>
 
 
 /* Identification for different operating system types */
@@ -38,6 +38,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define	HELLFIRE	3
 #define LINUX		4
 #define IDLEVCPU	5
+
+struct vcpu_t;
+typedef struct vcpu_t vcpu_t;
 
 
 /* TLB entry description used in the config.h file. Used only for initialization purposes. */
@@ -62,17 +65,13 @@ struct vmconf_t{
 typedef struct vm_t {
 	unsigned int id;
 	unsigned int base_addr;
-	linkedlist_t vcpus;
+	struct list_t *vcpus;
 	uint32_t os_type;
 	uint32_t ntlbent;
 	uint32_t init;	
 	struct tlbentry *tlbentries;
 }vm_t;
 
-
-void delete_vm(vm_t*);
-vm_t *get_vm(unsigned int);
-void delete_vcpu(vcpu_t*);
 vm_t *create_vm(const struct vmconf_t const *vm);
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point);
 

@@ -40,64 +40,55 @@ extern _heap_size;
 
 static void print_config(void)
 {
-        printf("\n===========================================================");
-        printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
-        printf("\nCopyright (c) 2016, prpl Foundation");
-        printf("\n===========================================================");
-        printf("\nCPU ID:        %s", CPU_ID);
-        printf("\nARCH:          %s", CPU_ARCH);
-        printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
-        printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
-        printf("\nScheduler      %dms", QUANTUM_SCHEDULER);
-        printf("\nVMs:           %d\n", NVMACHINES);
+	printf("\n===========================================================");
+	printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
+	printf("\nCopyright (c) 2016, prpl Foundation");
+	printf("\n===========================================================");
+	printf("\nCPU ID:        %s", CPU_ID);
+	printf("\nARCH:          %s", CPU_ARCH);
+	printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
+	printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
+	printf("\nScheduler      %dms", QUANTUM_SCHEDULER);
+	printf("\nVMs:           %d\n", NVMACHINES);
 }
 
 
 /** C code entry. Called from hal/$(BOARD)/boot.S */
 int32_t hyper_init(){
     
-    /* Specific board configuration. */
-    early_platform_init();    
+	/* Specific board configuration. */
+	early_platform_init();    
     
-    print_config();
+	print_config();
     
-    /* Now inialize the hardware */
-    /* Processor inicialization */
-    if(LowLevelProcInit()){
-        return 1;
-    }
+	/* Now inialize the hardware */
+	/* Processor inicialization */
+	if(LowLevelProcInit()){
+		return 1;
+	}
             
-    /* Initialize memory */
-    /* Register heap space on the allocator */ 
-     if(init_mem()){        
-        return 1;
-    }
+	/* Initialize memory */
+	/* Register heap space on the allocator */ 
+	if(init_mem()){        
+		return 1;
+	}
     
-    /*Initialize processor structure*/
-    if(initProc()){
-        return 1;
-    } 
-    
-    if(initializeShedulers()){
-        return 1;
-    }
-    
-    /*Initialize vcpus and virtual machines*/
-    initializeMachines();
+	/*Initialize vcpus and virtual machines*/
+	initializeMachines();
 
-    /* Initialize device drivers */    
-    drivers_initialization();
+	/* Initialize device drivers */    
+	drivers_initialization();
 
-    /* Run scheduler .*/
-    runScheduler();  
+	/* Run scheduler .*/
+	run_scheduler();  
     
-    hal_start_hyper();
+	hal_start_hyper();
 
-    /* start system timer */
-    start_timer();
+	/* start system timer */
+	start_timer();
     
-    /* Should never reach this point !!! */
-    return 0;
+	/* Should never reach this point !!! */
+	return 0;
 }
 
 /** Handle guest exceptions */
@@ -117,8 +108,8 @@ static uint32_t GuestExitException(){
 			break;
 	}
 	
-	curr_vcpu->pc = epc+4;
-        setEPC(curr_vcpu->pc);
+	vcpu_executing->pc = epc+4;
+	setEPC(vcpu_executing->pc);
 	return ret;
 }
 
@@ -131,30 +122,29 @@ void configureGuestExecution(uint32_t exCause){
     
 	if(exCause == RESCHEDULE || exCause == CHANGE_TO_TARGET_VCPU){
 		dispatcher();
-    }
+	}
 
 	
-    contextRestore();
+	contextRestore();
 }
 
 
 void general_exception_handler(){
-        uint32_t CauseCode = getCauseCode();
+	uint32_t CauseCode = getCauseCode();
 
-        switch (CauseCode){
-        case    GUESTEXITEXCEPTION:   
-                        GuestExitException();
-                        break;
+	switch (CauseCode){
+	case    GUESTEXITEXCEPTION:   
+		GuestExitException();
+                break;
 
-        /* TLB load, store or fetch exception */
-        case    0x3:                                            
-        case    0x2:
-                        Warning("\nTLB miss: VCPU: %d EPC 0x%x", curr_vcpu->id, getEPC());
-                        while(1);
-        default:
-                /* panic */
-                Warning("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), curr_vcpu->id);
+	/* TLB load, store or fetch exception */
+	case    0x3:                                            
+	case    0x2:
+		Warning("\nTLB miss: VCPU: %d EPC 0x%x", vcpu_executing->id, getEPC());
                 while(1);
+	default:
+                /* panic */
+		Warning("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), vcpu_executing->id);
+		while(1);
         }
-        
 }

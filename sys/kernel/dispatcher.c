@@ -21,32 +21,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 void dispatcher(){	
 	int i;
-	setPreviousShadowSet(curr_vcpu->gprshadowset);
-		
-	//Check if needs to save GP registers context
-	if(vcpu_sgpr[curr_vcpu->gprshadowset] != NULL && vcpu_sgpr[curr_vcpu->gprshadowset] != curr_vcpu){
-		save_sgpr_ctx(vcpu_sgpr[curr_vcpu->gprshadowset]->gp_registers);			   
-		restore_sgpr_ctx(curr_vcpu->gp_registers);
-		vcpu_sgpr[curr_vcpu->gprshadowset]=curr_vcpu;
-	}else{
-		if(curr_vcpu->init){
-                    //FIXME: This line results in critical fault. Must be debugged. 
-                    //restore_sgpr_ctx(curr_vcpu->gp_registers);
-		}
-		vcpu_sgpr[curr_vcpu->gprshadowset]=curr_vcpu;		
-	}
+	setPreviousShadowSet(vcpu_executing->gprshadowset);
 
-	setLowestGShadow(curr_vcpu->gprshadowset);	
-	setGuestID(curr_vm->id);
+	setLowestGShadow(vcpu_executing->gprshadowset);	
+	setGuestID(vm_executing->id);
 	
 	/* Avoid to enter in guest mode for hypervisor tasks. */
-	if(curr_vm->id!=0){
+	if(vm_executing->id!=0){
 		setGuestMode();
 	}
 	
 	//Initialize vcpu
-	if(curr_vcpu->init){
-		curr_vcpu->cp0_registers[9][0]=getCounter();
-		curr_vcpu->init = 0;
+	if(vcpu_executing->init){
+		vcpu_executing->cp0_registers[9][0]=getCounter();
+		vcpu_executing->init = 0;
 	}
 }

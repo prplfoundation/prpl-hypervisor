@@ -32,6 +32,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 #include <globals.h>
 #include <tlb.h>
+#include <mips_cp0.h>
 
 /* Hypercalls table */
 static hypercall_t* hypercall_table[HCALL_TABLE_SIZE];

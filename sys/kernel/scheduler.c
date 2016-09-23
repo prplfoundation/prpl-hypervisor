@@ -15,135 +15,68 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/**
+ * @file scheduler.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * Round-robin scheduler algorithm. The round robin algorithm may be substituted by any other 
+ * scheduler policy. The only requirment is that the scheduler routine must set 
+ * scheduler_info.vcpu_executing_nd to point to the next VCPU node to be executed. 
+ * 
+ */
+
 #include <scheduler.h>
 #include <vcpu.h>
-#include <libc.h>
-//#include <irq.h>
 #include <globals.h>
-#include <config.h>
+#include <linkedlist.h>
 
 
-//Best effort vcpu list
-linkedlist_t be_vcpu_list = {0};
-linkedlist_t virtualmachines = {0};
+struct scheduler_info_t scheduler_info = {NULL, NULL, NULL};
 
-
-int initializeShedulers(){
-	 ll_init(&be_vcpu_list);
-	 ll_init(&virtualmachines);
-	 return 0;
-}
-
-ll_node_t* curr_node = NULL;
-
-void runBestEffortScheduler(){ //Simple round robin
-	
-	if(!curr_node)
-		curr_node = be_vcpu_list.head;
-	
-	if(curr_vcpu){		
-		if(curr_node && curr_node->next){
-			curr_node = curr_node->next;			
-		}else{
-			curr_node = be_vcpu_list.head;			
-		}		
+/**
+ * @brief round-robin scheduler implementation. 
+ * 
+ * @return Pointer to the node in the list of VCPUs of the scheduled VCPU. 
+ */
+struct list_t* round_robin_scheduler(){
+	if(!scheduler_info.vcpu_executing_nd || !scheduler_info.vcpu_executing_nd->next){
+		return scheduler_info.vcpu_ready_list;
 	}else{
-		curr_node = be_vcpu_list.head;
+		return scheduler_info.vcpu_executing_nd->next;
 	}
-	
-	if(curr_node != NULL){
-		curr_vcpu = (vcpu_t*) curr_node->ptr;		
-	}else{
-		curr_vcpu = idle_vcpu;
-	}
-
-}
-
-int32_t remove_vm_and_runBestEffortScheduler(){
-	
-	ll_node_t* node = curr_node->next;	
-		
-	ll_remove(curr_node);
-	
-	if(be_vcpu_list.count==0){
-		curr_vcpu = idle_vcpu;
-	}
-		
-	if(!node)
-		node = be_vcpu_list.head;
-		
-	curr_node = node;	
-	
-	if(curr_node)
-		curr_vcpu = (vcpu_t*) curr_node->ptr;
-
-	if(curr_vcpu == idle_vcpu)
-		return -1;
-		
-	return 0;	
 }
 
 
-void runScheduler(){
+/**
+ * @brief Scheduler routine. Must be invoke in the timer interrupt routine. 
+ * 
+ */
+void run_scheduler(){
 	
-	runBestEffortScheduler();
+	scheduler_info.vcpu_executing_nd = round_robin_scheduler();
 	
 }
 
-ll_node_t* get_vcpu_node_from_task_name(char* unique_name, linkedlist_t* vcpu_list){
-	
-	uint32_t uhash = hash(unique_name);	
-	
-	//Search on vcpu list
-	ll_node_t* node_i;
-	vcpu_t* vcpu=NULL;
-	
-	for(node_i = vcpu_list->head; node_i != NULL ; node_i = node_i->next){
-		vcpu = (vcpu_t*)node_i->ptr;		
-		if(vcpu->task.unique_name_hash==uhash)
-			return node_i;				
-	}
-	
-	return NULL;	
-}
 
-vcpu_t* get_vcpu_from_id(uint32_t id, linkedlist_t* vcpu_list){
+/**
+ * @brief Returns a VCPU corresponding to the id.
+ * 
+ * @return Pointer to the VCPU. 
+ */
+vcpu_t* get_vcpu_from_id(uint32_t id){
+	struct list_t* vm_list;
+	vm_list = scheduler_info.virtual_machines_list;
 	
-	//Search on vcpu list
-	ll_node_t* node_i;
-	vcpu_t* vcpu=NULL;
-	
-	for(node_i = vcpu_list->head; node_i != NULL ; node_i = node_i->next){
-		vcpu = (vcpu_t*)node_i->ptr;		
-		if(vcpu->vm->id==id)
-			return vcpu;				
+	while(vm_list){
+		if(id == ((vm_t*)vm_list->elem)->id){
+			struct list_t *vcpu_l = ((vm_t*)vm_list->elem)->vcpus;
+			return (vcpu_t*)vcpu_l->elem;
+		}
+		vm_list = vm_list->next;
 	}
 	
 	return NULL;	
 } 
 
-int32_t addVcpu_bestEffortList(vcpu_t *vcpu){
-	ll_node_t *vnd;
-	if(!(vnd = (ll_node_t *) calloc(1,sizeof(ll_node_t))))
-		return -1;
-
-	vnd->ptr=vcpu;
-	vnd->priority=0; 
-	ll_append(&(be_vcpu_list), vnd);
-	
-	return 0;  		    
-}
-
-int addVcpu_toList(vcpu_t *vcpu,linkedlist_t* linkedlist){
-	
-	ll_node_t *vnd;
-	if(!(vnd = (ll_node_t *) calloc(1,sizeof(ll_node_t))))
-		return -1;
-
-	vnd->ptr=vcpu;
-	vnd->priority=0; 
-	ll_append(linkedlist, vnd);
-	
-	return 0;  		    
-}
 
