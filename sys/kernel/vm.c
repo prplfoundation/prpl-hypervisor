@@ -16,7 +16,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 /**
- * @file vm.c
+ * @file vcpu.c
  * 
  * @section DESCRIPTION
  * 
@@ -37,7 +37,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <globals.h>
 #include <mips_cp0.h>
-
 
 /**
  * @brief Responsable by the VM's data initialization.
@@ -161,9 +160,6 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){
 	/* Mark VCPU as not initialized */
 	vcpu->init=1;
 
-	/* Initialize the VCPU with the default state of the Guest CP0 */
-	contextSave(vcpu);
-	
 	/* Initialize compare and count registers. */
 	vcpu->cp0_registers[9][0] = 0;
 	vcpu->cp0_registers[11][0] = 0;

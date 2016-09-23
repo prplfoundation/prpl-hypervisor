@@ -15,21 +15,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-
 #include <types.h>
-#include <hal.h>
 #include <config.h>
 #include <kernel.h>
-#include <tlb.h>
-#include <malloc.h>
 #include <libc.h>
-#include <vcpu.h>
-#include <dispatcher.h>
 #include <globals.h>
-#include <hypercall.h>
-#include <common.h>
 #include <mips_cp0.h>
-
 
 extern _heap_size;
 
@@ -91,6 +82,13 @@ int32_t hyper_init(){
 	return 0;
 }
 
+void context_switching(){
+	contextSave();           
+	run_scheduler();
+	contextRestore();
+}
+
+
 /** Handle guest exceptions */
 static uint32_t GuestExitException(){
 	uint32_t guestcause = getGCauseCode();
@@ -113,22 +111,6 @@ static uint32_t GuestExitException(){
 	return ret;
 }
 
-
-void configureGuestExecution(uint32_t exCause){
-	
-	uint32_t count;
-	uint32_t currentCount;
-	uint32_t elapsedTime;
-    
-	if(exCause == RESCHEDULE || exCause == CHANGE_TO_TARGET_VCPU){
-		dispatcher();
-	}
-
-	
-	contextRestore();
-}
-
-
 void general_exception_handler(){
 	uint32_t CauseCode = getCauseCode();
 
@@ -141,10 +123,10 @@ void general_exception_handler(){
 	case    0x3:                                            
 	case    0x2:
 		Warning("\nTLB miss: VCPU: %d EPC 0x%x", vcpu_executing->id, getEPC());
-                while(1);
+                wait_for_reset();
 	default:
                 /* panic */
 		Warning("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), vcpu_executing->id);
-		while(1);
+		wait_for_reset();
         }
 }

@@ -50,9 +50,7 @@ static void timer_interrupt_handler(){
     IFSCLR(0) = 1;
     
     if (tick_count%QUANTUM_SCHEDULER==0){
-        contextSave(NULL, temp_CP0, ret);           
-        run_scheduler();
-        configureGuestExecution(RESCHEDULE);    
+       context_switching();
     }else{
         setGuestCTL2(3 << GUESTCLT2_GRIPL_SHIFT);
     }

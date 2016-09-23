@@ -15,7 +15,6 @@
 
 kernel:
 	$(CC) $(CFLAGS) $(INC_DIRS) \
-        	$(TOPDIR)sys/kernel/dispatcher.c \
 	        $(TOPDIR)sys/kernel/hypercall.c \
 	       	$(TOPDIR)sys/kernel/kernel.c \
 	        $(TOPDIR)sys/kernel/scheduler.c \
