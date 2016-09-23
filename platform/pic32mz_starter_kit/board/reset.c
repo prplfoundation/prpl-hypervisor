@@ -54,6 +54,9 @@ void SoftReset(){
 	while(1) ;  
 }
 
+/**
+ * @brief This call must be used in cases where the hypervisor is halted and must be reseted. 
+ */
 void wait_for_reset(){
 	while(1){
 		if( !(PORTB & (1<<12)) ){
