@@ -1,0 +1,555 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META NAME="generator" CONTENT="http://txt2tags.org">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+<TITLE>Hypervisor Deployment on PIC32MZ2048EFM144 platform.</TITLE>
+
+<!-- Included tutorial.css -->
+<STYLE TYPE="text/css">
+pre {
+
+	background-color:#E0E0E0  ;
+	}
+
+</STYLE>
+
+</HEAD><BODY BGCOLOR="white" TEXT="black">
+<CENTER>
+<H1>Hypervisor Deployment on PIC32MZ2048EFM144 platform.</H1>
+</CENTER>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+
+  <OL>
+  <LI><A HREF="#toc1">Introduction</A>
+  <LI><A HREF="#toc2">Pre-Requisits</A>
+    <UL>
+    <LI><A HREF="#toc3">2.1. Ubuntu tools requirements</A>
+    </UL>
+  <LI><A HREF="#toc4">Thrid part software and tools</A>
+    <UL>
+    <LI><A HREF="#toc5">3.1. pic32prog download</A>
+    <LI><A HREF="#toc6">3.2. Remove ModemManager software package</A>
+    </UL>
+  <LI><A HREF="#toc7">Deployment</A>
+  <LI><A HREF="#toc8">Hypervisor configuration</A>
+    <UL>
+    <LI><A HREF="#toc9">5.1. system group</A>
+    <LI><A HREF="#toc10">5.2. virtual_machines group</A>
+    </UL>
+  <LI><A HREF="#toc11">Bare-metal application development</A>
+    <UL>
+    <LI><A HREF="#toc12">6.1. Timer</A>
+    </UL>
+  <LI><A HREF="#toc13">Inter-VM Communication</A>
+    <UL>
+    <LI><A HREF="#toc14">7.1. Overall API available to VMs</A>
+    <LI><A HREF="#toc15">7.2. UART access</A>
+    </UL>
+  <LI><A HREF="#toc16">Considerations</A>
+  </OL>
+
+<P></P>
+<HR NOSHADE SIZE=1>
+<P></P>
+
+<A NAME="toc1"></A>
+<H1>1. Introduction</H1>
+
+<P>
+This how-to is intended to show how to compile the prplHypervisor with virtualized bare-metal applications on the PIC32MZ2048EFM144 Microchip board without using the MPLABX's compiler or linker scripts.
+</P>
+
+<A NAME="toc2"></A>
+<H1>2. Pre-Requisits</H1>
+
+ <UL>
+ <LI>Ubuntu 14.04 LTS or greater. It should work on Debian as well. 
+ <LI>PIC32MZ Embedded Connectivity Starter Kit board and cables. 
+ </UL>
+
+<A NAME="toc3"></A>
+<H2>2.1. Ubuntu tools requirements</H2>
+
+<P>
+Install the following software packages on Ubuntu 14.04 LTS.
+</P>
+
+<PRE>
+  sudo dpkg --add-architecture i386
+  sudo apt-get update
+  sudo apt-get install gcc-multilib
+  sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
+  sudo apt-get install libexpat1-dev:i386
+  sudo apt-get install libX11-dev:i386
+  sudo apt-get install libXext-dev:i386
+</PRE>
+
+<A NAME="toc4"></A>
+<H1>3. Thrid part software and tools</H1>
+
+<UL>
+<LI>MPLABX IPE already installed (used to flash the bootloader for the first time). You don't need the MPLABX IDE installed, just the IPE. (<A HREF="http://microchip.wikidot.com/ipe:installation">http://microchip.wikidot.com/ipe:installation</A>)
+<LI>MIPS-MTI toolchain already installed. (Download page: <A HREF="https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/">https://community.imgtec.com/developers/mips/tools/codescape-mips-sdk/download-codescape-mips-sdk-essentials/</A>)
+<LI>pic32prog to flash the hypervisor and VMs (Source code: <A HREF="https://github.com/sergev/pic32prog">https://github.com/sergev/pic32prog</A>)
+<LI>git client installed (sudo apt-get install git). 
+<LI>Installed srecord software package (sudo apt-get install srecord).
+<LI>libconfig used to read the configuration files (sudo apt-get install libconfig-dev).
+</UL>
+
+<A NAME="toc5"></A>
+<H2>3.1. pic32prog download</H2>
+
+<PRE>
+  Linux64: https://github.com/sergev/pic32prog/blob/master/linux64/pic32prog
+  Linux32: https://github.com/sergev/pic32prog/blob/master/linux32/pic32prog
+</PRE>
+
+<P>
+Download and copy the pic32prog to the prplHypervisor directory that will be created at step 4.1.
+</P>
+
+<A NAME="toc6"></A>
+<H2>3.2. Remove ModemManager software package</H2>
+
+<P>
+The ModemManager software package scans for modems on individual serial ports when they are plugged, e.g. ttyACMx ports. This keep the port busy for several seconds. To avoid this inconvenience uninstall it from your system:
+</P>
+
+<PRE>
+  sudo apt-get purge modemmanager.
+</PRE>
+
+<A NAME="toc7"></A>
+<H1>4. Deployment</H1>
+
+<P>
+1) Clone the git repository of the prplHypervisor and make sure you are at master branch:
+</P>
+
+<PRE>
+  git clone https://github.com/prplfoundation/prpl-hypervisor
+  git checkout master 
+</PRE>
+
+<P>
+2) Use the MPLABX IPE to flash the Microchip_UART.hex to the board. It can be found at the prplHypervisor/bin directory.
+</P>
+
+    <UL>
+    <LI>The bootloader was generated from the project <A HREF="https://github.com/chipKIT32/PIC32-avrdude-bootloader">https://github.com/chipKIT32/PIC32-avrdude-bootloader</A>. 
+    <LI>After flashed, the LED1 will keep blinking showing the that the bootloader is ready to upload a hex file.
+    </UL>
+
+<P>
+3) Go to the <B>platform/pic32mz_starter_kit</B> directory and use the make command to compile the hypervisor with its default configuration using the MIPS-MTI toolchain. This process will generate the firmware.bin file. Such file contains the 
+hypervisor and the VM's code. Example:
+</P>
+
+<PRE>
+  ~/prplHypervisor/platform/pic32mz_starter_kit$: make
+  gcc -o genconf cfg_reader/genconf.c -lconfig
+  #execute first and exit in case of errors
+  ./genconf samples_cfg/sample-1VM.cfg || (exit 1)
+  blink 
+  #execute and export to a makefile variable the ouput of the script
+  mips-mti-elf-gcc -EL -O2 -mtune=m14k -mips32r2 -Wa,-mvirt -mno-check-zero-division -msoft-float -fshort-double -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0 -DETHERNET_SUPPORT -DUSB_SUPPORT -DCPU_SPEED=200000000 -DHYPVERSION="v0.11.27 (g9100f1a)" -I../../arch/mips/pic32mz_starter_kit/include -I../../arch/mips/common/include -I../../sys/lib/include -I../../sys/kernel/include -I../../platform/pic32mz_starter_kit/include \
+                  ../../sys/lib/libc.c \
+                  ../../sys/lib/linkedlist.c \
+                  ../../sys/lib/malloc.c
+  ...
+  mips-mti-elf-size blink.elf
+     text    data     bss     dec     hex filename
+    12248      16    1424   13688    3578 blink.elf
+  make[1]: Saindo do diretório `/home/moratelli/hyper/prpl-hypervisor/bare-metal-apps/apps/blink'
+  ../../scripts/genhex.sh blink 
+  0+1 registros de entrada
+  1+0 registros de saída
+  65536 bytes (66 kB) copiados, 0,000635281 s, 103 MB/s
+  0+1 registros de entrada
+  1+0 registros de saída
+  32768 bytes (33 kB) copiados, 0,000245427 s, 134 MB/s
+</PRE>
+
+<P>
+<B>Note</B>: See the main Makefile on the <B>platform/pic32mz_starter_kit</B> directory. You may want to modify the input configuration file (CFG_FILE), CROSS_COMPILER or the optional features. Example:
+</P>
+
+<PRE>
+  #Input XML file for VMs configuration
+  CFG_FILE = samples_cfg/sample-1VM.cfg
+  
+  # CROSS Compiler 
+  CROSS_COMPILER = mips-mti-elf-
+  
+  # Code generation options - Comment undesired features.
+  ETHERNET = -DETHERNET_SUPPORT -DUSB_SUPPORT
+</PRE>
+
+<P>
+4) Upload the resulting firwarem.hex file to the board using "make load" command. For this, use a second USB cable to connect to the board's UART port. 
+</P>
+
+<PRE>
+  ~/prplHypervisor$: make load
+  stty 115200 raw cs8 -hupcl -parenb -crtscts clocal cread ignpar ignbrk -ixon -ixoff -ixany -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke -F /dev/ttyACM0
+  ./pic32prog -S -d /dev/ttyACM0 firmware.hex
+  Programmer for Microchip PIC32 microcontrollers, Version 2.0.186
+      Copyright: (C) 2011-2015 Serge Vakulenko
+        Adapter: STK500v2 Bootloader
+   Program area: 1d000000-1d1fffff
+      Processor: Bootloader
+   Flash memory: 2048 kbytes
+    Boot memory: 80 kbytes
+           Data: 131072 bytes
+          Erase: done
+  Program flash: ################################# done
+   Program rate: 6600 bytes per second
+</PRE>
+
+<P>
+5) You can make a cat command to the ttyACM0 dev to see the application output. 
+</P>
+
+<PRE>
+  ===========================================================
+  prplHypervsior v0.11.26 (g2298a08) [Sep  4 2016, 11:50:12]
+  Copyright (c) 2016, prpl Foundation
+  ===========================================================
+  CPU ID:        M5150
+  ARCH:          Microchip Starter Kit
+  SYSCLK:        200MHz
+  Heap size:     32Kbytes
+  Scheduler      1ms
+  VMs:           1
+  Initializing Physical Processor.
+  Initializing Virtual Machines
+  Creating VCPUs
+  
+  HAL: Ethernet PHY at 0
+  HAL: Ethernet interface en0: interrupt 153, MAC address d8:80:39:75:a6:1a
+  HAL: Ethernet device is a SMSC LAN8740AConfiguring Timer
+  Starting Hypervisor Execution
+  
+  Timer tick count: 2
+  Timer tick count: 1001
+</PRE>
+
+<A NAME="toc8"></A>
+<H1>5. Hypervisor configuration</H1>
+
+<P>
+The prplHypervisor configuration is made through readably configuration files (cfg). During the compilation, the cfg file is read and interpreted to generate the config.h on the platform directory. The directory 
+<B>platform/pic32mz_starter_kit/samples_cfg</B> has some configuration file samples. The cfg files are structured in two main groups: system and virtual_machines. The system group contains system wide configuration, while the 
+virtual_machines group contains the configuration of each VM on the resulting system. The proprierties of each group are detailed bellow.
+</P>
+
+<A NAME="toc9"></A>
+<H2>5.1. system group</H2>
+
+<P>
+System group properties description. 
+</P>
+
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><B>Proprierty</B></TD>
+<TD><B>Type</B></TD>
+<TD><B>Description</B></TD>
+<TD><B>Valid Range</B></TD>
+</TR>
+<TR>
+<TD>debug</TD>
+<TD>Array of strings</TD>
+<TD>Optional list of defines for output messages for debug purposes.</TD>
+<TD>DEBUG, WARNINGS, INFOS, CRITICALS and VERBOSE.</TD>
+</TR>
+<TR>
+<TD>platform</TD>
+<TD>Proprierty group</TD>
+<TD>Specific platform information</TD>
+<TD>Not applicable.</TD>
+</TR>
+<TR>
+<TD>platform.cpu</TD>
+<TD>string</TD>
+<TD>Processor's name description.</TD>
+<TD>Any valid string.</TD>
+</TR>
+<TR>
+<TD>platform.platform_str</TD>
+<TD>string</TD>
+<TD>Platform description.</TD>
+<TD>Any valid string.</TD>
+</TR>
+<TR>
+<TD>platform.system_clock</TD>
+<TD>integer</TD>
+<TD>Processor's clock in Hertz.</TD>
+<TD>Positive integers</TD>
+</TR>
+<TR>
+<TD>uart_speed</TD>
+<TD>integer</TD>
+<TD>UART 2 baudrate.</TD>
+<TD>115200, 57600 and 9600. Other baudrates may be used.</TD>
+</TR>
+<TR>
+<TD>scheduler_quantum_ms</TD>
+<TD>integer</TD>
+<TD>Timer interval in millisecods for the hypervisor scheduler timer (QUANTUM).</TD>
+<TD>Positive integers.</TD>
+</TR>
+</TABLE>
+
+<P>
+Example of a valid system configuration. 
+</P>
+
+<PRE>
+  system = {
+      debug =  [ "DEBUG", "WARNINGS", "INFOS", "CRITICALS", "VERBOSE"];
+      platform = { 
+          cpu = "M5150";
+          platform_str = "Microchip Starter Kit";
+          system_clock = 200000000;
+      };
+      uart_speed = 115200;
+      scheduler_quantum_ms = 1;
+      heap_size_bytes = 0x8000;
+      heap_address = 0x80002000;
+  }; 
+</PRE>
+
+<A NAME="toc10"></A>
+<H2>5.2. virtual_machines group</H2>
+
+<P>
+virtual_machines group proprierties description. 
+</P>
+
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD><B>Proprierty</B></TD>
+<TD><B>Type</B></TD>
+<TD><B>Description</B></TD>
+<TD><B>Valid Range</B></TD>
+</TR>
+<TR>
+<TD>app_name</TD>
+<TD>string</TD>
+<TD>Name of the bare-metal application directory.</TD>
+<TD>Any valid barel-metal app directory.</TD>
+</TR>
+<TR>
+<TD>os_type</TD>
+<TD>string</TD>
+<TD>Type of the virtualized OS</TD>
+<TD>BAREOS</TD>
+</TR>
+<TR>
+<TD>RAM_size_bytes</TD>
+<TD>string</TD>
+<TD>Size of the VM's SRAM</TD>
+<TD>MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB and MEM_SIZE_256KB</TD>
+</TR>
+<TR>
+<TD>flash_size_bytes</TD>
+<TD>string</TD>
+<TD>Size of the VM's FLASH</TD>
+<TD>MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB</TD>
+</TR>
+<TR>
+<TD>vm_entry_point</TD>
+<TD>integer</TD>
+<TD>VM's entry point</TD>
+<TD>Positive integers.</TD>
+</TR>
+<TR>
+<TD>memory_maps</TD>
+<TD>Array of proprierties.</TD>
+<TD>Indicate the VM's memory mapping.</TD>
+<TD>Not applicable.</TD>
+</TR>
+<TR>
+<TD>memory_maps.base_addr</TD>
+<TD>integer</TD>
+<TD>Memory mapping base address</TD>
+<TD>Any virtual address.</TD>
+</TR>
+<TR>
+<TD>memory_maps.page_size</TD>
+<TD>string</TD>
+<TD>Memory mapping size</TD>
+<TD>MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB</TD>
+</TR>
+</TABLE>
+
+<P>
+Example of a valid virtual_machine group describing two virtual machines. The blink VM has 32KB of SRAM, 64KB of FLASH and two 4KB pages mapping for peripheral access. The pong VM has 32KB of SRAM and FLASH a 4KB page
+mapping for peripheral access. 
+</P>
+
+<PRE>
+  virtual_machines = (
+      { 
+          app_name = "blink";
+          os_type = "BAREOS";
+          RAM_size_bytes = "MEM_SIZE_32KB";
+          flash_size_bytes = "MEM_SIZE_64KB";
+          vm_entry_point = 0x9d001000;
+          memory_maps = ({ /* Two 4K page mapping for peripheral access. */
+                  base_addr = 0xbf822000;
+                  page_size = "MEM_SIZE_4KB";
+              },
+              {
+                  base_addr = 0xbf860000;
+                  page_size = "MEM_SIZE_4KB";
+              })
+      },
+      { 
+          app_name = "pong";
+          os_type = "BAREOS";
+          RAM_size_bytes = "MEM_SIZE_32KB";
+          flash_size_bytes = "MEM_SIZE_32KB";
+          vm_entry_point = 0x9d001000;
+          memory_maps = ({ /* Two 4K page mapping for peripheral access. */
+                  base_addr = 0xbf822000;
+                  page_size = "MEM_SIZE_4KB";
+              })
+      }
+      
+  );
+</PRE>
+
+<A NAME="toc11"></A>
+<H1>6. Bare-metal application development</H1>
+
+<P>
+To develop new applications move to the ~/prplHypervisor/bare-metal-apps/apps directory and see the blink, ping, pong directories among others examples. Each directory contains the implementation of a bare-metal
+application. Such applications are compiled, virtualized and executed. 
+</P>
+<P>
+The hypervisor can perform up to 3 bare-metal applications (virtual machines). Each virtual machine has configurable SRAM and FLASH sizes, as explained before. To compile differente bare-metal applications modify 
+the input configuration file in <B>platform/pic32mz_starter_kit/Makefile</B>, as in the following example:
+</P>
+
+<PRE>
+  #Input CFG file for VMs configuration
+  CFG_FILE = samples_cfg/sample-1VM.cfg
+</PRE>
+
+<P>
+The easily way to implement a new bare-metal app is to copy the directory of a existing application, for example blink, to a new directory and modifing the implementation. Additionally, to compile different combination of 
+applications see the explation in the Section 5.
+</P>
+
+<A NAME="toc12"></A>
+<H2>6.1. Timer</H2>
+
+<P>
+The default hypervisor scheduler quantum is ten milliseconds. Thus, each VM will perform during ten milliseconds before to be preempted to the next VM execution. During its execution, the VM will receive timer interrupts each one millisecond.  
+</P>
+<P>
+The implementation of the timer handler at the VM is done in the irq_timer() function. 
+</P>
+
+<A NAME="toc13"></A>
+<H1>7. Inter-VM Communication</H1>
+
+<P>
+The prplHypervisor supports Inter-VM communication through message copies from origin to the target VM. The API is simple and consists of the following calls:
+</P>
+
+<PRE>
+  int32_t ReceiveMessage(uint32_t *source, char* buffer, uint32_t bufsz, uint32_t block);
+  uint32_t SendMessage(uint32_t target, char* buffer, uint32_t size);
+</PRE>
+
+<P>
+Each VM has an identification number (ID) generated by the hypervisor during its initialization. The ID is attributed following the VM's initialization order. The first initialized VM has ID equal to 1, the second one has ID 2 and so on. 
+The ID is used to identify the VMs during communication. A VM can discovers its on ID calling the hypercall hyp_get_guest_id(). 
+</P>
+<P>
+The ReiceveMessage() hypercall returns greater than 0 if a message was received. The data is copied to the buffer limited to bufsz bytes. Zero means no data was received.  The SendMessage() hypercall returns the number of bytes sent. Zero or less means error. The possible errors are:
+MESSAGE_VCPU_NOT_FOUND (destination not found), MESSAGE_FULL (destination queue full), MSSAGE_TOO_BIG (message to big), MESSAGE_VCPU_NOT_INIT (the target VPCU is not ready for communication).
+</P>
+<P>
+If nonblocking receive is desired, use block equal to zero when calling ReceiveMessage(), otherwise, it will block the application until a message is received. 
+</P>
+<P>
+The application Ping-Pong is an example for inter-VM communication. A message is sent from ping (VM ID 1) to pong (VM ID 2) and back. To compile the Ping-Pong example, it is needed to modify the APP_LIST variable in the main makefile (prplHypervisor/Makefile) to:
+</P>
+
+<PRE>
+  APP_LIST=  ping pong
+</PRE>
+
+<A NAME="toc14"></A>
+<H2>7.1. Overall API available to VMs</H2>
+
+<P>
+The bare-metal application's execution enviroment supports a minimal Unix-like API. The available functions are listeb below: 
+</P>
+
+<PRE>
+  int8_t *strcpy(int8_t *dst, const int8_t *src);
+  int8_t *strncpy(int8_t *s1, int8_t *s2, int32_t n);
+  int8_t *strcat(int8_t *dst, const int8_t *src);
+  int8_t *strncat(int8_t *s1, int8_t *s2, int32_t n);
+  int32_t strcmp(const int8_t *s1, const int8_t *s2);
+  int32_t strncmp(int8_t *s1, int8_t *s2, int32_t n);
+  int8_t *strstr(const int8_t *string, const int8_t *find);
+  int32_t strlen(const int8_t *s);
+  int8_t *strchr(const int8_t *s, int32_t c);
+  int8_t *strpbrk(int8_t *str, int8_t *set);
+  int8_t *strsep(int8_t **pp, int8_t *delim);
+  int8_t *strtok(int8_t *s, const int8_t *delim);
+  void *memcpy(void *dst, const void *src, uint32_t n);
+  void *memmove(void *dst, const void *src, uint32_t n);
+  int32_t memcmp(const void *cs, const void *ct, uint32_t n);
+  void *memset(void *s, int32_t c, uint32_t n);
+  int32_t strtol(const int8_t *s, int8_t **end, int32_t base);
+  int32_t atoi(const int8_t *s);
+  int8_t *itoa(int32_t i, int8_t *s, int32_t base);
+  int32_t puts(const int8_t *str);
+  int8_t *gets(int8_t *s);
+  int32_t abs(int32_t n);
+  int32_t random(void);
+  void srand(uint32_t seed);
+  int printf(const int8_t *fmt, ...);
+  int sprintf(int8_t *out, const int8_t *fmt, ...);
+  void udelay(uint32_t usec);
+  void putchar(int32_t value);
+  uint32_t getchar(void);
+</PRE>
+
+<A NAME="toc15"></A>
+<H2>7.2. UART access</H2>
+
+<P>
+I/O calls, like printf() or getchar() will assume by default the UART2 port (J11 connector). However, the application on a VM can choose to write to the UART6 (PIN 12 TX and PIN 11 RX of the 40 pin connector ). To this use the following call:
+</P>
+
+<PRE>
+  int32_t serial_select(uint32_t serial_number);
+</PRE>
+
+<P>
+Use the defined parameters UART2 and UART6 to select each one of the UARTS. 
+</P>
+
+<A NAME="toc16"></A>
+<H1>8. Considerations</H1>
+
+<UL>
+<LI>If the hypervisor is executing, it is possible to reset the board to upload a new firmware without turn off the board. To do this, just press the button SW1 on the board. However, if the hypervisor is not in execution to flash a new software will require turning off the board.
+<LI>On power on, the board will wait for 5 seconds before automatically load the application. During this time it is possible to flash a new firmware. 
+</UL>
+
+<!-- html code generated by txt2tags 2.6 (http://txt2tags.org) -->
+<!-- cmdline: txt2tags howto.txt -->
+</BODY></HTML>
