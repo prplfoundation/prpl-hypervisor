@@ -85,6 +85,8 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	
 	vm->vcpus = NULL;
 	
+	vm->vm_name = vm_conf->vm_name;
+	
 	vm->base_addr = vm_conf->ram_base;
 	
 	vm->id = vm_id++;  

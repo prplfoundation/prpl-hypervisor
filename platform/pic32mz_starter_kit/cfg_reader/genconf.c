@@ -517,6 +517,11 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         strncat(app_list, auxstrp, STRSZ);
         strncat(app_list, " ", STRSZ);
         strncpy(app_name, auxstrp, STRSZ);
+	
+	strings_cat(str, STRSZ, "\t\tvm_name: \"", app_name, "\",\n", NULL);
+        if ( (ret = write_to_conf_file(outfile, str)) ) {
+            return ret;
+        }
         
         /* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
         snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
