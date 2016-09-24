@@ -110,7 +110,7 @@ load: serial
 bare_apps:
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk '/'$$i'/{print $$2}' include/vms.info` RAM_SIZE=`awk '/'$$i'/{print $$3}' include/vms.info` \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
 	;done
 
 generate_firmware:
