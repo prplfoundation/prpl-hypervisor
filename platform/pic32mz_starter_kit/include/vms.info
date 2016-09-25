@@ -1,0 +1,3 @@
+VM name 	flash_size 	ram_size 	 address_start
+ping 	32768 	32768 	0x9d010000
+pong 	32768 	32768 	0x9d018000

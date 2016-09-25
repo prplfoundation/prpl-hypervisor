@@ -64,6 +64,7 @@ INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz/include \
            -I$(TOPDIR)sys/lib/include \
            -I$(TOPDIR)sys/kernel/include \
            -I$(TOPDIR)platform/pic32mz_starter_kit/include \
+           -I$(TOPDIR)cryptography/include \
            -I$(TOPDIR)/include
 
 BUILDDIR=build/hypervisor
@@ -79,13 +80,14 @@ CC= $(CROSS_COMPILER)gcc
 
 APP = prplHypervisor
 
-all: config_vms lib kernel common pic32mz platform drivers $(APP) bare_apps generate_firmware
+all: config_vms lib kernel common pic32mz platform drivers cryptography $(APP) bare_apps generate_firmware 
 
 include $(TOPDIR)sys/sys.mk
 include $(TOPDIR)arch/mips/common/common.mk
 include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
 include board/board.mk
 include $(TOPDIR)/drivers/drivers.mk
+include $(TOPDIR)/cryptography/cryptography.mk
 
 ifeq ($(CONFIG_PIC32MZ_ETHERNET),yes)
     OBJ = ../../bin/pic32mz-ethernet.o
