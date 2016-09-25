@@ -60,6 +60,8 @@ struct vmconf_t{
     uint32_t num_tlb_entries;
     uint32_t os_type;
     uint32_t vm_entry;
+    uint32_t fast_int_sz;
+    uint32_t *fast_interrupts;
     const struct tlb_entries const *tlb;
 };    
 

@@ -18,9 +18,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __GLOBALS_H
 #define __GLOBALS_H
 
-#include <types.h>
 #include <vm.h>
 #include <vcpu.h>
+#include <config.h>
 
 #define CRITICAL(x) printf(x); while(1){};
 
@@ -44,7 +44,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 extern struct scheduler_info_t scheduler_info;
 
+#define is_vcpu_executing (((vcpu_t*)scheduler_info.vcpu_executing_nd) ? ((vcpu_t*)scheduler_info.vcpu_executing_nd->elem) : NULL)
 #define vcpu_executing ((vcpu_t*)scheduler_info.vcpu_executing_nd->elem)
 #define vm_executing   ((vm_t*)vcpu_executing->vm)
+
+/* Interval of interrupt injection on guests */
+#define QUANTUM (1 * MILISECOND)
+
 
 #endif

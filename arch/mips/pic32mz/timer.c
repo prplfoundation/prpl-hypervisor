@@ -20,7 +20,7 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
  * 
  * @section DESCRIPTION
  * 
- * Timer interrupt subsystem. This timer is used for VCPU scheduling and and 
+ * Timer interrupt subsystem. This timer is used for VCPU scheduling and  
  * virtual timer interrupt injection on Guests. 
  * 
  * Every guest receive timer interrupt each 1ms. This will be replaced soon with 
@@ -28,15 +28,26 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
  */
 
 #include <globals.h>
-#include <config.h>
 #include <hal.h>
 #include <pic32mz.h>
 #include <mips_cp0.h>
 
-/* Interval of interrupt injection on guests */
-#define QUANTUM (1 * MILISECOND)
-
 static uint32_t tick_count = 0;
+
+/**
+ * @brief Configures the COMPARE register to the next interrupt. 
+ * 
+ * @param interval Time interval to the next interrupt in CPU ticks (CPU_FREQ/2)
+ */
+inline void calc_next_timer_interrupt(uint32_t interval){
+	uint32_t count;
+	
+	count = mfc0(CP0_COUNT, 0);
+	count += interval;
+	mtc0(CP0_COMPARE, 0, count);
+	
+	IFSCLR(0) = 1;  
+}
 
 /**
  * @brief Time interrupt handler.
@@ -44,22 +55,19 @@ static uint32_t tick_count = 0;
  * Perfoms VCPUs scheduling and virtual timer interrupt injection on guests. 
  */
 static void timer_interrupt_handler(){
-    uint32_t temp_CP0;
-    uint32_t ret;
+	uint32_t temp_CP0;
+	uint32_t ret;
     
-    IFSCLR(0) = 1;
+	if (tick_count%QUANTUM_SCHEDULER==0){
+		run_scheduler();
+	}
+	
+	/* Insert a virtual timer interrupt to the guest. */
+	setGuestCTL2(getGuestCTL2() | (3 << GUESTCLT2_GRIPL_SHIFT));
     
-    if (tick_count%QUANTUM_SCHEDULER==0){
-       context_switching();
-    }else{
-        setGuestCTL2(3 << GUESTCLT2_GRIPL_SHIFT);
-    }
+	tick_count++;
     
-    tick_count++;
-    
-    temp_CP0 = mfc0(CP0_COUNT, 0);
-    temp_CP0 += QUANTUM;
-    mtc0(CP0_COMPARE, 0, temp_CP0);
+	calc_next_timer_interrupt(QUANTUM);
 }
 
 /**
@@ -69,29 +77,23 @@ static void timer_interrupt_handler(){
  * first timer interrupt.
  */
 void start_timer(){
-    uint32_t temp_CP0, offset;
+	uint32_t temp_CP0, offset;
     
-    offset = register_interrupt(timer_interrupt_handler);
-    OFF(0) = offset;
-    printf ("\nCP0 Timer interrupt registered at 0x%x.", offset);
+	offset = register_interrupt(timer_interrupt_handler);
+	OFF(0) = offset;
+	printf ("\nCP0 Timer interrupt registered at 0x%x.", offset);
     
-    IPC(0) = 0x1f;
-    IFSCLR(0) = 1;
-    IECSET(0) = 1;
+	IPC(0) = 0x1f;
+	IFSCLR(0) = 1;
+	IECSET(0) = 1;
     
-    temp_CP0 = mfc0(CP0_COUNT, 0);
-    temp_CP0 += 10000;
-    mtc0(CP0_COMPARE, 0, temp_CP0);
+	temp_CP0 = mfc0(CP0_COUNT, 0);
+	temp_CP0 += 10000;
+	mtc0(CP0_COMPARE, 0, temp_CP0);
 
-    asm volatile ("ei");    
+	asm volatile ("ei");    
     
-    /* Wait for a timer interrupt */
-    while(1){};
-}
-
-
-/* Critical error ocurred. Waiting for reset */
-void WaitforReset(){
-    while(1){};
+	/* Wait for a timer interrupt */
+	while(1){};
 }
 

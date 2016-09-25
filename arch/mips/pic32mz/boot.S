@@ -302,18 +302,17 @@ restore_sgpr_ctx:
 .end restore_sgpr_ctx
 
 
-.global hal_start_hyper
-.ent hal_start_hyper
-hal_start_hyper:
+.global hal_config_hyper_gpr_shadow
+.ent hal_config_hyper_gpr_shadow
+hal_config_hyper_gpr_shadow:
         .set noreorder
         la $k1, _gp
         wrpgpr $gp, $k1
         la $k1, _stack
         wrpgpr $sp, $k1
         jr $ra
-        /*mfc0 $v0, $12, 2*/
         nop
         .set reorder
-.end hal_start_hyper
+.end hal_config_hyper_gpr_shadow
 
 

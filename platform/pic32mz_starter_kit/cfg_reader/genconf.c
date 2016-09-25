@@ -109,7 +109,7 @@ int get_value_from_str(struct mem_sizes_def *mdef, int num_el, char *str_name){
 	int i;
 	for(i=0;i<num_el;i++){
 		if (!strcmp(mdef[i].name, str_name)){
-		return mdef[i].value;
+			return mdef[i].value;
 		}
 	}
 	return 0;
@@ -154,7 +154,9 @@ int initial_msg(FILE *f, char * conf_name){
     
 	if (write_to_conf_file(f, "#include <vm.h>\n\n"))
 		return EXIT_FAILURE;
-    
+
+	if (write_to_conf_file(f, "#include <arch.h>\n\n"))
+		return EXIT_FAILURE;
     
 	return 0;
 }
@@ -563,6 +565,38 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
 		}
+			
+		/* fast_interrupts array  */
+		config_setting_t * fast_int_setting = config_setting_lookup(vm_conf, "fast_interrupts");
+		if(fast_int_setting){
+			int int_sz = config_setting_length(fast_int_setting);
+			int i;
+			/* get fast_int_sz */
+			snprintf(str, STRSZ, "\t\tfast_int_sz: %d,\n", int_sz);
+			if ( (ret = write_to_conf_file(outfile, str)) ) {
+				return ret;
+			}
+
+			if ( (ret = write_to_conf_file(outfile, "\t\tfast_interrupts: (uint32_t []) {")) ) {
+				return ret;
+			}
+
+			for(i = 0; i < int_sz; ++i){
+				if(i>0){
+					if ( (ret = write_to_conf_file(outfile, ", ")) ) {
+						return ret;
+					}
+				}
+				const char* fast_int = config_setting_get_string_elem(fast_int_setting, i);
+				if ( (ret = write_to_conf_file(outfile, (char*)fast_int)) ) {
+					return ret;
+				}
+			}
+
+			if ( (ret = write_to_conf_file(outfile, " },\n")) ) {
+				return ret;
+			}
+		}
         
 		/* Generate the TLB entries to the current VM's configuration */
 		if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
@@ -584,7 +618,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, outfile))){
 			return ret;
 		}
-        
+		
 		/* get FLASH size */
 		if( !config_setting_lookup_string(vm_conf, "flash_size_bytes", &auxstrp)){
 			fprintf(stderr, "Missing flash_size_bytes proprierty on virtual_machines group.\n");
@@ -599,7 +633,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		if ((ret = process_tlb_entry(vm_number, flash_size, &vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, outfile))){
 			return ret;
 		}
-        
+		
 		/* process the additional memory mapping */
 		mem_maps = config_setting_lookup(vm_conf, "memory_maps");
 		num_mm = config_setting_length(mem_maps);
@@ -652,8 +686,9 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		if ( (ret = write_to_conf_file(outfile, "\t},\n")) ) {
 			return ret;
 		}	
+
 	}
-    
+
 	/* Close VM's conf. */
 	if ( (ret = write_to_conf_file(outfile, "};\n")) ) {
 		return ret;
@@ -800,7 +835,6 @@ int main(int argc, char **argv)
 	}
     
 	free(vms_info);
-    
     
 	if (write_vm_number(vm_count, app_list, outfile)){  
 		config_destroy(&cfg);

@@ -45,7 +45,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 void initializeMachines(void) {
 	unsigned int i;
 
-	printf("\nInitializing Virtual Machines");
+	printf("\nInitializing Virtual Machines.");
 
 	scheduler_info.vcpu_ready_list = NULL;
 	
@@ -77,6 +77,8 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	vm_t *vm;
 	uint32_t i;
 	vcpu_t *vcpu;
+	
+	printf("\nConfiguring %s VM starting at 0x%x RAM address.", vm_conf->vm_name, vm_conf->ram_base);
     
 	/* Number of fix TLB entries */
 	uint32_t ntlbent = vm_conf->num_tlb_entries;
@@ -95,6 +97,9 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	vm->init = 1;
 
 	vm->tlbentries = NULL;
+	
+	vm->fast_int_sz = vm_conf->fast_int_sz;
+	vm->fast_interrupts = vm_conf->fast_interrupts;
         
 	/* Allocate a TLB entry to the VM */
 	vm->tlbentries = (struct tlbentry *)malloc(sizeof(struct tlbentry)*(ntlbent)); 

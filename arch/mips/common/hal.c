@@ -652,6 +652,15 @@ void setGuestCTL2(uint32_t guestclt2){
     mtc0(CP0_GUESTCTL2, 5, guestclt2);
 }
 
+/**
+ * @brief Get CP0 GuestCLT2 .
+ * 
+ * @return guestctl2 register value.
+ */
+uint32_t getGuestCTL2(){
+    return mfc0(CP0_GUESTCTL2, 5);
+}
+
 
 /**
  * @brief Get CP0 Random .

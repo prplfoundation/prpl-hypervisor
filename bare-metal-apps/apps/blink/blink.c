@@ -31,8 +31,9 @@ void irq_timer(){
 int main() {
     /* Pin RH0 as ouput (LED 1)*/
     TRISHCLR = 1;
+    
     while (1){
-        printf("\nTimer tick count: %d", t2);
+        printf("\nBlink read LED! Total of %d timer ticks.", t2);
         /* Blink Led */
         LATHINV = 1;
         /* 1 second delay */

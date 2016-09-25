@@ -34,28 +34,59 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 struct scheduler_info_t scheduler_info = {NULL, NULL, NULL};
 
+/** 
+ * Keeps a pointer to the last scheduled VCPU. 
+ */
+static struct list_t *last_scheduled = NULL;
+
 /**
  * @brief round-robin scheduler implementation. 
  * 
  * @return Pointer to the node in the list of VCPUs of the scheduled VCPU. 
  */
 struct list_t* round_robin_scheduler(){
-	if(!scheduler_info.vcpu_executing_nd || !scheduler_info.vcpu_executing_nd->next){
-		return scheduler_info.vcpu_ready_list;
+	if(!last_scheduled || !last_scheduled->next){
+		last_scheduled = scheduler_info.vcpu_ready_list;
 	}else{
-		return scheduler_info.vcpu_executing_nd->next;
+		last_scheduled = last_scheduled->next;
 	}
+	return last_scheduled;
 }
 
 
 /**
- * @brief Scheduler routine. Must be invoke in the timer interrupt routine. 
+ * @brief Performs a context-switching to a target VCPU. This is called 
+ * from device drivers interrupt context and it allows for a 
+ * VM to attend to a interrupt faster. The device driver should called
+ * get_fast_int_vcpu_node() to discovery if a VCPU is associated
+ * to its interrupts. 
+ * 
+ * @param target Target VCPU. 
+ * 
+ */
+void fast_interrupt_delivery(struct list_t *target){
+
+	/* Do not reschedule if the VCPU is already in execution. */
+	if (target == scheduler_info.vcpu_executing_nd){
+		calc_next_timer_interrupt(QUANTUM);
+		return;
+	}
+	
+	contextSave();
+	scheduler_info.vcpu_executing_nd = target;
+	contextRestore();
+	calc_next_timer_interrupt(QUANTUM);
+}
+
+
+/**
+ * @brief Scheduler routine. Must be invoked in the timer interrupt routine. 
  * 
  */
 void run_scheduler(){
-	
+	contextSave();           
 	scheduler_info.vcpu_executing_nd = round_robin_scheduler();
-	
+	contextRestore();
 }
 
 
@@ -78,5 +109,40 @@ vcpu_t* get_vcpu_from_id(uint32_t id){
 	
 	return NULL;	
 } 
+
+
+/**
+ * @brief Returns a VCPU associated with a fast interrupt policy. The
+ * device drivers must call this routine to discovery if its interrupts
+ * are associated with a VCPU. When an interrupt is associated to a VM, 
+ * the device driver should call fast_interrupt_delivery() to perform 
+ * a context-switching to the target VM during its interrupt handler. 
+ * 
+ * @param fast_int Target interrupt. 
+ *
+ * @return Pointer to the target VCPU. The drivers should keep this pointer 
+ * to use with the fast_interrupt_delivery() call. 
+ *
+ */
+struct list_t* get_fast_int_vcpu_node(uint32_t fast_int){
+	uint32_t i, fint;
+	vm_t* vm;
+	struct list_t* vm_list;
+	vm_list = scheduler_info.virtual_machines_list;
+	
+	
+	while(vm_list){
+		vm = (vm_t*)vm_list->elem;
+		for(i=0;i<vm->fast_int_sz;i++){
+			if(fast_int == vm->fast_interrupts[i]){
+				return ((vm_t*)vm_list->elem)->vcpus;
+				
+			}
+		}
+		vm_list = vm_list->next;
+	}
+	return NULL;	
+} 
+
 
 

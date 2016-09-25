@@ -70,10 +70,7 @@ int32_t hyper_init(){
 	/* Initialize device drivers */    
 	drivers_initialization();
 
-	/* Run scheduler .*/
-	run_scheduler();  
-    
-	hal_start_hyper();
+	hal_config_hyper_gpr_shadow();
 
 	/* start system timer */
 	start_timer();
@@ -81,13 +78,6 @@ int32_t hyper_init(){
 	/* Should never reach this point !!! */
 	return 0;
 }
-
-void context_switching(){
-	contextSave();           
-	run_scheduler();
-	contextRestore();
-}
-
 
 /** Handle guest exceptions */
 static uint32_t GuestExitException(){

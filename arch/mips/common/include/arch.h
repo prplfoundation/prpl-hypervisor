@@ -15,20 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#ifndef __SCHEDULER_H
-#define __SCHEDULER_H
+#ifndef __ARCH_H
+#define __ARCH_H
 
-#include <linkedlist.h>
+#include <pic32mz.h>
 
-/**
- * Keeps the virtual machine and VCPU lists. Additionally, it 
- * keeps a pointer to the VCPU in execution. 
- */
-struct scheduler_info_t{
-	struct list_t *vcpu_ready_list;
-	struct list_t *virtual_machines_list;
-	struct list_t *vcpu_executing_nd;
-};
-
-
-#endif /* __SCHEDULER_H */
+#endif
