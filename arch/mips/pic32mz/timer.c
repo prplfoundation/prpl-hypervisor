@@ -32,7 +32,11 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include <pic32mz.h>
 #include <mips_cp0.h>
 
-static uint32_t tick_count = 0;
+/**
+ * @brief Number of timer ticks. 
+ * 
+ */
+static uint32_t timer_count = 0;
 
 /**
  * @brief Configures the COMPARE register to the next interrupt. 
@@ -58,14 +62,12 @@ static void timer_interrupt_handler(){
 	uint32_t temp_CP0;
 	uint32_t ret;
     
-	if (tick_count%QUANTUM_SCHEDULER==0){
-		run_scheduler();
-	}
+	run_scheduler();
 	
-	/* Insert a virtual timer interrupt to the guest. */
-	setGuestCTL2(getGuestCTL2() | (3 << GUESTCLT2_GRIPL_SHIFT));
-    
-	tick_count++;
+	/* Insert a virtual timer interrupt to the guest each other timer tick. */
+	if(timer_count++ % 2){
+		setGuestCTL2(getGuestCTL2() | (3 << GUESTCLT2_GRIPL_SHIFT));
+	}
     
 	calc_next_timer_interrupt(QUANTUM);
 }

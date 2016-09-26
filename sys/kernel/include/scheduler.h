@@ -22,12 +22,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /**
  * Keeps the virtual machine and VCPU lists. Additionally, it 
- * keeps a pointer to the VCPU in execution. 
+ * keeps a pointer to the VCPU in execution and to the next VCPU
+ * (in case of fast interrupt delivery policy).
  */
 struct scheduler_info_t{
 	struct list_t *vcpu_ready_list;
 	struct list_t *virtual_machines_list;
 	struct list_t *vcpu_executing_nd;
+	struct list_t *next_vcpu;
 };
 
 

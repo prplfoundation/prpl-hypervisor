@@ -31,8 +31,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <linkedlist.h>
 
+#define TICKS_BEFORE_SCHEDULING ((QUANTUM_SCHEDULER*1000*MICROSECOND)/QUANTUM)
 
-struct scheduler_info_t scheduler_info = {NULL, NULL, NULL};
+struct scheduler_info_t scheduler_info = {NULL, NULL, NULL, NULL};
+
+/** 
+ * @brief Tick counter. Used for VM's scheduling. 
+ */ 
+static uint32_t tick_count = 0;
 
 /** 
  * Keeps a pointer to the last scheduled VCPU. 
@@ -68,14 +74,10 @@ void fast_interrupt_delivery(struct list_t *target){
 
 	/* Do not reschedule if the VCPU is already in execution. */
 	if (target == scheduler_info.vcpu_executing_nd){
-		calc_next_timer_interrupt(QUANTUM);
 		return;
 	}
 	
-	contextSave();
-	scheduler_info.vcpu_executing_nd = target;
-	contextRestore();
-	calc_next_timer_interrupt(QUANTUM);
+	scheduler_info.next_vcpu = target;
 }
 
 
@@ -84,9 +86,21 @@ void fast_interrupt_delivery(struct list_t *target){
  * 
  */
 void run_scheduler(){
-	contextSave();           
-	scheduler_info.vcpu_executing_nd = round_robin_scheduler();
-	contextRestore();
+	if (scheduler_info.next_vcpu){
+		contextSave();           	
+		scheduler_info.vcpu_executing_nd = scheduler_info.next_vcpu;
+		contextRestore();
+		scheduler_info.next_vcpu = NULL;
+		/* Gives an extra execution time to the target VM if the current period is finishing. */
+		tick_count = (tick_count % TICKS_BEFORE_SCHEDULING >= TICKS_BEFORE_SCHEDULING)? (tick_count-2) : tick_count;
+	}else{
+		if ( tick_count % TICKS_BEFORE_SCHEDULING == 0){
+			contextSave();   
+			scheduler_info.vcpu_executing_nd = round_robin_scheduler();
+			contextRestore();
+		}
+	}
+	tick_count++;	
 }
 
 
