@@ -33,12 +33,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define VM_NAME_SZ 16
 
 /* Identification for different operating system types */
-#define GENERIC		0
-#define BAREOS		1
-#define BAREOS_RT   2
-#define	HELLFIRE	3
-#define LINUX		4
-#define IDLEVCPU	5
+#define BARE_METAL	1
+
+#define BARE_METAL_ENTRY_POINT 0x9d001000
 
 struct vcpu_t;
 typedef struct vcpu_t vcpu_t;
@@ -59,7 +56,6 @@ struct vmconf_t{
     uint32_t ram_base;
     uint32_t num_tlb_entries;
     uint32_t os_type;
-    uint32_t vm_entry;
     uint32_t fast_int_sz;
     uint32_t *fast_interrupts;
     const struct tlb_entries const *tlb;

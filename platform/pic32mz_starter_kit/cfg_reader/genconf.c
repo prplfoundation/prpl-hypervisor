@@ -555,17 +555,6 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return ret;
 		}
         
-		/* get OS entry point  */
-		if( !config_setting_lookup_int(vm_conf, "vm_entry_point", (int*)&value)){
-			fprintf(stderr, "Missing vm_entry_point proprierty on virtual_machines group.\n");
-			return EXIT_FAILURE;
-		}
-		snprintf(auxstr, STRSZ, "0x%x", value);
-		strings_cat(str, STRSZ, "\t\tvm_entry: ", auxstr, ",\n", NULL);
-		if ( (ret = write_to_conf_file(outfile, str)) ) {
-			return ret;
-		}
-			
 		/* fast_interrupts array  */
 		config_setting_t * fast_int_setting = config_setting_lookup(vm_conf, "fast_interrupts");
 		if(fast_int_setting){
@@ -737,10 +726,6 @@ int rt_vm_list(FILE* outfile){
 	int ret;
     
 	if ( (ret = insert_blank_line(outfile)) ){
-		return ret;
-	}
-    
-	if ( (ret = write_to_conf_file(outfile, "#define VMCONF_RT {0}\n\n")) ) {
 		return ret;
 	}
     

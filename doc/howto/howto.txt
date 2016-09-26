@@ -210,10 +210,10 @@ virtual_machines group proprierties description.
 
 | **Proprierty** | **Type** | **Description** | **Valid Range** |
 | app_name | string | Name of the bare-metal application directory. | Any valid barel-metal app directory. 
-| os_type | string | Type of the virtualized OS | BAREOS
+| os_type | string | Type of the virtualized OS | BARE_METAL
 | RAM_size_bytes | string | Size of the VM's SRAM | MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB and MEM_SIZE_256KB
 | flash_size_bytes | string | Size of the VM's FLASH | MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB
-| vm_entry_point | integer | VM's entry point | Positive integers.
+| fast_interrupts | Array of strings | List of associated interrupts. Allows for the hypervisor to fast delivery an interrupt to a VM.  | IRQ_ETH
 | memory_maps | Array of proprierties. | Indicate the VM's memory mapping. | Not applicable. 
 | memory_maps.base_addr | integer | Memory mapping base address | Any virtual address.
 | memory_maps.page_size | string | Memory mapping size | MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB
@@ -226,10 +226,9 @@ mapping for peripheral access.
 virtual_machines = (
     { 
         app_name = "blink";
-        os_type = "BAREOS";
+	os_type = "BARE_METAL";
         RAM_size_bytes = "MEM_SIZE_32KB";
         flash_size_bytes = "MEM_SIZE_64KB";
-        vm_entry_point = 0x9d001000;
         memory_maps = ({ /* Two 4K page mapping for peripheral access. */
                 base_addr = 0xbf822000;
                 page_size = "MEM_SIZE_4KB";
@@ -241,11 +240,10 @@ virtual_machines = (
     },
     { 
         app_name = "pong";
-        os_type = "BAREOS";
+        os_type = "BARE_METAL";
         RAM_size_bytes = "MEM_SIZE_32KB";
         flash_size_bytes = "MEM_SIZE_32KB";
-        vm_entry_point = 0x9d001000;
-        memory_maps = ({ /* Two 4K page mapping for peripheral access. */
+        memory_maps = ({ /* One 4K page mapping for peripheral access. */
                 base_addr = 0xbf822000;
                 page_size = "MEM_SIZE_4KB";
             })

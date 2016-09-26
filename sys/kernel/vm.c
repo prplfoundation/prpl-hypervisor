@@ -73,6 +73,7 @@ void initializeMachines(void) {
 vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	static uint32_t vm_id = 1;  /* vm_id is the used as guestid */	
 	static uint32_t tlbindex = 0; 	/* unique tlb entry */
+	uint32_t entry_point = 0;
 
 	vm_t *vm;
 	uint32_t i;
@@ -122,8 +123,14 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 		tlbEntryWrite(&vm->tlbentries[i]);
 	}
 
+	if(vm->os_type == BARE_METAL){
+		entry_point = BARE_METAL_ENTRY_POINT;
+	}else{
+		Warning("\nOS type not defined.");
+	}
+	
 	/* Set the VM entry Point and scheduler*/
-	vcpu = create_vcpu(vm, vm_conf->vm_entry);	
+	vcpu = create_vcpu(vm, entry_point);	
 	
 	list_append(&scheduler_info.vcpu_ready_list, vcpu);
 	list_append(&scheduler_info.virtual_machines_list, vm);

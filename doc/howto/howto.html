@@ -348,7 +348,7 @@ virtual_machines group proprierties description.
 <TD>os_type</TD>
 <TD>string</TD>
 <TD>Type of the virtualized OS</TD>
-<TD>BAREOS</TD>
+<TD>BARE_METAL</TD>
 </TR>
 <TR>
 <TD>RAM_size_bytes</TD>
@@ -363,10 +363,10 @@ virtual_machines group proprierties description.
 <TD>MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB</TD>
 </TR>
 <TR>
-<TD>vm_entry_point</TD>
-<TD>integer</TD>
-<TD>VM's entry point</TD>
-<TD>Positive integers.</TD>
+<TD>fast_interrupts</TD>
+<TD>Array of strings</TD>
+<TD>List of associated interrupts. Allows for the hypervisor to fast delivery an interrupt to a VM.</TD>
+<TD>IRQ_ETH</TD>
 </TR>
 <TR>
 <TD>memory_maps</TD>
@@ -397,10 +397,9 @@ mapping for peripheral access.
   virtual_machines = (
       { 
           app_name = "blink";
-          os_type = "BAREOS";
+  	os_type = "BARE_METAL";
           RAM_size_bytes = "MEM_SIZE_32KB";
           flash_size_bytes = "MEM_SIZE_64KB";
-          vm_entry_point = 0x9d001000;
           memory_maps = ({ /* Two 4K page mapping for peripheral access. */
                   base_addr = 0xbf822000;
                   page_size = "MEM_SIZE_4KB";
@@ -412,11 +411,10 @@ mapping for peripheral access.
       },
       { 
           app_name = "pong";
-          os_type = "BAREOS";
+          os_type = "BARE_METAL";
           RAM_size_bytes = "MEM_SIZE_32KB";
           flash_size_bytes = "MEM_SIZE_32KB";
-          vm_entry_point = 0x9d001000;
-          memory_maps = ({ /* Two 4K page mapping for peripheral access. */
+          memory_maps = ({ /* One 4K page mapping for peripheral access. */
                   base_addr = 0xbf822000;
                   page_size = "MEM_SIZE_4KB";
               })
