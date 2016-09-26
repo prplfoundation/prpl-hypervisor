@@ -22,16 +22,30 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define NULL            ((void *)0)
 
+#if 0
 typedef int32_t word_align;
 
 union header{    /* block header */
-    struct{
-        union header *ptr;  /* mnext block if on free list */
-        uint32_t size;   /* size of this block */
-    } s;
-    word_align x;    /* force block alignment */
+struct{
+union header *ptr;  /* mnext block if on free list */
+uint32_t size;   /* size of this block */
+} s;
+word_align x;    /* force block alignment */
 };
 
 typedef union header mem_header;
+
+#else
+
+#define align4(x) ((((x) + 3) >> 2) << 2)
+
+typedef uint32_t size_t;
+
+struct mem_block {
+	struct mem_block *next;		/* pointer to the next block */
+	size_t size;			/* aligned block size. the LSB is used to define if the block is used */
+};
+
+#endif 
 
 #endif
