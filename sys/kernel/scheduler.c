@@ -147,8 +147,8 @@ struct list_t* get_fast_int_vcpu_node(uint32_t fast_int){
 	
 	while(vm_list){
 		vm = (vm_t*)vm_list->elem;
-		for(i=0;i<vm->fast_int_sz;i++){
-			if(fast_int == vm->fast_interrupts[i]){
+		for(i=0;i<vm->vmconf->fast_int_sz;i++){
+			if(fast_int == vm->vmconf->fast_interrupts[i]){
 				return ((vm_t*)vm_list->elem)->vcpus;
 				
 			}

@@ -50,6 +50,7 @@ struct tlb_entries{
     uint32_t coherency;
 };
 
+
 /* VM description used in the config.h file. Used only for initialization purposes. */
 struct vmconf_t{
     char vm_name[VM_NAME_SZ];
@@ -59,19 +60,19 @@ struct vmconf_t{
     uint32_t fast_int_sz;
     uint32_t *fast_interrupts;
     const struct tlb_entries const *tlb;
+    
 };    
 
 /* Holds information about a Virtual machine on runtime.  */
 typedef struct vm_t {
-	char *vm_name;
+	const char *vm_name;
 	unsigned int id;
 	unsigned int base_addr;
 	struct list_t *vcpus;
 	uint32_t os_type;
-	uint32_t ntlbent;
 	uint32_t init;	
-	uint32_t fast_int_sz;
-	uint32_t *fast_interrupts;
+	const struct vmconf_t * vmconf;
+	uint32_t ntlbent;
 	struct tlbentry *tlbentries;
 }vm_t;
 

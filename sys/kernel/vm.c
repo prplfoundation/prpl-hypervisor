@@ -88,6 +88,8 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	
 	vm->vcpus = NULL;
 	
+	vm->vmconf = vm_conf;
+	
 	vm->vm_name = vm_conf->vm_name;
 	
 	vm->base_addr = vm_conf->ram_base;
@@ -99,9 +101,6 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 
 	vm->tlbentries = NULL;
 	
-	vm->fast_int_sz = vm_conf->fast_int_sz;
-	vm->fast_interrupts = vm_conf->fast_interrupts;
-        
 	/* Allocate a TLB entry to the VM */
 	vm->tlbentries = (struct tlbentry *)malloc(sizeof(struct tlbentry)*(ntlbent)); 
 	memset(vm->tlbentries, 0, sizeof(struct tlbentry)*ntlbent);
