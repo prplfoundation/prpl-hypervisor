@@ -15,6 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+#include <hypercall_defines.h>
+
+
 
 	.section .exception
 	.org    0xf8
@@ -268,7 +271,7 @@ hyper_eth_mac:
         .ent hyper_eth_link_check
 hyper_eth_link_check:
         .set noreorder 
-        hypcall 0x4
+        hypcall 4
         jr $ra
         nop
         .set reorder

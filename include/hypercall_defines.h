@@ -24,6 +24,7 @@ typedef void hypercall_t();
 #define HCALL_CODE_INVALID       -1
 #define HCALL_CODE_USED          -2
 #define HCALL_NOT_IMPLEMENTED    -3
+#define HCALL_ADDRESS_NOT_ALLOWED -4
 
 
 /*************************/
@@ -83,6 +84,20 @@ typedef void hypercall_t();
 #define USB_VM_POLLING              8
 #define USB_VM_GET_DESCRIPTOR       9
 #define USB_VM_SEND_DATA            10
+
+
+/* Virtual IO Write Address .
+ * A0 = Address to write.
+ * A1 = Value to be writed.
+ * V0 = 0 if success or error code otherwise.
+ */ 
+#define HCALL_WRITE_ADDRESS	11
+
+/* Virtual IO Read Address .
+ * A0 = Address to read.
+ * V0 = Value.
+ */ 
+#define HCALL_READ_ADDRESS	12
 
 
 #if 0

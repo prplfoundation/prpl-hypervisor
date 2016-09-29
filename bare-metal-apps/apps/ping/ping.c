@@ -25,7 +25,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * */
 
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
 #include <network.h>
 

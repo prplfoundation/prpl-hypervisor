@@ -15,36 +15,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample using virtualized IO. */
+#ifndef __ARCH_H
+#define __ARCH_H
 
-#include <arch.h>
-#include <libc.h>
-#include <hypercalls.h>
+#include <../../../../../arch/mips/pic32mz/include/pic32mz.h>
+#include <../../../../../arch/mips/common/include/mips_cp0.h>    
 
-
-volatile int32_t t2 = 0;
-
-
-void irq_timer(){
-    t2++;
-}
-
-int main() {
-    /* Pin RH0 as ouput (LED 1)*/
-    uint32_t a;
-    
-    write(TRISHCLR, 1);
-    
-    while (1){
-        printf("\nBlink red LED! Total of %d timer ticks.", t2);
-        
-	/* Blink Led */
-	write(LATHINV, 1);
-	
-        /* 1 second delay */
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+#endif
 

@@ -17,7 +17,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Shared buffer example for PUF */
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
 
 

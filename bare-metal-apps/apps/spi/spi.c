@@ -17,7 +17,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Simple SPI write application sample */
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
 
 

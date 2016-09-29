@@ -15,36 +15,30 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample using virtualized IO. */
+#ifndef  __HYPERCALLS_H
+#define  __HYPERCALLS_H
 
-#include <arch.h>
-#include <libc.h>
-#include <hypercalls.h>
+#include <hypercall_defines.h>
+
+/* Read from privileged address  */
+#define read(addr) ({ int32_t __value; \
+asm volatile (                                          \
+"move	$a0, %z1 \n\
+hypcall   %2 \n\
+move	%0, $v0" \
+: "=r" (__value) :  "r" ((uint32_t) (&addr)), "I" (HCALL_READ_ADDRESS): "a0", "v0");               \
+__value; })
 
 
-volatile int32_t t2 = 0;
+/* Write to privileged address */
+#define write(reg, value) asm volatile (                    \
+"move $a0, %z0 \n \
+ move $a1, %z1 \n \
+ hypcall %2" \
+ : : "r" ((uint32_t) (&reg)), "r" ((uint32_t) (value)), "I" (HCALL_WRITE_ADDRESS) : "a0", "a1")
 
 
-void irq_timer(){
-    t2++;
-}
 
-int main() {
-    /* Pin RH0 as ouput (LED 1)*/
-    uint32_t a;
-    
-    write(TRISHCLR, 1);
-    
-    while (1){
-        printf("\nBlink red LED! Total of %d timer ticks.", t2);
-        
-	/* Blink Led */
-	write(LATHINV, 1);
-	
-        /* 1 second delay */
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+
+#endif
 

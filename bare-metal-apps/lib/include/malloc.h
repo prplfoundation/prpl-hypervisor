@@ -18,7 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _MALLOC_H_
 #define _MALLOC_H_
 
-#include <pic32mz.h>
+#include <types.h>
 
 #define NULL            ((void *)0)
 

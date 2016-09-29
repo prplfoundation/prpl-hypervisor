@@ -4,7 +4,7 @@ APP=blink
 #INC_DIRS = 
 
 #Aditional C flags
-#CFLAGS = 
+CFLAGS = -DVIRTUALIZED_IO
 
 #Aditional Libraries
 #LIBS=
@@ -44,6 +44,7 @@ endif
 TOPDIR=../../
 
 INC_DIRS += -I$(TOPDIR)/lib/include \
+            -I$(TOPDIR)../include \
            -I$(TOPDIR)arch/mips/pic32mz_starter_kit/include/
 
 include $(TOPDIR)lib/lib.mk

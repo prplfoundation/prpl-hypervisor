@@ -50,6 +50,10 @@ struct tlb_entries{
     uint32_t coherency;
 };
 
+struct device_mapping_t{
+	uint32_t start_addr;
+	uint32_t size;
+};
 
 /* VM description used in the config.h file. Used only for initialization purposes. */
 struct vmconf_t{
@@ -60,7 +64,8 @@ struct vmconf_t{
     uint32_t fast_int_sz;
     uint32_t *fast_interrupts;
     const struct tlb_entries const *tlb;
-    
+    uint32_t devices_mapping_sz;
+    const struct device_mapping_t const *devices;
 };    
 
 /* Holds information about a Virtual machine on runtime.  */

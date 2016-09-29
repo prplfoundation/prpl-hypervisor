@@ -15,6 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+#include <types.h>
 /*
 constants, tests and transformations
 */

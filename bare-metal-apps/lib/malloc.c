@@ -15,7 +15,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#include <pic32mz.h>
+#include <types.h>
 #include <malloc.h>
 
 /* new memory allocator implementation
