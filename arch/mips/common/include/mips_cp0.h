@@ -48,7 +48,7 @@
         
 #define rdpgpr(reg) ({ int32_t __value;                      \
         asm volatile (                                          \
-        "mfgc0   %0, $%1"                                    \
+        "rdpgpr   %0, $%1"                                    \
         : "=r" (__value) : "K" (reg));               \
         __value; })
 
