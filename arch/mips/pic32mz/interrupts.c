@@ -60,7 +60,7 @@ void interrupt_init(){
     temp_CP0 &= ~STATUS_EXL; 
     mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
     
-    printf("\nPIC32mz in Vectored Interrupt Mode.");
+    INFO("PIC32mz in Vectored Interrupt Mode.");
 }
 
 driver_init(interrupt_init);

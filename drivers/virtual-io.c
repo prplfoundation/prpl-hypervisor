@@ -131,7 +131,7 @@ void virtual_io_init(){
 		vmconf_p[i] = vcpu->vm->vmconf;
 	}
     
-	printf("\nDevice mapping hypercalls registered.");
+	INFO("Device mapping hypercalls registered.");
 }
 
 driver_init(virtual_io_init);

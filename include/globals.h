@@ -39,7 +39,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifdef INFOS
 #define INFO(X,...) printf("\n"X, ##__VA_ARGS__);
 #else
-#define Info(X,...) do{}while(0);
+#define INFO(X,...) do{}while(0);
 #endif
 
 extern struct scheduler_info_t scheduler_info;

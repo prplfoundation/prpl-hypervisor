@@ -83,7 +83,7 @@ void start_timer(){
     
 	offset = register_interrupt(timer_interrupt_handler);
 	OFF(0) = offset;
-	printf ("\nCP0 Timer interrupt registered at 0x%x.", offset);
+	INFO("CP0 Timer interrupt registered at 0x%x.", offset);
     
 	IPC(0) = 0x1f;
 	IFSCLR(0) = 1;
