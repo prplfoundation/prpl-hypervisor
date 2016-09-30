@@ -138,6 +138,5 @@ typedef struct {
 extern processor_t* proc; 
 extern vcpu_t *idle_vcpu;
 
-uint32_t InstructionEmulation();
 
 #endif

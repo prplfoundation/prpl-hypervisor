@@ -47,8 +47,6 @@ uint32_t has1KPageSupport();
 void Disable1KPageSupport();
 int32_t isEnteringGuestMode();
 uint32_t getBadVAddress();
-uint32_t MoveFromPreviousGuestGPR(uint32_t reg);
-void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value);
 void setLowestGShadow(uint32_t lowestshadow);
 uint32_t getLowestGShadow(void);
 void setPreviousShadowSet(uint32_t shadow_set);

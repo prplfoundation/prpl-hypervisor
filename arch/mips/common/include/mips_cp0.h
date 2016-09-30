@@ -41,18 +41,19 @@
         "mtgc0   %z0, $%1, %2"                                   \
         : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
 
-/* */
-#define wrpgpr(reg, value) asm volatile (                    \
+/* write to previous gpr shadow */
+#define MoveToPreviousGuestGPR(reg, value) asm volatile (                    \
         "wrpgpr   $%0, %1"                                   \
         : : "K" (reg), "r" ((uint32_t) (value)))
-        
-#define rdpgpr(reg) ({ int32_t __value;                      \
+
+/* read from previous gpr shadow */        
+#define MoveFromPreviousGuestGPR(reg) ({ int32_t __value;                      \
         asm volatile (                                          \
         "rdpgpr   %0, $%1"                                    \
         : "=r" (__value) : "K" (reg));               \
         __value; })
 
-        
+/* TBL write */        
 #define tlb_commit() asm volatile ("tlbwi" : : )
 
         
@@ -296,6 +297,9 @@
 #define TLB_LOAD_FETCH_EXCEPTION    	0x2
 #define TLB_STORE_EXCEPTION    		0x3
 #define GUEST_EXIT_EXCEPTION   		0x1b
+#define GUEST_INSTRUCTION_EMULATION 0
+#define GUEST_HYPERCALL 2
+
 
 
 #endif 

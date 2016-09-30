@@ -41,14 +41,14 @@ static uint32_t guest_exit_exception(){
 	uint32_t epc = getEPC();
 	
 	switch (guestcause) {
-	    case 0x0:	
-			InstructionEmulation(epc);
+		case GUEST_INSTRUCTION_EMULATION:	
+			WARNING("Instruction emulation not implemented.");
 			break;
-	    case 0x2:
+		case GUEST_HYPERCALL:
 			hypercall_execution();			
 			break;
 		default:
-			WARNING("Guest exit cause code %d not supported.");
+			WARNING("Guest exit cause code %d not supported.", guestcause);
 			break;
 	}
 	
