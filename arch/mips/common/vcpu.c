@@ -168,10 +168,10 @@ uint32_t InstructionEmulation(uint32_t epc){
 				case	0x1: 
 					switch (func){
 						case WAIT: /* wait */
-							Warning("Wait emulation ignored.");
+							WARNING("Wait emulation ignored.");
 							break;
 						default:
-							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+							WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 							break;
 					}
 					break;
@@ -189,10 +189,10 @@ uint32_t InstructionEmulation(uint32_t epc){
 											flag = 1;
 											break;
 										case 3: /* srsctl */
-											Warning("Write to CP0 SRSCTL ignored");
+											WARNING("Write to CP0 SRSCTL ignored");
 											break;
 										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+											WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 											break;
 									}
 								break;
@@ -204,13 +204,13 @@ uint32_t InstructionEmulation(uint32_t epc){
 											setGTOffset(currentValue);
 											break;
 										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+											WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 											break;
 									}
 								break;
 								
 								default:
-									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+									WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 									break;
 							}
 							break;
@@ -227,7 +227,7 @@ uint32_t InstructionEmulation(uint32_t epc){
 											MoveToPreviousGuestGPR(rt, regvalue);
 											break;
 										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+											WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 											break;
 									}
 									break;
@@ -237,29 +237,29 @@ uint32_t InstructionEmulation(uint32_t epc){
 									break;
 						
 								default:
-									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+									WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 									break;
 							}
 							break;
 						default:
-							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+							WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 							break;
 					}
 					break;
 				default:
-					Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+					WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 					break;
 			}
 			break;
 			/* Cache instructions */
 		case CACHE:
-			Warning("Cache instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
+			WARNING("Cache instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
 			break;
 		default:
-			Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x", badinstr, epc, vcpu_executing->id);
+			WARNING("Instruction 0x%x at 0x%x not supported on VCPU 0x%x", badinstr, epc, vcpu_executing->id);
 			break;
 	}
 
-	return SUCEEDED;
+	return 0;
 }
 

@@ -70,7 +70,7 @@ void read_address(){
 			return;
 		}
 	}
-	Warning("VM %s trying to read a non-allowed memory address.", vm_executing->vm_name);
+	WARNING("VM %s trying to read a non-allowed memory address.", vm_executing->vm_name);
 }
 
 /**
@@ -103,7 +103,7 @@ void write_address(){
 	}
 	
 	MoveToPreviousGuestGPR(REG_V0, HCALL_ADDRESS_NOT_ALLOWED);
-	Warning("VM %s trying to write a non-allowed memory address.", vm_executing->vm_name);
+	WARNING("VM %s trying to write a non-allowed memory address.", vm_executing->vm_name);
 }
 
 

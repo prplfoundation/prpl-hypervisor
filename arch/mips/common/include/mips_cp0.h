@@ -293,7 +293,9 @@
 
 #define PERFORMANCE_COUNTER_INT (1<<31)
 
-#define GUESTEXITEXCEPTION      0x1b
+#define TLB_LOAD_FETCH_EXCEPTION    	0x2
+#define TLB_STORE_EXCEPTION    		0x3
+#define GUEST_EXIT_EXCEPTION   		0x1b
 
 
 #endif 

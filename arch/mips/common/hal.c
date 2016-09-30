@@ -21,15 +21,82 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * @section DESCRIPTION
  * 
  * Functions for access and configuration of the CP0 and Guest CP0. 
- * Supports the M5150 processor core. 
+ * Supports the M5150 processor core and initial hypervisor configuration. 
  */
 
 #include <libc.h>
 #include <types.h>
 #include <hal.h>
-#include <kernel.h>
 #include <globals.h>
 #include <mips_cp0.h>
+
+/* HEAP size as calculated by the linker script. */
+extern _heap_size;
+
+/* Stringfy compiler parameters. */
+#define STR(x) #x
+#define STR_VALUE(x) STR(x)
+
+
+/**
+ * @brief Early boot message. 
+ * 	Print to the stdout usefull hypervisor information.
+ */
+static void print_config(void)
+{
+	printf("\n===========================================================");
+	printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
+	printf("\nCopyright (c) 2016, prpl Foundation");
+	printf("\n===========================================================");
+	printf("\nCPU ID:        %s", CPU_ID);
+	printf("\nARCH:          %s", CPU_ARCH);
+	printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
+	printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
+	printf("\nScheduler      %dms", QUANTUM_SCHEDULER);
+	printf("\nVMs:           %d\n", NVMACHINES);
+}
+
+
+
+/**
+ * @brief C code entry. This is the first C code performed during 
+ * hypervisor initialization. Called from early boot stage to perform 
+ * overall hypervisor configuration. 
+ * 
+ * The hypervisor should never return form this call. The start_timer()
+ * call should configure the system timer and wait by the first 
+ * timer interrupt.
+ * 
+  */
+void hyper_init(){
+	
+	/* Specific board configuration. */
+	early_platform_init();    
+	
+	/* early boot messages with hypervisor configuration. */
+	print_config();
+	
+	/* Processor inicialization */
+	if(LowLevelProcInit()){
+		CRITICAL("Low level processor initialization error.");
+	}
+	
+	/* Configure the HEAP space on the allocator */ 
+	init_mem();
+	
+	/*Initialize VCPUs and virtual machines*/
+	initializeMachines();
+	
+	/* Initialize device drivers */    
+	drivers_initialization();
+	
+	/* Start system timer. Should not return from this call.
+	 *	   This call will wait for the first timer interrupt. */
+	start_timer();
+	
+	/* Should never reach this point !!! */
+	CRITICAL("Hypervisor initialization error.");
+}
 
 
 /**
@@ -106,7 +173,12 @@ int32_t ConfigureGPRShadow(){
     
         /* No virtual shadow registers to guests */
         mtc0(CP0_GUESTCTL3, 6, 0); 
-
+	
+	/* Configure $sp and $gp registers in the hypervisor shadow page. 
+	   The hypervisor will move to the highest shadow page after the first 
+	   interrupt. */
+	hal_config_hyper_gpr_shadow();
+	
     return 0;
 }
 

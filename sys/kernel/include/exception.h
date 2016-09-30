@@ -20,10 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <types.h>
 
-static void print_config(void);
-int32_t hyper_init();
-void context_switching();
-static uint32_t GuestExitException();
+static uint32_t guest_exit_exception();
 void general_exception_handler();
 
 #endif 

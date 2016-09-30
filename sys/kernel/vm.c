@@ -59,7 +59,7 @@ void initializeMachines(void) {
 			create_vm(&VMCONF[i]);
 		}
 	}else{
-		Warning("\nThere is no VM configuration. ");
+		WARNING("There is no VM configuration. ");
 	}
 }
 
@@ -125,7 +125,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	if(vm->os_type == BARE_METAL){
 		entry_point = BARE_METAL_ENTRY_POINT;
 	}else{
-		Warning("\nOS type not defined.");
+		WARNING("OS type not defined.");
 	}
 	
 	/* Set the VM entry Point and scheduler*/

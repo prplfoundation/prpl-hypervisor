@@ -18,6 +18,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _HAL_H_
 #define _HAL_H_
 
+static void print_config(void);
+void hyper_init();
 int32_t isRootMode();
 int32_t hasVZ();
 int32_t ConfigureGPRShadow();

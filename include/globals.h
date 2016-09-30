@@ -22,24 +22,24 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <vcpu.h>
 #include <config.h>
 
-#define CRITICAL(x) printf(x); while(1){};
+#define CRITICAL(X,...) printf("\nCRITICAL: X", ##__VA_ARGS__); wait_for_reset();
 
 #ifdef WARNINGS
-#define Warning(A,...) printf("WARNING: "A"\n",##__VA_ARGS__);
+#define WARNING(X,...) printf("\nWARNING: X", ##__VA_ARGS__);
 #else
-#define Warning(A,...)
+#define WARNING(A,...) do{}while(0);
+#endif
+
+#ifdef ERRORS
+#define ERROR(X,...) printf("\nERROR: X", ##__VA_ARGS__);
+#else
+#define ERROR(X,...) do{}while(0);
 #endif
 
 #ifdef INFOS
-#define Info(A,...) printf(A"\n",##__VA_ARGS__);
+#define INFO(X,...) printf("\nX", ##__VA_ARGS__);
 #else
-#define Info(A,...)
-#endif
-
-#ifdef CRITICALS
-#define Critical(A,...) printf("CRITICAL: "A"\n",##__VA_ARGS__);
-#else
-#define Critical(A,...)
+#define Info(X,...) do{}while(0);
 #endif
 
 extern struct scheduler_info_t scheduler_info;
