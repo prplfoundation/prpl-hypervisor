@@ -178,7 +178,7 @@ virtual_machines group contains the configuration of each VM on the resulting sy
 System group properties description. 
 
 | **Proprierty** | **Type** | **Description** | **Valid Range** |
-| debug | Array of strings | Optional list of defines for output messages for debug purposes. | DEBUG, WARNINGS, INFOS, CRITICALS and VERBOSE.
+| debug | Array of strings | Optional list of defines for output messages for debug purposes. | WARNINGS, INFOS, and ERRORS.
 | platform | Proprierty group | Specific platform information | Not applicable. 
 | platform.cpu | string | Processor's name description. | Any valid string. 
 | platform.platform_str | string | Platform description. | Any valid string. 

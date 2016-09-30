@@ -48,14 +48,14 @@ void get_vm_id(){
  * can be returned if the target VM is not running. 
  */
 void guest_is_up(){
-    vcpu_t* vcpu;
-    uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
-    vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
-    if(!vcpu){
-        MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
-    }else{
-        MoveToPreviousGuestGPR(REG_V0, vcpu->init? MESSAGE_VCPU_NOT_INIT : 1);
-    }
+	vcpu_t* vcpu;
+	uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
+	vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
+	if(!vcpu){
+		MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
+	}else{
+		MoveToPreviousGuestGPR(REG_V0, vcpu->init? MESSAGE_VCPU_NOT_INIT : 1);
+	}
 }
 
 /**
@@ -67,54 +67,54 @@ void guest_is_up(){
  *   v0 = true/false (Succeded/failed)
  */
 void intervm_send_msg(){
-    vcpu_t* vcpu;
+	vcpu_t* vcpu;
     
-    /* Getting parameters from guest */
-    uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
-    char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1); 
-    uint32_t message_size = MoveFromPreviousGuestGPR(REG_A2);
+	/* Getting parameters from guest */
+	uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
+	char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1); 
+	uint32_t message_size = MoveFromPreviousGuestGPR(REG_A2);
                         
-    /* check if the message has acceptable size */
-    if(message_size > MESSAGE_SZ){
-        MoveToPreviousGuestGPR(REG_V0, MESSAGE_TOO_BIG);
-        return;
-    }
+	/* check if the message has acceptable size */
+	if(message_size > MESSAGE_SZ){
+		MoveToPreviousGuestGPR(REG_V0, MESSAGE_TOO_BIG);
+		return;
+	}
                         
-    /* Try to locate the destiny VCPU */
-    vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
+	/* Try to locate the destiny VCPU */
+	vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
 
-     /* destination vcpu not found */
-     if(vcpu == NULL){
-        MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
-        return;
-     }
+	/* destination vcpu not found */
+	if(vcpu == NULL){
+		MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
+		return;
+	}
                         
-     if (vcpu->init){
-        MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_INIT);
-        return;
-     }
+	if (vcpu->init){
+		MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_INIT);
+		return;
+	}
                         
-     /* message queue full */
-     if(vcpu->messages.num_messages == MESSAGELIST_SZ){
-        vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
-        MoveToPreviousGuestGPR(REG_V0, MESSAGE_FULL);
-        return;
-     }     
+	/* message queue full */
+	if(vcpu->messages.num_messages == MESSAGELIST_SZ){
+		vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
+		MoveToPreviousGuestGPR(REG_V0, MESSAGE_FULL);
+		return;
+	}     
      
-     /* copy message to message queue */
-     char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_executing->base_addr, message_size, 0xf, CACHEABLE);
-     memcpy(vcpu->messages.message_list[vcpu->messages.in].message,message_ptr_mapped,message_size);
-     vcpu->messages.message_list[vcpu->messages.in].size = message_size;
-     vcpu->messages.message_list[vcpu->messages.in].source_id = vm_executing->id;
+	/* copy message to message queue */
+	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_executing->base_addr, message_size, 0xf, CACHEABLE);
+	memcpy(vcpu->messages.message_list[vcpu->messages.in].message,message_ptr_mapped,message_size);
+	vcpu->messages.message_list[vcpu->messages.in].size = message_size;
+	vcpu->messages.message_list[vcpu->messages.in].source_id = vm_executing->id;
                         
-     vcpu->messages.num_messages++;
-     vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
+	vcpu->messages.num_messages++;
+	vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
                         
-     /* generate virtual interrupt to guest */
-     vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
+	/* generate virtual interrupt to guest */
+	vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
                                 
-     /* Return success to sender */
-     MoveToPreviousGuestGPR(REG_V0, message_size);
+	/* Return success to sender */
+	MoveToPreviousGuestGPR(REG_V0, message_size);
      
 }
 
@@ -126,31 +126,31 @@ void intervm_send_msg(){
  *   v0 = Message size 
  */
 void intervm_recv_msg(){
-    vcpu_t* vcpu = vcpu_executing;
-    uint32_t messagesz;
+	vcpu_t* vcpu = vcpu_executing;
+	uint32_t messagesz;
 
-    /* No messages in the receiver queue */
-    if(vcpu->messages.num_messages == 0){
-        MoveToPreviousGuestGPR(REG_V0, MESSAGE_EMPTY); 
-        return;
-    }
+	/* No messages in the receiver queue */
+	if(vcpu->messages.num_messages == 0){
+		MoveToPreviousGuestGPR(REG_V0, MESSAGE_EMPTY); 
+		return;
+	}
 
-    /* Getting parameters from guest*/
-    uint32_t source_id  = MoveFromPreviousGuestGPR(REG_A0);
-    char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1);
+	/* Getting parameters from guest*/
+	uint32_t source_id  = MoveFromPreviousGuestGPR(REG_A0);
+	char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1);
 
-    /* Copy the message the receiver */
-    messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
-    char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_executing->base_addr, messagesz, 0xf, CACHEABLE);
-    memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
+	/* Copy the message the receiver */
+	messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
+	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_executing->base_addr, messagesz, 0xf, CACHEABLE);
+	memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
     
-    /* Return the message size to the receiver */
-    MoveToPreviousGuestGPR(REG_V0, messagesz);
-    MoveToPreviousGuestGPR(REG_V1, vcpu->messages.message_list[vcpu->messages.out].source_id); 
+	/* Return the message size to the receiver */
+	MoveToPreviousGuestGPR(REG_V0, messagesz);
+	MoveToPreviousGuestGPR(REG_V1, vcpu->messages.message_list[vcpu->messages.out].source_id); 
                         
-    /* free the message allocation in the message list */
-    vcpu->messages.num_messages--;
-    vcpu->messages.out = (vcpu->messages.out + 1) % MESSAGELIST_SZ;
+	/* free the message allocation in the message list */
+	vcpu->messages.num_messages--;
+	vcpu->messages.out = (vcpu->messages.out + 1) % MESSAGELIST_SZ;
                        
 }
 
@@ -158,27 +158,27 @@ void intervm_recv_msg(){
  * @brief Driver init call.  Registers the hypercalls. 
  */
 void intervm_init(){
-    if (register_hypercall(get_vm_id, HCALL_GET_VM_ID) < 0){
-        printf("\nError registering the HCALL_GET_VM_ID hypercall");
-        return;
-    }
+	if (register_hypercall(get_vm_id, HCALL_GET_VM_ID) < 0){
+		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
+		return;
+	}
     
-    if (register_hypercall(intervm_send_msg, HCALL_IPC_SEND_MSG) < 0){
-        printf("\nError registering the HCALL_IPC_SEND_MSG hypercall");
-        return;
-    }
+	if (register_hypercall(intervm_send_msg, HCALL_IPC_SEND_MSG) < 0){
+		ERROR("Error registering the HCALL_IPC_SEND_MSG hypercall");
+		return;
+	}
 
-    if (register_hypercall(intervm_recv_msg, HCALL_IPC_RECV_MSG) < 0){
-        printf("\nError registering the HCALL_IPC_RECV_MSG hypercall");
-        return;
-    }
+	if (register_hypercall(intervm_recv_msg, HCALL_IPC_RECV_MSG) < 0){
+		ERROR("Error registering the HCALL_IPC_RECV_MSG hypercall");
+		return;
+	}
     
-    if (register_hypercall(guest_is_up, HCALL_GUEST_UP) < 0){
-        printf("\nError registering the HCALL_IPC_RECV_MSG hypercall");
-        return;
-    }
+	if (register_hypercall(guest_is_up, HCALL_GUEST_UP) < 0){
+		ERROR("Error registering the HCALL_IPC_RECV_MSG hypercall");
+		return;
+	}
     
-    printf("\nInter-VM comunication hypercalls registered.");
+	INFO("Inter-VM comunication hypercalls registered.");
 }
 
 driver_init(intervm_init);

@@ -44,16 +44,16 @@ extern _heap_size;
  */
 static void print_config(void)
 {
-	printf("\n===========================================================");
-	printf("\nprplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
-	printf("\nCopyright (c) 2016, prpl Foundation");
-	printf("\n===========================================================");
-	printf("\nCPU ID:        %s", CPU_ID);
-	printf("\nARCH:          %s", CPU_ARCH);
-	printf("\nSYSCLK:        %dMHz", CPU_SPEED/1000000);
-	printf("\nHeap Size:     %dKbytes", (int)(&_heap_size)/1024);
-	printf("\nScheduler      %dms", QUANTUM_SCHEDULER);
-	printf("\nVMs:           %d\n", NVMACHINES);
+	INFO("===========================================================");
+	INFO("prplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
+	INFO("Copyright (c) 2016, prpl Foundation");
+	INFO("===========================================================");
+	INFO("CPU ID:        %s", CPU_ID);
+	INFO("ARCH:          %s", CPU_ARCH);
+	INFO("SYSCLK:        %dMHz", CPU_SPEED/1000000);
+	INFO("Heap Size:     %dKbytes", (int)(&_heap_size)/1024);
+	INFO("Scheduler      %dms", QUANTUM_SCHEDULER);
+	INFO("VMs:           %d\n", NVMACHINES);
 }
 
 
@@ -578,7 +578,7 @@ uint32_t MoveFromPreviousGuestGPR(uint32_t reg){
 		case 31: asm volatile ("rdpgpr %[temp], $31": [temp] "=r"(temp) :);
 			break;
 		default:
-			debugs("Register not found.\n");
+			WARNING("Register not found.\n");
 			break;
 	}
 	
@@ -657,7 +657,7 @@ void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value){
 		case 31: asm volatile ("wrpgpr $31, %[temp]": : [temp] "r"(temp) );
 			break;
 		default:
-			debugs("Register not found.\n");
+			WARNING("Register not found.\n");
 			break;
 	}
 }

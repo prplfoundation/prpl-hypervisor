@@ -18,17 +18,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _LIBC_H_
 #define _LIBC_H_
 
-#include "config.h"
-#include "types.h"
+#include <config.h>
+#include <types.h>
 
 #define min(a,b)		((a)<(b)?(a):(b))
 #define max(a,b)        ((a)>(b)?(a):(b))
-
-#ifdef DEBUG
-#define debugs(x) printf("MUSTANG: %s\n", (x));
-#else
-#define debugs(x)
-#endif
 
 void *memset(void *dst, int c, unsigned long bytes);
 void *memcpy(void *dst, const void *src, unsigned long bytes);

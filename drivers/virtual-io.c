@@ -115,12 +115,12 @@ void virtual_io_init(){
 	vcpu_t *vcpu;
 	
 	if (register_hypercall(write_address, HCALL_WRITE_ADDRESS) < 0){
-		printf("\nError registering the HCALL_GET_VM_ID hypercall");
+		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
 		return;
 	}
     
 	if (register_hypercall(read_address, HCALL_READ_ADDRESS) < 0){
-		printf("\nError registering the HCALL_GET_VM_ID hypercall");
+		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
 		return;
 	}
     
