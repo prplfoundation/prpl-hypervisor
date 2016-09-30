@@ -18,6 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <network.h>
 #include <libc.h>
+#include <hypercalls.h>
 
 static struct message_list_t message_list;
 
@@ -60,7 +61,7 @@ int ReceiveMessage(int *source, char *message, int bufsz, int block){
 }
 
 int SendMessage(unsigned target_id, void* message, unsigned size){
-        return hyp_ipc_send_message(target_id, message, size);
+	return ipc_send(target_id, message, size);
 }
 
 
@@ -73,7 +74,7 @@ void irq_network(){
         in = message_list.in;
 
         while(ret && message_list.num_messages < MESSAGELIST_SZ){
-                ret = message_list.messages[in].size = hyp_ipc_receive_message(&message_list.messages[in].source_id, message_list.messages[in].message);
+		ret = message_list.messages[in].size = ipc_recv(&message_list.messages[in].source_id, message_list.messages[in].message);
                 if(ret==MESSAGE_EMPTY){
                     return;
                 }

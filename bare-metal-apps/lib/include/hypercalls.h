@@ -29,7 +29,6 @@ move	%0, $v0" \
 : "=r" (__value) :  "r" ((uint32_t) (&addr)), "I" (HCALL_READ_ADDRESS): "a0", "v0");               \
 __value; })
 
-
 /* Write to privileged address */
 #define write(reg, value) asm volatile (                    \
 "move $a0, %z0 \n \
@@ -37,8 +36,27 @@ __value; })
  hypcall %2" \
  : : "r" ((uint32_t) (&reg)), "r" ((uint32_t) (value)), "I" (HCALL_WRITE_ADDRESS) : "a0", "a1")
 
-
-
-
+/* interVM send message  */
+#define ipc_send(targed_id, msg, size) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ move $a2, %z3 \n \
+ hypcall %4 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (target_id)), "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (HCALL_IPC_SEND_MSG) : "a0", "a1", "a2", "v0"); \
+ __ret; })
+ 
+ /* interVM send message  */
+#define ipc_recv(source_id, msg) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z2 \n\
+ hypcall %3 \n\
+ sw $a0, 0(%z1)\n \
+ move %0, $v0 " \
+ : "=r" (__ret) : "r" ((uint32_t) (source_id)), "r" ((uint32_t) (msg)), "I" (HCALL_IPC_RECV_MSG) : "a0", "v0"); \
+ __ret; })
+ 
+  
 #endif
 
