@@ -121,9 +121,9 @@ void intervm_send_msg(){
 /**
  * @brief Receive a message. 
  * Calling convention (guest registers): 
- *   a0 = Process ID
- *   a1 = Target message pointer 
- *   v0 = Message size 
+ *   Input: 	a0 = Destination buffer.
+ *   Output: 	v0 = Message size. 
+ *   		a0 = Source ID.
  */
 void intervm_recv_msg(){
 	vcpu_t* vcpu = vcpu_executing;
@@ -136,8 +136,7 @@ void intervm_recv_msg(){
 	}
 
 	/* Getting parameters from guest*/
-	uint32_t source_id  = MoveFromPreviousGuestGPR(REG_A0);
-	char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A1);
+	char* message_ptr = (char*)MoveFromPreviousGuestGPR(REG_A0);
 
 	/* Copy the message the receiver */
 	messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
@@ -146,7 +145,7 @@ void intervm_recv_msg(){
     
 	/* Return the message size to the receiver */
 	MoveToPreviousGuestGPR(REG_V0, messagesz);
-	MoveToPreviousGuestGPR(REG_V1, vcpu->messages.message_list[vcpu->messages.out].source_id); 
+	MoveToPreviousGuestGPR(REG_A0, vcpu->messages.message_list[vcpu->messages.out].source_id); 
                         
 	/* free the message allocation in the message list */
 	vcpu->messages.num_messages--;

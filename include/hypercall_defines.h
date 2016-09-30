@@ -37,9 +37,10 @@ typedef void hypercall_t();
 #define HCALL_GET_VM_ID 0
 
 /* RECEIVE MESSAGE 
- *   a0 = Process ID
- *   a1 = Target message pointer 
- *   v0 = Message size */
+ *   Input: 	a0 = Destination buffer.
+ *   Output: 	v0 = Message size. 
+ *   		a0 = Source ID.
+ */
 #define HCALL_IPC_RECV_MSG  1
 
 /* SEND MESSAGE 
