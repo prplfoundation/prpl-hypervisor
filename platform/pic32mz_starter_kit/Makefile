@@ -131,8 +131,9 @@ clean: config_vms
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
-	rm -f include/vms.info
+	rm -rf include
 	rm -f genconf
+	
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean \
 	;done

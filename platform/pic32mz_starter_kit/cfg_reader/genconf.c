@@ -29,6 +29,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libconfig.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 #if (LIBCONFIG_VER_MAJOR <= 1 && LIBCONFIG_VER_MINOR < 5)
 #define config_setting_lookup config_lookup_from
@@ -38,6 +39,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define LARGESTR 1024
 #define VMS_INFO_FILE "include/vms.info"
 #define OUTFILE "include/config.h"
+#define INCLUDE_DIR "include"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
 #define SYSTEM_COMMENT "/* Hypervisor kernel configuration and board info */\n"
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
@@ -815,6 +817,7 @@ int main(int argc, char **argv)
 	char app_list[STRSZ];
 	int vm_count;
 	char* vms_info;
+	struct stat st = {0};
     
 	if (argc<2){
 		fprintf(stderr, "Usage: %s <config file path>\n", argv[0]);
@@ -832,6 +835,10 @@ int main(int argc, char **argv)
 		return(EXIT_FAILURE);
 	}
     
+	if (stat(INCLUDE_DIR, &st) == -1) {
+		mkdir(INCLUDE_DIR, 0700);
+	}
+	
 	/* output file (config.h) */
 	if(NULL == (outfile = fopen(OUTFILE, "w"))){
 		fprintf(stderr, "Error creating %s file.", OUTFILE);
