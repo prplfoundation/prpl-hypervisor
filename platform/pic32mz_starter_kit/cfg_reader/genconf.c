@@ -604,7 +604,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		/* fast_interrupts array  */
 		config_setting_t * fast_int_setting = config_setting_lookup(vm_conf, "fast_interrupts");
 		if(fast_int_setting){
-			int int_sz = config_setting_length(device_mapping_setting);
+			int int_sz = config_setting_length(fast_int_setting);
 			int i;
 			/* get fast_int_sz */
 			snprintf(str, STRSZ, "\t\tfast_int_sz: %d,\n", int_sz);
@@ -857,14 +857,14 @@ int main(int argc, char **argv)
 		fclose(outfile);
 		return(EXIT_FAILURE);
 	}
-    
+	
 	vms_info = (char*)malloc(LARGESTR);
 	if (gen_conf_vms(cfg, outfile, app_list, &vm_count, vms_info)){
 		config_destroy(&cfg);
 		fclose(outfile);
 		return(EXIT_FAILURE);
 	}
-    
+
 	if(write_str_to_file(vms_info, VMS_INFO_FILE)){
 		config_destroy(&cfg);
 		fclose(outfile);
@@ -886,7 +886,6 @@ int main(int argc, char **argv)
 	}
     
 	printf("%s\n", app_list);
-     
     
 	fclose(outfile);
 	config_destroy(&cfg);
