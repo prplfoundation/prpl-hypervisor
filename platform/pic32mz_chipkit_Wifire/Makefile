@@ -14,15 +14,14 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = ../samples_cfg/sample-2VMs.cfg
+CFG_FILE = ../samples_cfg/sample-1VM.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
 # Optional Device Drivers
-CONFIG_INTERVMCOMM = yes
-CONFIG_PIC32MZ_USB = yes
-CONFIG_PIC32MZ_ETHERNET = yes
+CONFIG_INTERVM_COMM = no
+CONFIG_PIC32MZ_USB = no
 CONFIG_VIRTUAL_IO = yes
 
 ########################################################################################################
@@ -36,11 +35,11 @@ SHELL := /bin/bash
 # Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
 BAUDRATE=115200
 F_CLK=200000000
-SERIAL_DEV=/dev/ttyACM0
+SERIAL_DEV=/dev/ttyUSB0
 
 TOPDIR=../../
 
-PLATFORM_DIR=platform/pic32mz_starter_kit/
+PLATFORM_DIR=platform/pic32mz_chipkit_Wifire/
 
 VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 
@@ -64,7 +63,7 @@ INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz/include \
            -I$(TOPDIR)arch/mips/common/include \
            -I$(TOPDIR)sys/lib/include \
            -I$(TOPDIR)sys/kernel/include \
-           -I$(TOPDIR)platform/pic32mz_starter_kit/include \
+           -I$(TOPDIR)platform/pic32mz_chipkit_Wifire/include \
            -I$(TOPDIR)/include
 
 BUILDDIR=build/hypervisor
@@ -88,10 +87,6 @@ include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
 include board/board.mk
 include $(TOPDIR)/drivers/drivers.mk
 
-ifeq ($(CONFIG_PIC32MZ_ETHERNET),yes)
-    OBJ = ../../bin/pic32mz-ethernet.o
-endif
-    
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o $(OBJ)
@@ -107,6 +102,10 @@ serial:
 
 load: serial
 	../../bin/pic32prog -S -d ${SERIAL_DEV} firmware.hex
+	
+debug: serial
+	cat ${SERIAL_DEVICE}
+	
 
 bare_apps:
 	for i in $(APP_LIST) ; do \
