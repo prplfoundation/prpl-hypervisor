@@ -45,10 +45,10 @@ TOPDIR=../../
 
 INC_DIRS += -I$(TOPDIR)/lib/include \
             -I$(TOPDIR)../include \
-           -I$(TOPDIR)arch/mips/pic32mz_starter_kit/include/
+           -I$(TOPDIR)arch/mips/pic32mz/include/
 
 include $(TOPDIR)lib/lib.mk
-include $(TOPDIR)arch/mips/pic32mz_starter_kit/hal.mk
+include $(TOPDIR)arch/mips/pic32mz/hal.mk
 
            
 #Configure CROSS COMPILER
@@ -86,7 +86,7 @@ $(APP):
 	$(SIZE) $(APP).elf
 
 conf_liker:
-	cp $(TOPDIR)arch/mips/pic32mz_starter_kit/pic32mz.ld .
+	cp $(TOPDIR)arch/mips/pic32mz/pic32mz.ld .
 	sed -i -e 's/FLASH_SIZE/$(FLASH_SIZE)/' pic32mz.ld
 	sed -i -e 's/RAM_SIZE/$(RAM_SIZE)/' pic32mz.ld
 	sed -i -e 's/STACK_SIZE/$(STACK_SIZE)/' pic32mz.ld
