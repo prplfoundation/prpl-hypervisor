@@ -128,9 +128,7 @@ typedef struct vcpu_t {
 }vcpu_t;
 
 typedef struct {
-  //unsigned int id;
   unsigned int lastTime;
-//  irq_handler_t irq_handlers[8];     
   vcpu_t *curr_vcpu;
 } processor_t;
 

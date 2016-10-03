@@ -26,7 +26,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <vcpu.h> 
 #include <types.h>
 #include <libc.h>
-#include <rw_regs.h>
 #include <globals.h>
 #include <hal.h>
 #include <mips_cp0.h>
