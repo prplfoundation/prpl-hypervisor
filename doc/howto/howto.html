@@ -48,8 +48,9 @@ pre {
     <UL>
     <LI><A HREF="#toc14">7.1. Overall API available to VMs</A>
     <LI><A HREF="#toc15">7.2. UART access</A>
+    <LI><A HREF="#toc16">7.3. Virtualized I/O</A>
     </UL>
-  <LI><A HREF="#toc16">Considerations</A>
+  <LI><A HREF="#toc17">Considerations</A>
   </OL>
 
 <P></P>
@@ -311,7 +312,7 @@ Example of a valid system configuration.
 
 <PRE>
   system = {
-      debug =  [ "DEBUG", "WARNINGS", "INFOS", "CRITICALS", "VERBOSE"];
+      debug =  [ "WARNINGS", "INFOS", "ERRORS"];
       platform = { 
           cpu = "M5150";
           platform_str = "Microchip Starter Kit";
@@ -319,8 +320,6 @@ Example of a valid system configuration.
       };
       uart_speed = 115200;
       scheduler_quantum_ms = 1;
-      heap_size_bytes = 0x8000;
-      heap_address = 0x80002000;
   }; 
 </PRE>
 
@@ -369,6 +368,12 @@ virtual_machines group proprierties description.
 <TD>IRQ_ETH</TD>
 </TR>
 <TR>
+<TD>device_mapping</TD>
+<TD>Array of strings</TD>
+<TD>List of associated devices for virtualized I/O.</TD>
+<TD>PORTA through PORTK, UART1 through UART6, SPI1 through SPI1 through SP16, PM and AD1.</TD>
+</TR>
+<TR>
 <TD>memory_maps</TD>
 <TD>Array of proprierties.</TD>
 <TD>Indicate the VM's memory mapping.</TD>
@@ -400,22 +405,19 @@ mapping for peripheral access.
   	os_type = "BARE_METAL";
           RAM_size_bytes = "MEM_SIZE_32KB";
           flash_size_bytes = "MEM_SIZE_64KB";
-          memory_maps = ({ /* Two 4K page mapping for peripheral access. */
-                  base_addr = 0xbf822000;
-                  page_size = "MEM_SIZE_4KB";
-              },
-              {
-                  base_addr = 0xbf860000;
-                  page_size = "MEM_SIZE_4KB";
-              })
+          device_mapping = [ "PORTH", "UART2"];
       },
       { 
           app_name = "pong";
           os_type = "BARE_METAL";
           RAM_size_bytes = "MEM_SIZE_32KB";
           flash_size_bytes = "MEM_SIZE_32KB";
-          memory_maps = ({ /* One 4K page mapping for peripheral access. */
+          memory_maps = ({ /* Two 4K page mapping for direct peripheral access. */
                   base_addr = 0xbf822000;
+                  page_size = "MEM_SIZE_4KB";
+              },
+              {
+                  base_addr = 0xbf860000;
                   page_size = "MEM_SIZE_4KB";
               })
       }
@@ -537,10 +539,26 @@ I/O calls, like printf() or getchar() will assume by default the UART2 port (J11
 </PRE>
 
 <P>
-Use the defined parameters UART2 and UART6 to select each one of the UARTS. 
+Use the defined parameters UART2 and UART6 to select each one of the UARTs. If the guest if configured with the proprierty device_mapping the UART access is throught virtualized I/O. Otherwise, it is needed 
+to mapped a memory area using memory_maps proprierty for directy memory access. 
 </P>
 
 <A NAME="toc16"></A>
+<H2>7.3. Virtualized I/O</H2>
+
+<P>
+For a complete guest memory space separation use the proprierty device_mapping to describe which peripherals the guest can access through virtualized I/O. On the guest, use read()/write() calls for peripheral acess.
+For example:
+</P>
+
+<PRE>
+  uint32_t v;
+  write(TRISHCLR, 1);
+      
+  v = read(LATD);
+</PRE>
+
+<A NAME="toc17"></A>
 <H1>8. Considerations</H1>
 
 <UL>
