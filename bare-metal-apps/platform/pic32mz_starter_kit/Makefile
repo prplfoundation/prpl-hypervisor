@@ -17,10 +17,6 @@ all: conf_liker lib hal app $(APP)
 
 include ../../apps/$(APP)/app.mk
 
-######################################################################################
-# SHOULD NOT BE NECESSARY TO MODIFY THINGS FROM THIS POINT.                          #       
-######################################################################################
-
 ifndef CLEAN
     ifndef CROSS_COMPILER
         $(error  CROSS_COMPILER not defined)
