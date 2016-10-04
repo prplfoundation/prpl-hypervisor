@@ -15,39 +15,20 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample using virtualized IO. */
+/**
+ * @file guest_interrupts.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * Interrupt values for bare-metal applications.
+ */
 
-#include <arch.h>
-#include <libc.h>
-#include <hypercalls.h>
-#include <guest_interrupts.h>
+#ifndef __GUEST_INTERRUPTS_H
+#define __GUEST_INTERRUPTS_H
 
+#define GUEST_TIMER_INT		1
+#define GUEST_INTERVM_INT	3
+#define GUEST_USB_INT		5
 
-volatile int32_t t2 = 0;
-
-
-void irq_timer(){
-    t2++;
-}
-
-int main() {
-    /* Pin RH0 as ouput (LED 1)*/
-    uint32_t a;
-    
-    interrupt_register(irq_timer, GUEST_TIMER_INT);
-    
-    write(TRISHCLR, 1);
-    
-    while (1){
-        printf("\nBlink red LED! Total of %d timer ticks.", t2);
-        
-	/* Blink Led */
-	write(LATHINV, 1);
-	
-        /* 1 second delay */
-        udelay(1000000);
-   }
-    
-    return 0;
-}
+#endif
 

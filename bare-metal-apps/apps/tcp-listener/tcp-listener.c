@@ -41,6 +41,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <arch.h>
 #include <libc.h>
 #include <eth.h>
+#include <guest_interrupts.h>
 
 #include "pico_defines.h"
 #include "pico_stack.h"
@@ -178,6 +179,8 @@ int main()
     const char *ipaddr="192.168.0.2";
     uint16_t port_be = 0;
     int i = 0;
+    
+    interrupt_register(irq_timer, GUEST_TIMER_INT);
   
     /* Select output serial 2 = UART2, 6 = UART6 */
     serial_select(UART2);

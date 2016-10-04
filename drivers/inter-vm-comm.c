@@ -32,6 +32,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <driver.h>
 #include <hypercall_defines.h>
 #include <mips_cp0.h>
+#include <guest_interrupts.h>
 
 
 /**
@@ -96,7 +97,7 @@ void intervm_send_msg(){
                         
 	/* message queue full */
 	if(vcpu->messages.num_messages == MESSAGELIST_SZ){
-		vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
+		vcpu->guestclt2 |= (GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT);
 		MoveToPreviousGuestGPR(REG_V0, MESSAGE_FULL);
 		return;
 	}     
@@ -111,7 +112,7 @@ void intervm_send_msg(){
 	vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
                         
 	/* generate virtual interrupt to guest */
-	vcpu->guestclt2 |= (5<<GUESTCLT2_GRIPL_SHIFT);
+	vcpu->guestclt2 |= (GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT);
                                 
 	/* Return success to sender */
 	MoveToPreviousGuestGPR(REG_V0, message_size);

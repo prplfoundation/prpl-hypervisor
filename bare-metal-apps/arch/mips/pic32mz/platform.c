@@ -17,52 +17,75 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <arch.h>
 #include <types.h>
+#include <guest_interrupts.h>
+#include <malloc.h>
 
+#define NUM_GUEST_INTERRUPTS 8
 
-#define TIMER 1 
-#define NETWORK 2
-#define USB  4
+typedef void interrupt_handler_t();
 
-/* interrupts inserted by the hypervisor */
+static interrupt_handler_t * interrupt_handlers[NUM_GUEST_INTERRUPTS] = {NULL};
+
+/**
+ * @brief Interrupt registration. 
+ *   	Register interruts rotines. The valid interrupt numbers are
+ *   	in the guest_interrupts.h file. 
+ */
+uint32_t interrupt_register(interrupt_handler_t *handler, uint32_t interrupt){
+	if (interrupt > NUM_GUEST_INTERRUPTS){
+		return 0;
+	}
+	
+	if (interrupt_handlers[interrupt] != NULL){
+		return 0;
+	}
+	
+	interrupt_handlers[interrupt] = handler;
+	
+	return (uint32_t)handler;
+}
+
+/**
+ * @brief General exception routne.
+ *   All interrupts or exceptions invoke this routine. Call the 
+ *   function handler corresponding to the RIPL field.
+ */
 void _irq_handler(uint32_t status, uint32_t cause)
 {
-    /* extract ripl field */
-    uint32_t ripl = (cause & 0x3FC00) >> 10 >> 1;
+	/* extract RIPL field */
+	uint32_t ripl = (cause & 0x3FC00) >> 10;
     
-    if (ripl & TIMER){
-        irq_timer();
-    }
-    
-    if (ripl & NETWORK){
-        irq_network();
-    }
-    
-    if (ripl & USB){
-        irq_usb();
-    }
-   
+	if (interrupt_handlers[ripl]){
+		((interrupt_handler_t*)interrupt_handlers[ripl])();
+	}
 }
 
 
+/**
+ * @brief Processor configuration. Called early during the initilization. 
+ * 
+ */
 void init_proc(){
-    unsigned int temp_CP0;
+	unsigned int temp_CP0;
 
-   /* configure the interrupt controller to compatibility mode */
-    asm volatile("di");         /* Disable all interrupts */
-    mtc0 (CP0_EBASE, 1, 0x9d000000);    /* Set an EBase value of 0x9D000000 */
-    temp_CP0 = mfc0(CP0_CAUSE, 0);      /* Get Cause */
-    temp_CP0 |= CAUSE_IV;           /* Set Cause IV */
-    mtc0(CP0_CAUSE, 0, temp_CP0);       /* Update Cause */
+	/* configure the interrupt controller to compatibility mode */
+	asm volatile("di");         		/* Disable all interrupts */
+	mtc0 (CP0_EBASE, 1, 0x9d000000);    	/* Set an EBase value of 0x9D000000 */
+	temp_CP0 = mfc0(CP0_CAUSE, 0);      	/* Get Cause */
+	temp_CP0 |= CAUSE_IV;           	/* Set Cause IV */
+	mtc0(CP0_CAUSE, 0, temp_CP0);       	/* Update Cause */
  
-    temp_CP0 = mfc0(CP0_STATUS, 0);     /* Get Status */
-    temp_CP0 &= ~STATUS_BEV;        /* Clear Status BEV */
-    mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
+	temp_CP0 = mfc0(CP0_STATUS, 0);     	/* Get Status */
+	temp_CP0 &= ~STATUS_BEV;        	/* Clear Status BEV */
+	mtc0(CP0_STATUS, 0, temp_CP0);      	/* Update Status */
     
-    temp_CP0 = mfc0(12,1); /* intCTL IV must be different of 0 to allow EIC mode. */
-    temp_CP0 |= 8<<5;
-    mtc0(12, 1, temp_CP0);
+	temp_CP0 = mfc0(CP0_INTCTL,1); 			/* configure intCTL IV */
+	temp_CP0 |= 8<<INTCTL_VS_SHIFT;
+	mtc0(CP0_INTCTL, 1, temp_CP0);
+    
+	memset(interrupt_handlers, NULL, sizeof(interrupt_handlers));
 
-    asm volatile ("ei");
+	asm volatile ("ei");
     
 }
 

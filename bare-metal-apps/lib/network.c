@@ -19,13 +19,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <network.h>
 #include <libc.h>
 #include <hypercalls.h>
+#include <guest_interrupts.h>
 
 static struct message_list_t message_list;
-
-void init_network(){
-       memset((void *)&message_list, 0, sizeof(message_list));
-}
-
 
 int ReceiveMessage(int *source, char *message, int bufsz, int block){
         unsigned int size, out;
@@ -107,4 +103,8 @@ void print_net_error(int32_t error){
         }
 }
 
+void init_network(){
+	interrupt_register(irq_network, GUEST_INTERVM_INT);
+	memset((void *)&message_list, 0, sizeof(message_list));
+}
 
