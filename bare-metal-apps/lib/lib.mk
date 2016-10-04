@@ -1,9 +1,8 @@
 
 lib:
-	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        $(TOPDIR)lib/libc.c \
-	        $(TOPDIR)lib/malloc.c \
-	        $(TOPDIR)lib/network.c \
-	        $(TOPDIR)lib/usb_lib.c
+	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)lib/libc.c -o $(TOPDIR)apps/$(APP)/libc.o
+	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)lib/malloc.c -o $(TOPDIR)apps/$(APP)/malloc.o
+	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)lib/network.c -o $(TOPDIR)apps/$(APP)/network.o
+	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)lib/usb_lib.c -o $(TOPDIR)apps/$(APP)/usb_lib.o
 
 
