@@ -240,7 +240,7 @@ void *realloc(void *ptr, uint32_t size){
 
 void init_mem()
 {
-	krnl_heap =  ((uint32_t)(&_heap_start) + 8) & 0xFFFFFFFC;
+	krnl_heap =  (struct mem_block *)(((uint32_t)(&_heap_start) + 8) & 0xFFFFFFFC);
 	uint32_t len = ((uint32_t)(&_heap_size) -8) & 0xFFFFFFFC;
 	
 	struct mem_block *p = (struct mem_block *)krnl_heap;
