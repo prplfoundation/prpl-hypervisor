@@ -27,8 +27,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define __GUEST_INTERRUPTS_H
 
 #define GUEST_TIMER_INT		1
-#define GUEST_INTERVM_INT	3
-#define GUEST_USB_INT		5
+#define GUEST_INTERVM_INT	2
+#define GUEST_USB_INT		4
+#define GUEST_ETH_INT		8
 
 #endif
 

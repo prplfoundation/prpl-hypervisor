@@ -20,11 +20,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <guest_interrupts.h>
 #include <malloc.h>
 
-#define NUM_GUEST_INTERRUPTS 8
+#define NUM_GUEST_INTERRUPTS 10
 
 typedef void interrupt_handler_t();
 
-static interrupt_handler_t * interrupt_handlers[NUM_GUEST_INTERRUPTS] = {NULL};
+static interrupt_handler_t * interrupt_handlers[NUM_GUEST_INTERRUPTS] = {[0 ... NUM_GUEST_INTERRUPTS-1] = NULL};
 
 /**
  * @brief Interrupt registration. 
@@ -32,17 +32,18 @@ static interrupt_handler_t * interrupt_handlers[NUM_GUEST_INTERRUPTS] = {NULL};
  *   	in the guest_interrupts.h file. 
  */
 uint32_t interrupt_register(interrupt_handler_t *handler, uint32_t interrupt){
-	if (interrupt > NUM_GUEST_INTERRUPTS){
-		return 0;
+	uint32_t i;
+	
+	for(i=0; i<NUM_GUEST_INTERRUPTS; i++){
+		if(interrupt & (1<<i)){
+			if (interrupt_handlers[i] == NULL){
+				interrupt_handlers[i] = handler;
+				return (uint32_t)handler;
+			}
+		}
 	}
-	
-	if (interrupt_handlers[interrupt] != NULL){
-		return 0;
-	}
-	
-	interrupt_handlers[interrupt] = handler;
-	
-	return (uint32_t)handler;
+		
+	return 0;
 }
 
 /**
@@ -50,14 +51,21 @@ uint32_t interrupt_register(interrupt_handler_t *handler, uint32_t interrupt){
  *   All interrupts or exceptions invoke this routine. Call the 
  *   function handler corresponding to the RIPL field.
  */
-void _irq_handler(uint32_t status, uint32_t cause)
-{
+void _irq_handler(uint32_t status, uint32_t cause){
+	uint32_t i = 0;
+	
 	/* extract RIPL field */
 	uint32_t ripl = (cause & 0x3FC00) >> 10;
     
-	if (interrupt_handlers[ripl]){
-		((interrupt_handler_t*)interrupt_handlers[ripl])();
-	}
+	do{
+		if(ripl & 1){
+			if (interrupt_handlers[i]){
+				((interrupt_handler_t*)interrupt_handlers[i])();
+			}
+		}
+		i++;
+		ripl >>= 1;
+	}while(ripl);
 }
 
 
