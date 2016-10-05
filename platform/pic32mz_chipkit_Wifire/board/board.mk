@@ -1,3 +1,4 @@
+#
 #Copyright (c) 2016, prpl Foundation
 #
 #Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
@@ -12,21 +13,7 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-
-# Define your additional include paths
-#INC_DIRS = 
-
-#Aditional C flags
-CFLAGS = -DVIRTUALIZED_IO
-
-#Aditional Libraries
-#LIBS=
-
-#default stack size 512 bytes
-STACK_SIZE = 512
-
-#Include your additional mk files here. 
-
-app:
-	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/$(APP).c -o $(TOPDIR)apps/$(APP)/$(APP).o
-
+platform:
+	$(CC) $(CFLAGS) $(INC_DIRS) \
+		board/uart.c \
+		board/board.c

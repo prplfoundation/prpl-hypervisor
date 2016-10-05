@@ -18,7 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef USB_LIB_H
 #define USB_LIB_H
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
 
 

@@ -15,8 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
+#include <hypercalls.h>
 
 extern void putchar(int32_t value);
 extern uint32_t getchar(void);
@@ -529,13 +530,23 @@ void udelay(uint32_t usec){
 }
 
 void putchar(int32_t value){
+#ifdef VIRTUALIZED_IO
     if (serial_port == UART2){
-        while(U2STA & USTA_UTXBF);
-        U2TXREG = value;    
+        while(read(U2STA) & USTA_UTXBF);
+        write(U2TXREG, value);    
     }else if (serial_port == UART6){
-        while(U6STA & USTA_UTXBF);
-        U6TXREG = value;    
+        while(read(U6STA) & USTA_UTXBF);
+        write(U6TXREG, value);    
     }
+#else
+	if (serial_port == UART2){
+		while(U2STA & USTA_UTXBF);
+		U2TXREG = value;    
+	}else if (serial_port == UART6){
+		while(U6STA & USTA_UTXBF);
+		U6TXREG = value;    
+	}
+#endif	
 }
 
 int32_t kbhit(void){

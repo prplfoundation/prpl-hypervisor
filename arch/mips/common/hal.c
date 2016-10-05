@@ -21,15 +21,82 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * @section DESCRIPTION
  * 
  * Functions for access and configuration of the CP0 and Guest CP0. 
- * Supports the M5150 processor core. 
+ * Supports the M5150 processor core and initial hypervisor configuration. 
  */
 
 #include <libc.h>
 #include <types.h>
 #include <hal.h>
-#include <kernel.h>
 #include <globals.h>
 #include <mips_cp0.h>
+
+/* HEAP size as calculated by the linker script. */
+extern _heap_size;
+
+/* Stringfy compiler parameters. */
+#define STR(x) #x
+#define STR_VALUE(x) STR(x)
+
+
+/**
+ * @brief Early boot message. 
+ * 	Print to the stdout usefull hypervisor information.
+ */
+static void print_config(void)
+{
+	INFO("===========================================================");
+	INFO("prplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
+	INFO("Copyright (c) 2016, prpl Foundation");
+	INFO("===========================================================");
+	INFO("CPU ID:        %s", CPU_ID);
+	INFO("ARCH:          %s", CPU_ARCH);
+	INFO("SYSCLK:        %dMHz", CPU_SPEED/1000000);
+	INFO("Heap Size:     %dKbytes", (int)(&_heap_size)/1024);
+	INFO("Scheduler      %dms", QUANTUM_SCHEDULER);
+	INFO("VMs:           %d\n", NVMACHINES);
+}
+
+
+
+/**
+ * @brief C code entry. This is the first C code performed during 
+ * hypervisor initialization. Called from early boot stage to perform 
+ * overall hypervisor configuration. 
+ * 
+ * The hypervisor should never return form this call. The start_timer()
+ * call should configure the system timer and wait by the first 
+ * timer interrupt.
+ * 
+  */
+void hyper_init(){
+	
+	/* Specific board configuration. */
+	early_platform_init();    
+	
+	/* early boot messages with hypervisor configuration. */
+	print_config();
+	
+	/* Processor inicialization */
+	if(LowLevelProcInit()){
+		CRITICAL("Low level processor initialization error.");
+	}
+	
+	/* Configure the HEAP space on the allocator */ 
+	init_mem();
+	
+	/*Initialize VCPUs and virtual machines*/
+	initializeMachines();
+	
+	/* Initialize device drivers */    
+	drivers_initialization();
+	
+	/* Start system timer. Should not return from this call.
+	 *	   This call will wait for the first timer interrupt. */
+	start_timer();
+	
+	/* Should never reach this point !!! */
+	CRITICAL("Hypervisor initialization error.");
+}
 
 
 /**
@@ -106,7 +173,12 @@ int32_t ConfigureGPRShadow(){
     
         /* No virtual shadow registers to guests */
         mtc0(CP0_GUESTCTL3, 6, 0); 
-
+	
+	/* Configure $sp and $gp registers in the hypervisor shadow page. 
+	   The hypervisor will move to the highest shadow page after the first 
+	   interrupt. */
+	hal_config_hyper_gpr_shadow();
+	
     return 0;
 }
 
@@ -431,165 +503,6 @@ int32_t isEnteringGuestMode(){
 uint32_t getBadVAddress(){
 	return mfc0(CP0_BADVADDR, 0);
 }
-
-
-/**
- * @brief Read Reg from preview GPR Shadow .
- * @return GPR value. 
- */
-uint32_t MoveFromPreviousGuestGPR(uint32_t reg){
-	uint32_t temp;
-	
-	switch(reg){
-		case 0: asm volatile ("rdpgpr %[temp], $0": [temp] "=r"(temp) :);
-			break;
-		case 1: asm volatile ("rdpgpr %[temp], $1": [temp] "=r"(temp) :);
-			break;
-		case 2: asm volatile ("rdpgpr %[temp], $2": [temp] "=r"(temp) :);
-			break;
-		case 3: asm volatile ("rdpgpr %[temp], $3": [temp] "=r"(temp) :);
-			break;
-		case 4: asm volatile ("rdpgpr %[temp], $4": [temp] "=r"(temp) :);
-			break;
-		case 5: asm volatile ("rdpgpr %[temp], $5": [temp] "=r"(temp) :);
-			break;
-		case 6: asm volatile ("rdpgpr %[temp], $6": [temp] "=r"(temp) :);
-			break;
-		case 7: asm volatile ("rdpgpr %[temp], $7": [temp] "=r"(temp) :);
-			break;
-		case 8: asm volatile ("rdpgpr %[temp], $8": [temp] "=r"(temp) :);
-			break;
-		case 9: asm volatile ("rdpgpr %[temp], $9": [temp] "=r"(temp) :);
-			break;
-		case 10: asm volatile ("rdpgpr %[temp], $10": [temp] "=r"(temp) :);
-			break;
-		case 11: asm volatile ("rdpgpr %[temp], $11": [temp] "=r"(temp) :);
-			break;
-		case 12: asm volatile ("rdpgpr %[temp], $12": [temp] "=r"(temp) :);
-			break;
-		case 13: asm volatile ("rdpgpr %[temp], $13": [temp] "=r"(temp) :);
-			break;
-		case 14: asm volatile ("rdpgpr %[temp], $14": [temp] "=r"(temp) :);
-			break;
-		case 15: asm volatile ("rdpgpr %[temp], $15": [temp] "=r"(temp) :);
-			break;
-		case 16: asm volatile ("rdpgpr %[temp], $16": [temp] "=r"(temp) :);
-			break;
-		case 17: asm volatile ("rdpgpr %[temp], $17": [temp] "=r"(temp) :);
-			break;
-		case 18: asm volatile ("rdpgpr %[temp], $18": [temp] "=r"(temp) :);
-			break;
-		case 19: asm volatile ("rdpgpr %[temp], $19": [temp] "=r"(temp) :);
-			break;
-		case 20: asm volatile ("rdpgpr %[temp], $20": [temp] "=r"(temp) :);
-			break;
-		case 21: asm volatile ("rdpgpr %[temp], $21": [temp] "=r"(temp) :);
-			break;
-		case 22: asm volatile ("rdpgpr %[temp], $22": [temp] "=r"(temp) :);
-			break;
-		case 23: asm volatile ("rdpgpr %[temp], $23": [temp] "=r"(temp) :);
-			break;
-		case 24: asm volatile ("rdpgpr %[temp], $24": [temp] "=r"(temp) :);
-			break;
-		case 25: asm volatile ("rdpgpr %[temp], $25": [temp] "=r"(temp) :);
-			break;
-		case 26: asm volatile ("rdpgpr %[temp], $26": [temp] "=r"(temp) :);
-			break;
-		case 27: asm volatile ("rdpgpr %[temp], $27": [temp] "=r"(temp) :);
-			break;
-		case 28: asm volatile ("rdpgpr %[temp], $28": [temp] "=r"(temp) :);
-			break;
-		case 29: asm volatile ("rdpgpr %[temp], $29": [temp] "=r"(temp) :);
-			break;
-		case 30: asm volatile ("rdpgpr %[temp], $30": [temp] "=r"(temp) :);
-			break;
-		case 31: asm volatile ("rdpgpr %[temp], $31": [temp] "=r"(temp) :);
-			break;
-		default:
-			debugs("Register not found.\n");
-			break;
-	}
-	
-	return temp;
-}
-
-
-/**
- * @brief Write value to Reg on preview GPR Shadow.
- * @return GPR value. 
- */
-void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value){
-	uint32_t temp = value;
-
-	switch(reg){
-		case 1: asm volatile ("wrpgpr $1, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 2: asm volatile ("wrpgpr $2, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 3: asm volatile ("wrpgpr $3, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 4: asm volatile ("wrpgpr $4, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 5: asm volatile ("wrpgpr $5, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 6: asm volatile ("wrpgpr $6, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 7: asm volatile ("wrpgpr $7, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 8: asm volatile ("wrpgpr $8, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 9: asm volatile ("wrpgpr $9, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 10: asm volatile ("wrpgpr $10, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 11: asm volatile ("wrpgpr $11, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 12: asm volatile ("wrpgpr $12, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 13: asm volatile ("wrpgpr $13, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 14: asm volatile ("wrpgpr $14, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 15: asm volatile ("wrpgpr $15, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 16: asm volatile ("wrpgpr $16, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 17: asm volatile ("wrpgpr $17, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 18: asm volatile ("wrpgpr $18, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 19: asm volatile ("wrpgpr $19, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 20: asm volatile ("wrpgpr $20, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 21: asm volatile ("wrpgpr $21, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 22: asm volatile ("wrpgpr $22, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 23: asm volatile ("wrpgpr $23, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 24: asm volatile ("wrpgpr $24, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 25: asm volatile ("wrpgpr $25, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 26: asm volatile ("wrpgpr $26, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 27: asm volatile ("wrpgpr $27, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 28: asm volatile ("wrpgpr $28, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 29: asm volatile ("wrpgpr $29, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 30: asm volatile ("wrpgpr $30, %[temp]": : [temp] "r"(temp) );
-			break;
-		case 31: asm volatile ("wrpgpr $31, %[temp]": : [temp] "r"(temp) );
-			break;
-		default:
-			debugs("Register not found.\n");
-			break;
-	}
-}
-
 
 /**
  * @brief Set the Lowest GPR Shadow.

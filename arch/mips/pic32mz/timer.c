@@ -31,6 +31,7 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include <hal.h>
 #include <pic32mz.h>
 #include <mips_cp0.h>
+#include <guest_interrupts.h>
 
 /**
  * @brief Number of timer ticks. 
@@ -66,10 +67,12 @@ static void timer_interrupt_handler(){
 	
 	/* Insert a virtual timer interrupt to the guest each other timer tick. */
 	if(timer_count++ % 2){
-		setGuestCTL2(getGuestCTL2() | (3 << GUESTCLT2_GRIPL_SHIFT));
+		setGuestCTL2(getGuestCTL2() | (GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT));
 	}
     
 	calc_next_timer_interrupt(QUANTUM);
+	
+	
 }
 
 /**
@@ -83,7 +86,7 @@ void start_timer(){
     
 	offset = register_interrupt(timer_interrupt_handler);
 	OFF(0) = offset;
-	printf ("\nCP0 Timer interrupt registered at 0x%x.", offset);
+	INFO("CP0 Timer interrupt registered at 0x%x.", offset);
     
 	IPC(0) = 0x1f;
 	IFSCLR(0) = 1;

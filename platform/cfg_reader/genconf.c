@@ -29,6 +29,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libconfig.h>
 #include <string.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 #if (LIBCONFIG_VER_MAJOR <= 1 && LIBCONFIG_VER_MINOR < 5)
 #define config_setting_lookup config_lookup_from
@@ -38,6 +39,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define LARGESTR 1024
 #define VMS_INFO_FILE "include/vms.info"
 #define OUTFILE "include/config.h"
+#define INCLUDE_DIR "include"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
 #define SYSTEM_COMMENT "/* Hypervisor kernel configuration and board info */\n"
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
@@ -528,7 +530,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         
 		/* write num of tlb entries */
 		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
-		aux = config_setting_length(mem_maps);
+		aux = mem_maps? config_setting_length(mem_maps) : 0;
 		/* RAM and FLASH mapping requires 2 additional TLB entries */
 		aux += 2;
 		snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
@@ -555,6 +557,50 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return ret;
 		}
         
+		/* Device Mapping array  */
+		config_setting_t * device_mapping_setting = config_setting_lookup(vm_conf, "device_mapping");
+		if(device_mapping_setting){
+			int int_sz = config_setting_length(device_mapping_setting);
+			int i;
+			/* get fast_int_sz */
+			snprintf(str, STRSZ, "\t\tdevices_mapping_sz: %d,\n", int_sz);
+			if ( (ret = write_to_conf_file(outfile, str)) ) {
+				return ret;
+			}
+
+			if ( (ret = write_to_conf_file(outfile, "\t\tdevices: (const struct device_mapping_t const []) {\n")) ) {
+				return ret;
+			}
+
+			for(i = 0; i < int_sz; ++i){
+				if ( (ret = write_to_conf_file(outfile, "\t\t\t{\n")) ) {
+					return ret;
+				}
+					
+				const char* device_name = config_setting_get_string_elem(device_mapping_setting, i);
+				
+				strings_cat(str, STRSZ, "\t\t\t\tstart_addr: ", device_name, "_BASE,\n", NULL);
+				if ( (ret = write_to_conf_file(outfile, (char*)str)) ) {
+					return ret;
+				}
+				
+				strings_cat(str, STRSZ, "\t\t\t\tsize: ", device_name, "_SIZE,\n", NULL);
+				if ( (ret = write_to_conf_file(outfile, (char*)str)) ) {
+					return ret;
+				}
+				
+				if ( (ret = write_to_conf_file(outfile, "\t\t\t},\n")) ) {
+					return ret;
+				}
+				
+				
+			}
+
+			if ( (ret = write_to_conf_file(outfile, "\t\t},\n")) ) {
+				return ret;
+			}
+		}
+		
 		/* fast_interrupts array  */
 		config_setting_t * fast_int_setting = config_setting_lookup(vm_conf, "fast_interrupts");
 		if(fast_int_setting){
@@ -565,11 +611,11 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			if ( (ret = write_to_conf_file(outfile, str)) ) {
 				return ret;
 			}
-
+			
 			if ( (ret = write_to_conf_file(outfile, "\t\tfast_interrupts: (uint32_t []) {")) ) {
 				return ret;
 			}
-
+			
 			for(i = 0; i < int_sz; ++i){
 				if(i>0){
 					if ( (ret = write_to_conf_file(outfile, ", ")) ) {
@@ -581,11 +627,12 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 					return ret;
 				}
 			}
-
+			
 			if ( (ret = write_to_conf_file(outfile, " },\n")) ) {
 				return ret;
 			}
 		}
+		
         
 		/* Generate the TLB entries to the current VM's configuration */
 		if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
@@ -625,7 +672,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		
 		/* process the additional memory mapping */
 		mem_maps = config_setting_lookup(vm_conf, "memory_maps");
-		num_mm = config_setting_length(mem_maps);
+		num_mm = mem_maps? config_setting_length(mem_maps) : 0;
 		for(j=0; j<num_mm; j++){
 			unsigned int page_size;
 			unsigned int base_addr;
@@ -770,6 +817,7 @@ int main(int argc, char **argv)
 	char app_list[STRSZ];
 	int vm_count;
 	char* vms_info;
+	struct stat st = {0};
     
 	if (argc<2){
 		fprintf(stderr, "Usage: %s <config file path>\n", argv[0]);
@@ -787,6 +835,10 @@ int main(int argc, char **argv)
 		return(EXIT_FAILURE);
 	}
     
+	if (stat(INCLUDE_DIR, &st) == -1) {
+		mkdir(INCLUDE_DIR, 0700);
+	}
+	
 	/* output file (config.h) */
 	if(NULL == (outfile = fopen(OUTFILE, "w"))){
 		fprintf(stderr, "Error creating %s file.", OUTFILE);
@@ -805,14 +857,14 @@ int main(int argc, char **argv)
 		fclose(outfile);
 		return(EXIT_FAILURE);
 	}
-    
+	
 	vms_info = (char*)malloc(LARGESTR);
 	if (gen_conf_vms(cfg, outfile, app_list, &vm_count, vms_info)){
 		config_destroy(&cfg);
 		fclose(outfile);
 		return(EXIT_FAILURE);
 	}
-    
+
 	if(write_str_to_file(vms_info, VMS_INFO_FILE)){
 		config_destroy(&cfg);
 		fclose(outfile);
@@ -834,7 +886,6 @@ int main(int argc, char **argv)
 	}
     
 	printf("%s\n", app_list);
-     
     
 	fclose(outfile);
 	config_destroy(&cfg);

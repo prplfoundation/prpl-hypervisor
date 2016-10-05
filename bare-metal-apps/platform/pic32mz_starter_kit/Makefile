@@ -1,0 +1,93 @@
+#Copyright (c) 2016, prpl Foundation
+#
+#Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
+#fee is hereby granted, provided that the above copyright notice and this permission notice appear 
+#in all copies.
+#
+#THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+#INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE 
+#FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+#LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+#ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+#This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
+
+
+all: conf_liker lib hal app $(APP)
+
+include ../../apps/$(APP)/app.mk
+
+ifndef CLEAN
+    ifndef CROSS_COMPILER
+        $(error  CROSS_COMPILER not defined)
+    endif
+
+    ifndef F_CLK
+        $(error  F_CLK not defined)
+    endif
+
+    ifndef FLASH_SIZE
+        $(error  FLASH_SIZE not defined.)
+    endif
+
+    ifndef RAM_SIZE
+        $(error  RAM_SIZE not defined.)
+    endif
+endif
+
+TOPDIR=../../
+
+INC_DIRS += -I$(TOPDIR)/lib/include \
+            -I$(TOPDIR)../include \
+           -I$(TOPDIR)arch/mips/pic32mz/include/
+
+include $(TOPDIR)lib/lib.mk
+include $(TOPDIR)arch/mips/pic32mz/hal.mk
+
+           
+#Configure CROSS COMPILER
+AS = $(CROSS_COMPILER)as 
+LD = $(CROSS_COMPILER)ld 
+OBJDUMP = $(CROSS_COMPILER)objdump
+READELF = $(CROSS_COMPILER)readelf
+OBJCOPY = $(CROSS_COMPILER)objcopy
+SIZE = $(CROSS_COMPILER)size
+CC= $(CROSS_COMPILER)gcc
+
+LINKER_SCRIPT = ../../apps/$(APP)/pic32mz.ld
+
+### GCC flags configuration: processor tunning ###
+CFLAGS += -EL -O2 -mtune=m14k -mips32r2
+#MIPZ VZ support
+CFLAGS += -Wa,-mvirt
+#flointing pointing options
+CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
+#General options
+CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
+#Additional features flags
+CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK)
+# AS flags
+ASFLAGS += -EL -mvirt -mips32r2
+# LD flags
+LDFLAGS += -EL
+
+$(APP): 
+	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map ../../apps/$(APP)/$(APP).map -o ../../apps/$(APP)/$(APP).elf ../../apps/$(APP)/*.o -N $(LIBS)
+	$(OBJDUMP) --disassemble --reloc ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).lst
+	$(OBJDUMP) -h ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).sec
+	$(OBJDUMP) -s ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).cnt
+	$(OBJCOPY) -O binary ../../apps/$(APP)/$(APP).elf ../../apps/$(APP)/$(APP).bin
+	$(SIZE) ../../apps/$(APP)/$(APP).elf
+
+conf_liker:
+	cp $(TOPDIR)arch/mips/pic32mz/pic32mz.ld ../../apps/$(APP)/
+	sed -i -e 's/FLASH_SIZE/$(FLASH_SIZE)/' ../../apps/$(APP)/pic32mz.ld
+	sed -i -e 's/RAM_SIZE/$(RAM_SIZE)/' ../../apps/$(APP)/pic32mz.ld
+	sed -i -e 's/STACK_SIZE/$(STACK_SIZE)/' ../../apps/$(APP)/pic32mz.ld
+	
+	
+	
+clean: 
+	rm -f ../../apps/$(APP)/*.o ../../apps/$(APP)/*.sec ../../apps/$(APP)/*.lst ../../apps/$(APP)/*.elf 
+	rm -f ../../apps/$(APP)/*.cnt ../../apps/$(APP)/*.bin ../../apps/$(APP)/*.map ../../apps/$(APP)/*~ ../../apps/$(APP)/*.ld
+

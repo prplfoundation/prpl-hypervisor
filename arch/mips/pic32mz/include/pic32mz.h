@@ -58,6 +58,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATACLR      PIC32MZ_PBASE (0x60094)
 #define CNSTATASET      PIC32MZ_PBASE (0x60098)
 #define CNSTATAINV      PIC32MZ_PBASE (0x6009C)
+#define PORTA_BASE      0xbf860000
+#define PORTA_SIZE	0x9c
+
 #define ANSELB          PIC32MZ_PBASE (0x60100)
 #define ANSELBCLR       PIC32MZ_PBASE (0x60104)
 #define ANSELBSET       PIC32MZ_PBASE (0x60108)
@@ -98,6 +101,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATBCLR      PIC32MZ_PBASE (0x60194)
 #define CNSTATBSET      PIC32MZ_PBASE (0x60198)
 #define CNSTATBINV      PIC32MZ_PBASE (0x6019C)
+#define PORTB_BASE      0xbf860100
+#define PORTB_SIZE	0x9C
+
+
 #define ANSELC          PIC32MZ_PBASE (0x60200)
 #define ANSELCCLR       PIC32MZ_PBASE (0x60204)
 #define ANSELCSET       PIC32MZ_PBASE (0x60208)
@@ -138,6 +145,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATCCLR      PIC32MZ_PBASE (0x60294)
 #define CNSTATCSET      PIC32MZ_PBASE (0x60298)
 #define CNSTATCINV      PIC32MZ_PBASE (0x6029C)
+#define PORTC_BASE	0xbf860200
+#define PORTC_SIZE	0x9C
+
 #define ANSELD          PIC32MZ_PBASE (0x60300)
 #define ANSELDCLR       PIC32MZ_PBASE (0x60304)
 #define ANSELDSET       PIC32MZ_PBASE (0x60308)
@@ -178,6 +188,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATDCLR      PIC32MZ_PBASE (0x60394)
 #define CNSTATDSET      PIC32MZ_PBASE (0x60398)
 #define CNSTATDINV      PIC32MZ_PBASE (0x6039C)
+#define PORTD_BASE	0xbf860300
+#define PORTD_SIZE	0x9C
+
 #define ANSELE          PIC32MZ_PBASE (0x60400)
 #define ANSELECLR       PIC32MZ_PBASE (0x60404)
 #define ANSELESET       PIC32MZ_PBASE (0x60408)
@@ -218,6 +231,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATECLR      PIC32MZ_PBASE (0x60494)
 #define CNSTATESET      PIC32MZ_PBASE (0x60498)
 #define CNSTATEINV      PIC32MZ_PBASE (0x6049C)
+#define PORTE_BASE	0xbf860400
+#define PORTD_SIZE	0x9C
+
 #define ANSELF          PIC32MZ_PBASE (0x60500)
 #define ANSELFCLR       PIC32MZ_PBASE (0x60504)
 #define ANSELFSET       PIC32MZ_PBASE (0x60508)
@@ -258,6 +274,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATFCLR      PIC32MZ_PBASE (0x60594)
 #define CNSTATFSET      PIC32MZ_PBASE (0x60598)
 #define CNSTATFINV      PIC32MZ_PBASE (0x6059C)
+#define PORTF_BASE	0xbf860500
+#define PORTF_SIZE	0x9C
+
 #define ANSELG          PIC32MZ_PBASE (0x60600)
 #define ANSELGCLR       PIC32MZ_PBASE (0x60604)
 #define ANSELGSET       PIC32MZ_PBASE (0x60608)
@@ -298,6 +317,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATGCLR      PIC32MZ_PBASE (0x60694)
 #define CNSTATGSET      PIC32MZ_PBASE (0x60698)
 #define CNSTATGINV      PIC32MZ_PBASE (0x6069C)
+#define PORTG_BASE	0xbf860600
+#define PORTG_SIZE	0x9C
+
 #define ANSELH          PIC32MZ_PBASE (0x60700)
 #define ANSELHCLR       PIC32MZ_PBASE (0x60704)
 #define ANSELHSET       PIC32MZ_PBASE (0x60708)
@@ -338,6 +360,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATHCLR      PIC32MZ_PBASE (0x60794)
 #define CNSTATHSET      PIC32MZ_PBASE (0x60798)
 #define CNSTATHINV      PIC32MZ_PBASE (0x6079C)
+#define PORTH_BASE 	0xbf860700
+#define PORTH_SIZE	0x9c
+
 #define ANSELJ          PIC32MZ_PBASE (0x60800)
 #define ANSELJCLR       PIC32MZ_PBASE (0x60804)
 #define ANSELJSET       PIC32MZ_PBASE (0x60808)
@@ -378,6 +403,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATJCLR      PIC32MZ_PBASE (0x60894)
 #define CNSTATJSET      PIC32MZ_PBASE (0x60898)
 #define CNSTATJINV      PIC32MZ_PBASE (0x6089C)
+#define PORTJ_BASE	0xbf860800
+#define PORTJ_SIZE	0x9C
+
 #define TRISK           PIC32MZ_PBASE (0x60910)
 #define TRISKCLR        PIC32MZ_PBASE (0x60914)
 #define TRISKSET        PIC32MZ_PBASE (0x60918)
@@ -414,6 +442,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATKCLR      PIC32MZ_PBASE (0x60994)
 #define CNSTATKSET      PIC32MZ_PBASE (0x60998)
 #define CNSTATKINV      PIC32MZ_PBASE (0x6099C)
+#define PORTK_BASE	0xbf860910
+#define PORTK_SIZE	0x8C
+
 
 /* Parallel master port registers */
 #define PMCON           PIC32MZ_PBASE (0x2E000)
@@ -444,6 +475,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define PMSTATCLR       PIC32MZ_PBASE (0x2E064)
 #define PMSTATSET       PIC32MZ_PBASE (0x2E068)
 #define PMSTATINV       PIC32MZ_PBASE (0x2E06C)
+#define PM_BASE		0xbf82e000
+#define PM_SIZE		0x6c
 
 /* Parallel master port control register */
 #define PMCON_RDSP              0x0001
@@ -522,6 +555,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define U1BRGCLR        PIC32MZ_PBASE (0x22044)
 #define U1BRGSET        PIC32MZ_PBASE (0x22048)
 #define U1BRGINV        PIC32MZ_PBASE (0x2204C)
+#define UART1_BASE	0xbf822000
+#define UART1_SIZE	0x4c
+
 #define U2MODE          PIC32MZ_PBASE (0x22200)
 #define U2MODECLR       PIC32MZ_PBASE (0x22204)
 #define U2MODESET       PIC32MZ_PBASE (0x22208)
@@ -536,6 +572,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define U2BRGCLR        PIC32MZ_PBASE (0x22244)
 #define U2BRGSET        PIC32MZ_PBASE (0x22248)
 #define U2BRGINV        PIC32MZ_PBASE (0x2224C)
+#define UART2_BASE	0xbf822200
+#define UART2_SIZE	0x4c
+
 #define U3MODE          PIC32MZ_PBASE (0x22400)
 #define U3MODECLR       PIC32MZ_PBASE (0x22404)
 #define U3MODESET       PIC32MZ_PBASE (0x22408)
@@ -550,6 +589,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define U3BRGCLR        PIC32MZ_PBASE (0x22444)
 #define U3BRGSET        PIC32MZ_PBASE (0x22448)
 #define U3BRGINV        PIC32MZ_PBASE (0x2244C)
+#define UART3_BASE	0xbf822400
+#define UART3_SIZE	0x4c
+
 #define U4MODE          PIC32MZ_PBASE (0x22600)
 #define U4MODECLR       PIC32MZ_PBASE (0x22604)
 #define U4MODESET       PIC32MZ_PBASE (0x22608)
@@ -564,6 +606,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define U4BRGCLR        PIC32MZ_PBASE (0x22644)
 #define U4BRGSET        PIC32MZ_PBASE (0x22648)
 #define U4BRGINV        PIC32MZ_PBASE (0x2264C)
+#define UART4_BASE	0xbf822600
+#define UART4_SIZE	0x4c
+
 #define U5MODE          PIC32MZ_PBASE (0x22800)
 #define U5MODECLR       PIC32MZ_PBASE (0x22804)
 #define U5MODESET       PIC32MZ_PBASE (0x22808)
@@ -578,6 +623,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define U5BRGCLR        PIC32MZ_PBASE (0x22844)
 #define U5BRGSET        PIC32MZ_PBASE (0x22848)
 #define U5BRGINV        PIC32MZ_PBASE (0x2284C)
+#define UART5_BASE	0xbf822800
+#define UART5_SIZE	0x4c
+
 #define U6MODE          PIC32MZ_PBASE (0x22A00)
 #define U6MODECLR       PIC32MZ_PBASE (0x22A04)
 #define U6MODESET       PIC32MZ_PBASE (0x22A08)
@@ -592,6 +640,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define U6BRGCLR        PIC32MZ_PBASE (0x22A44)
 #define U6BRGSET        PIC32MZ_PBASE (0x22A48)
 #define U6BRGINV        PIC32MZ_PBASE (0x22A4C)
+#define UART6_BASE	0xbf822A00
+#define UART6_SIZE	0x4c
+
 
 /* UART mode register */
 #define UMODE_STSEL             0x0001
@@ -899,6 +950,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define AD1CAL3         PIC32MZ_PBASE (0x4b208)
 #define AD1CAL4         PIC32MZ_PBASE (0x4b20c)
 #define AD1CAL5         PIC32MZ_PBASE (0x4b210)
+#define AD1_BASE	0xbf84b000
+#define AD1_SIZE	0x210
 
 /* SPI registers */
 #define SPI1CON         PIC32MZ_PBASE (0x21000)
@@ -918,6 +971,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SPI1CON2CLR     PIC32MZ_PBASE (0x21044)
 #define SPI1CON2SET     PIC32MZ_PBASE (0x21048)
 #define SPI1CON2INV     PIC32MZ_PBASE (0x2104c)
+#define SPI1_BASE	0xbf821000
+#define SPI1_SIZE	0x4c
+
 #define SPI2CON         PIC32MZ_PBASE (0x21200)
 #define SPI2CONCLR      PIC32MZ_PBASE (0x21204)
 #define SPI2CONSET      PIC32MZ_PBASE (0x21208)
@@ -935,6 +991,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SPI2CON2CLR     PIC32MZ_PBASE (0x21244)
 #define SPI2CON2SET     PIC32MZ_PBASE (0x21248)
 #define SPI2CON2INV     PIC32MZ_PBASE (0x2124c)
+#define SPI2_BASE	0xbf821200
+#define SPI2_SIZE	0x4c
+
+
 #define SPI3CON         PIC32MZ_PBASE (0x21400)
 #define SPI3CONCLR      PIC32MZ_PBASE (0x21404)
 #define SPI3CONSET      PIC32MZ_PBASE (0x21408)
@@ -952,6 +1012,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SPI3CON2CLR     PIC32MZ_PBASE (0x21444)
 #define SPI3CON2SET     PIC32MZ_PBASE (0x21448)
 #define SPI3CON2INV     PIC32MZ_PBASE (0x2144c)
+#define SPI3_BASE	0xbf821400
+#define SPI3_SIZE	0x4c
+
+
 #define SPI4CON         PIC32MZ_PBASE (0x21600)
 #define SPI4CONCLR      PIC32MZ_PBASE (0x21604)
 #define SPI4CONSET      PIC32MZ_PBASE (0x21608)
@@ -969,6 +1033,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SPI4CON2CLR     PIC32MZ_PBASE (0x21644)
 #define SPI4CON2SET     PIC32MZ_PBASE (0x21648)
 #define SPI4CON2INV     PIC32MZ_PBASE (0x2164c)
+#define SPI4_BASE	0xbf821600
+#define SPI4_SIZE	0x4c
+
+
 #define SPI5CON         PIC32MZ_PBASE (0x21800)
 #define SPI5CONCLR      PIC32MZ_PBASE (0x21804)
 #define SPI5CONSET      PIC32MZ_PBASE (0x21808)
@@ -986,6 +1054,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SPI5CON2CLR     PIC32MZ_PBASE (0x21844)
 #define SPI5CON2SET     PIC32MZ_PBASE (0x21848)
 #define SPI5CON2INV     PIC32MZ_PBASE (0x2184c)
+#define SPI5_BASE	0xbf821800
+#define SPI5_SIZE	0x4c
+
 #define SPI6CON         PIC32MZ_PBASE (0x21a00)
 #define SPI6CONCLR      PIC32MZ_PBASE (0x21a04)
 #define SPI6CONSET      PIC32MZ_PBASE (0x21a08)
@@ -1003,6 +1074,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SPI6CON2CLR     PIC32MZ_PBASE (0x21a44)
 #define SPI6CON2SET     PIC32MZ_PBASE (0x21a48)
 #define SPI6CON2INV     PIC32MZ_PBASE (0x21a4c)
+#define SPI6_BASE	0xbf821a00
+#define SPI6_SIZE	0x4c
+
 
 /* SPI control register */
 #define SPICON_MSTEN            0x00000020

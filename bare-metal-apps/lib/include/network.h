@@ -18,7 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
 
 

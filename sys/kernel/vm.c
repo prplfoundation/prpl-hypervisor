@@ -45,7 +45,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 void initializeMachines(void) {
 	unsigned int i;
 
-	printf("\nInitializing Virtual Machines.");
+	INFO("Initializing Virtual Machines.");
 
 	scheduler_info.vcpu_ready_list = NULL;
 	
@@ -59,7 +59,7 @@ void initializeMachines(void) {
 			create_vm(&VMCONF[i]);
 		}
 	}else{
-		Warning("\nThere is no VM configuration. ");
+		WARNING("There is no VM configuration. ");
 	}
 }
 
@@ -79,7 +79,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	uint32_t i;
 	vcpu_t *vcpu;
 	
-	printf("\nConfiguring %s VM starting at 0x%x RAM address.", vm_conf->vm_name, vm_conf->ram_base);
+	INFO("Configuring %s VM starting at 0x%x RAM address.", vm_conf->vm_name, vm_conf->ram_base);
     
 	/* Number of fix TLB entries */
 	uint32_t ntlbent = vm_conf->num_tlb_entries;
@@ -87,6 +87,8 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	vm = (vm_t*)malloc(sizeof(vm_t));
 	
 	vm->vcpus = NULL;
+	
+	vm->vmconf = vm_conf;
 	
 	vm->vm_name = vm_conf->vm_name;
 	
@@ -99,9 +101,6 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 
 	vm->tlbentries = NULL;
 	
-	vm->fast_int_sz = vm_conf->fast_int_sz;
-	vm->fast_interrupts = vm_conf->fast_interrupts;
-        
 	/* Allocate a TLB entry to the VM */
 	vm->tlbentries = (struct tlbentry *)malloc(sizeof(struct tlbentry)*(ntlbent)); 
 	memset(vm->tlbentries, 0, sizeof(struct tlbentry)*ntlbent);
@@ -126,7 +125,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	if(vm->os_type == BARE_METAL){
 		entry_point = BARE_METAL_ENTRY_POINT;
 	}else{
-		Warning("\nOS type not defined.");
+		WARNING("OS type not defined.");
 	}
 	
 	/* Set the VM entry Point and scheduler*/

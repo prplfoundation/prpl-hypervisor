@@ -18,6 +18,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _HAL_H_
 #define _HAL_H_
 
+static void print_config(void);
+void hyper_init();
 int32_t isRootMode();
 int32_t hasVZ();
 int32_t ConfigureGPRShadow();
@@ -45,8 +47,6 @@ uint32_t has1KPageSupport();
 void Disable1KPageSupport();
 int32_t isEnteringGuestMode();
 uint32_t getBadVAddress();
-uint32_t MoveFromPreviousGuestGPR(uint32_t reg);
-void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value);
 void setLowestGShadow(uint32_t lowestshadow);
 uint32_t getLowestGShadow(void);
 void setPreviousShadowSet(uint32_t shadow_set);

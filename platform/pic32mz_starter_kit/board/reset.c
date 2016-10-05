@@ -27,6 +27,7 @@
 
 #include<pic32mz.h>
 #include <driver.h>
+#include <globals.h>
 
 
 /**
@@ -35,7 +36,7 @@
  */
 void SoftReset(){
     
-	printf("\nReset button (sw1) pressed. Performing software reset.");
+	INFO("Reset button (sw1) pressed. Performing software reset.");
     
 	/* Give time for message output before reset. */
 	udelay(1000000);
@@ -94,7 +95,7 @@ void sw1_button_interrupt_init(){
 	IFSCLR(3) = 1<<23;
 	IECSET(3) = 1<<23;
     
-	printf("\nSoftware reset interrupt (SW1) registered at offset 0x%x.", offset);
+	INFO("Software reset interrupt (SW1) registered at offset 0x%x.", offset);
 }
 
 driver_init(sw1_button_interrupt_init);
