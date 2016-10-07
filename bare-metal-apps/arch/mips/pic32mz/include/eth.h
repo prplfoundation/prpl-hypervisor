@@ -29,14 +29,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 
-/* Ethernet Send/Receive */
-
-int32_t hyper_eth_send(void *buf, int len);
-int32_t hyper_eth_poll(void *buf, int len);
-int32_t eth_link_state(struct pico_device *dev);
-void eth_get_mac(uint8_t *mac);
-
-
 #define ETH_MESSAGE_SZ 1536
 #define ETH_MESSAGELIST_SZ 5
 
@@ -56,6 +48,7 @@ struct eth_message_list_t{
 
 int eth_send(struct pico_device *dev, void *buf, int len);
 int eth_poll(struct pico_device *dev, int loop_score);
+int eth_link_state(struct pico_device *dev);
     
 #endif
 #endif

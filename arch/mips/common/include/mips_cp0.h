@@ -141,6 +141,7 @@
 #define CAUSE_DC                0x08000000
 #define CAUSE_IV                0x00800000
 #define CAUSE_RIPL(r)           ((r)>>10 & 63)
+#define CAUSE_RIPL_MASK         0xFC00
 #define CAUSE_IP1               0x00020000
 #define CAUSE_IP0               0x00010000
 #define CAUSE_EXC_CODE          0x0000007c

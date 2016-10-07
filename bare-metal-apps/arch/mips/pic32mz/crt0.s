@@ -194,58 +194,6 @@ guest_is_up:
 .end guest_is_up
 
 
-        .global read_devcofg3
-        .ent read_devcofg3        
-read_devcofg3:
-        .set noreorder 
-        hypcall 0x170
-        jr $ra
-        nop
-        .set reorder        
-.end read_devcofg3
-
-    .global hyper_eth_send
-    .ent hyper_eth_send
-hyper_eth_send:
-    .set noreorder 
-    hypcall 0x5
-    jr $ra
-    nop
-    .set reorder
-.end hyper_eth_send
-
-        .global hyper_eth_recv
-        .ent hyper_eth_recv
-hyper_eth_recv:
-        .set noreorder 
-        hypcall 0x6
-        jr $ra
-        nop
-        .set reorder
-.end hyper_eth_recv
-
-        .global hyper_eth_mac
-        .ent hyper_eth_mac
-hyper_eth_mac:
-        .set noreorder 
-        hypcall 0x7
-        jr $ra
-        nop
-        .set reorder
-.end hyper_eth_mac
-
-        
-        .global hyper_eth_link_check
-        .ent hyper_eth_link_check
-hyper_eth_link_check:
-        .set noreorder 
-        hypcall 4
-        jr $ra
-        nop
-        .set reorder
-        .end hyper_eth_link_check
-
-        
         .global spinlock
         .ent spinlock
 spinlock:

@@ -47,13 +47,13 @@ uint32_t interrupt_register(interrupt_handler_t *handler, uint32_t interrupt){
 }
 
 /**
- * @brief General exception routne.
+ * @brief General exception routine.
  *   All interrupts or exceptions invoke this routine. Call the 
  *   function handler corresponding to the RIPL field.
  */
 void _irq_handler(uint32_t status, uint32_t cause){
 	uint32_t i = 0;
-	
+
 	/* extract RIPL field */
 	uint32_t ripl = (cause & 0x3FC00) >> 10;
     
@@ -66,6 +66,7 @@ void _irq_handler(uint32_t status, uint32_t cause){
 		i++;
 		ripl >>= 1;
 	}while(ripl);
+	
 }
 
 

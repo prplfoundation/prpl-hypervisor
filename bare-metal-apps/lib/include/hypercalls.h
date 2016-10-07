@@ -47,7 +47,7 @@ asm volatile (                    \
  : "=r" (__ret) : "r" ((uint32_t) (target_id)), "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (HCALL_IPC_SEND_MSG) : "a0", "a1", "a2", "v0"); \
  __ret; })
  
- /* interVM send message  */
+ /* interVM recv message  */
 #define ipc_recv(source_id, msg) ({ int32_t __ret; \
 asm volatile (                    \
 "move $a0, %z2 \n\
@@ -56,7 +56,41 @@ asm volatile (                    \
  move %0, $v0 " \
  : "=r" (__ret) : "r" ((uint32_t) (source_id)), "r" ((uint32_t) (msg)), "I" (HCALL_IPC_RECV_MSG) : "a0", "v0"); \
  __ret; })
+
+ /* Ethernert link checker */
+#define eth_watch() ({ int32_t __ret; \
+asm volatile (                    \
+ "hypcall %1 \n\
+  move %0, $v0 " \
+  : "=r" (__ret) : "I" (HCALL_ETHERNET_WATCHDOG) : "v0"); \
+ __ret; })
  
-  
+/* Ethernert get mac */
+#define eth_mac(msg) asm volatile (                    \
+"move $a0, %z0 \n\
+ hypcall %1" \
+ : : "r" ((uint32_t) (msg)), "I" (HCALL_ETHERNET_GET_MAC) : "a0");
+ 
+
+/* Ethernet send message  */
+#define eth_send_frame(msg, size) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (HCALL_ETHERNET_SEND) : "a0", "a1", "v0"); \
+ __ret; })
+ 
+ /* Ethernet recv message  */
+#define eth_recv_frame(msg) ({ int32_t __ret; \
+ asm volatile (                    \
+ "move $a0, %z1 \n\
+ hypcall %2 \n\
+ move %0, $v0 " \
+ : "=r" (__ret) : "r" ((uint32_t) (msg)), "I" (HCALL_ETHERNET_RECV) : "a0", "v0"); \
+ __ret; })
+ 
+ 
 #endif
 

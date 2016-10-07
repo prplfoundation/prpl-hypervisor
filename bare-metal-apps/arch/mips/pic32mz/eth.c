@@ -19,6 +19,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <eth.h>
 #include <libc.h>
+#include <hypercalls.h>
 
 #define ETH_FRAME_SZ 1518
 
@@ -37,38 +38,38 @@ uint32_t calc_wait_time(uint32_t time, uint32_t ms_delay){
 }
 
 
-int32_t eth_link_state(struct pico_device *dev){
+int eth_link_state(struct pico_device *dev){
     return link_state;
 }
 
 void eth_watchdog(uint32_t *time, uint32_t ms_delay){
     if (calc_wait_time(*time, ms_delay)){
-            link_state = hyper_eth_link_check();
+	    link_state = eth_watch();
             *time = mfc0(CP0_COUNT, 0);
     }
 }
 
 void eth_get_mac(uint8_t *mac){
-    hyper_eth_mac(mac);
+	eth_mac(mac);
 }
 
 int eth_send(struct pico_device *dev, void *buf, int len){
-    return hyper_eth_send(buf, len);
+	return eth_send_frame(buf, len);
 }
 
 int eth_poll(struct pico_device *dev, int loop_score){
     int32_t size;
-        
+    
     while(loop_score > 0){
         
-        size = hyper_eth_recv(frame_buf);
+	size = eth_recv_frame(frame_buf);
         if (size<=0){
             break;
         }
         pico_stack_recv(dev, frame_buf, size);
         loop_score--;
     }
-        
+    
     return loop_score;
 }
 
