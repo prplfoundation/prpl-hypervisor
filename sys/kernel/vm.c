@@ -147,7 +147,6 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
  */
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){	
 	static uint32_t vcpu_id=1;
-	static uint32_t shadow_gpr_to_assign = 0;
 	uint32_t num_shadow_gprs;
 	
 	vcpu_t *vcpu;
@@ -159,13 +158,8 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){
 	num_shadow_gprs = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (num_shadow_gprs & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	
-	/* Highest shadown gpr is used to the hypervisor */
-	if(shadow_gpr_to_assign==num_shadow_gprs){
-		vcpu->gprshadowset=shadow_gpr_to_assign-1;
-	}else{
-		vcpu->gprshadowset = shadow_gpr_to_assign;
-		shadow_gpr_to_assign++;
-	}
+	/* Lowest GPR shadown (zero) is used by the hypervisor */
+	vcpu->gprshadowset = vcpu_id;
 	
 	vcpu->id = vcpu_id;	
 	vcpu_id++;

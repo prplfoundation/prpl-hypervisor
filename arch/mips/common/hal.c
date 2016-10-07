@@ -133,7 +133,7 @@ int32_t hasVZ(){
 
 /**
  * @brief Set the GPR Shadow Bank. 
- *      The hypervisor uses the highest GPR shadow page. The others GPR shadows keep the VM's context.
+ *      The hypervisor uses the GPR shadow page 0. The others GPR shadows keep the VM's context.
  * 
  * @return 0 for error or 1 for success.
  */
@@ -142,7 +142,7 @@ int32_t ConfigureGPRShadow(){
 	int32_t guestsrsclt_reg;
 	int32_t num_shadow_gprs = 0;
 
-	/* Configure the GPR Shadow. The hypervisor will use the highest shadow page. 
+	/* Configure the GPR Shadow. The hypervisor will use the lowest shadow page. 
 	   Still, the hypervisor needs at least one GPR Shadow.
         */
 	srsclt_reg = mfc0(CP0_SRSCTL, 2);
@@ -152,34 +152,19 @@ int32_t ConfigureGPRShadow(){
 		return 1;
 	}
 	
-	/* Set the ESS field and PSS */
-	/* PSS is set to the highest page. The processor will change to the new GPR on the next eret */
-        mtc0(CP0_SRSCTL, 2, num_shadow_gprs << SRSCTL_ESS_SHIFT | num_shadow_gprs << SRSCLT_PSS_SHIFT);
+	/* Set the ESS field and PSS to zero.*/
+        mtc0(CP0_SRSCTL, 2, 0);
 	
 	/* Set the SRSMap register */
-	mtc0(CP0_SRSMAP, 3, num_shadow_gprs << SRSMAP_SSV7_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV6_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV5_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV4_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV3_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV2_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV1_SHIFT |
-			num_shadow_gprs << SRSMAP_SSV0_SHIFT );
+	mtc0(CP0_SRSMAP, 3, 0 );
 	
 	/* Set the SRSMap2 */
-	mtc0(CP0_SRSMAP2, 5, num_shadow_gprs << SRSMAP2_SSV8_SHIFT |
-			 num_shadow_gprs << SRSMAP2_SSV9_SHIFT );
+	mtc0(CP0_SRSMAP2, 5, 0);
 			 
-    
         /* No virtual shadow registers to guests */
         mtc0(CP0_GUESTCTL3, 6, 0); 
 	
-	/* Configure $sp and $gp registers in the hypervisor shadow page. 
-	   The hypervisor will move to the highest shadow page after the first 
-	   interrupt. */
-	hal_config_hyper_gpr_shadow();
-	
-    return 0;
+	return 0;
 }
 
 

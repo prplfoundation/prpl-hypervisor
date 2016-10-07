@@ -45,9 +45,10 @@ uint32_t register_interrupt(handler_vector_t * handler){
 void interrupt_init(){
     uint32_t temp_CP0, offset;
     
-    /* All interrupt levels are handled at GPR shadow 7 
-    Other GPR shadows are used for VM execution. */
-    PRISS = 7<<28 | 7<<24 | 7<<20 | 7<<16 | 7<<12 | 7<<8 | 7<<4;
+    /* All root interrupt levels are handled at GPR shadow 0 where the
+     * hypervisor resides.  Other GPR shadows are used for VM's execution. 
+     */
+    PRISS = 0;
 
     /* Configure the processor to vectored interrupt mode. */
     mtc0 (CP0_EBASE, 1, 0x9d000000);    /* Set an EBase value of 0x9D000000 */
