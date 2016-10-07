@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-int isVmTrusted(void);
+int isVmTrust(void);
 
 
 #ifdef __cplusplus

@@ -1,0 +1,153 @@
+/*********************************************************************
+ * Filename: makeKeys
+ *********************************************************************/
+
+/*****************************************************************************
+**                HEADERS
+*****************************************************************************/
+#include <stdio.h>
+//#include <memory.h>
+#include <string.h>
+#include "./include/uECC.h"
+#include "./include/sha256.h"
+
+/*****************************************************************************
+**                DEFINES
+*****************************************************************************/
+
+/*****************************************************************************
+**                INTERNAL FUNCTIONS
+*****************************************************************************/
+void vli_print(uint8_t *p_vli, unsigned int size);
+long file_lenght(FILE *file);
+
+//typedef struct SHA256_HashContext {
+//    uECC_HashContext uECC;
+//    SHA256_CTX ctx;
+//} SHA256_HashContext;
+#define NUM_ECC_DIGITS 32
+int main()
+{
+	printf("#####################################################\n");
+	printf("Aplicacao desenvolvida para gerar chaves publica e privada\n");
+	printf("que serão utilizadas pelo Hypervisor para autenticar VM\n");
+	printf("Project: micro-ecc\n");
+	printf("#####################################################\n\n");
+
+	uint8_t private[NUM_ECC_DIGITS];
+	uint8_t public[NUM_ECC_DIGITS * 2];
+        uint8_t sig[64] = {0};//sigature - feito com a chave privada do emissor e entregue para que tem a chave publica verificar.
+	/*criar chave publica/privada*/
+	if (!uECC_make_key(public, private, uECC_secp256k1())) {
+		printf("uECC_make_key() failed\n");
+		return 1;
+	}
+
+	/*mostrar chave privada*/
+	printf("uint8_t private[NUM_ECC_DIGITS] = {");
+	vli_print(private, NUM_ECC_DIGITS);
+	printf("};\n");
+	printf("\n\n");
+	printf("uint8_t public[64] = {");
+	vli_print(public, NUM_ECC_DIGITS * 2);
+	printf("};\n");
+	printf("\n\n");
+	/*validar chave gerada*/
+	if (!uECC_valid_public_key(public, uECC_secp256k1())) {
+		printf("uECC_valid_public_key() failed\n");
+		return 1;
+	} else {
+		printf("Chave publica valida\n");
+	}
+
+        /**********************************************************************/
+        FILE *ptr_ping, *ptr_pong;
+        long fileSizePing=0;
+//        ptr_ping=fopen("pong.elf", "rb");
+        ptr_ping=fopen("/tmp/ping.bin", "rb");
+        if(ptr_ping==NULL){
+            printf("\nErro ao abrir arquivo\n");
+            return 1;
+        }
+        //fileSizePing=file_lenght(ptr_ping);
+        fileSizePing=128000;
+        printf("\n\r ###tamanho arquivo: %ld \n", fileSizePing);
+        
+//        long hashBinarioPing[fileSizePing];
+        char hashBinarioPing[fileSizePing];
+        int bytes;
+        //ler todo arquivo
+        fread(hashBinarioPing, 1, fileSizePing, ptr_ping);
+        /**********************************************************************/
+        //teste HMAC
+        //teste tentar criar hmac
+        uint8_t tmp[2 * SHA256_BLOCK_SIZE + 64];
+        SHA256_HashContext ctx = {{
+            &init_SHA256,
+            &update_SHA256,
+            &finish_SHA256,
+            2*SHA256_BLOCK_SIZE,
+            SHA256_BLOCK_SIZE,
+            tmp
+        }};
+        //declarar variaveis
+//        BYTE text1[] = {"abc"};
+        SHA256_CTX contextHash;
+        BYTE buf[SHA256_BLOCK_SIZE];
+        
+        //usar code externo e calcular o hash
+        sha256_init(&contextHash);
+//	sha256_update(&contextHash, text1, strlen(text1));
+	sha256_update(&contextHash, hashBinarioPing, fileSizePing);
+	sha256_final(&contextHash, buf);
+        printf("uint8_t hash[NUM_ECC_DIGITS] = {");
+	vli_print(buf, sizeof(buf));
+	printf("};\n");
+	printf("\n\n");  
+               
+        if (!uECC_sign_deterministic(private, buf, sizeof(buf), &ctx.uECC, sig, uECC_secp256k1())) {
+                printf("uECC_sign() failed\n");
+                return 1;
+            }
+        
+        printf("uint8_t sig[NUM_ECC_DIGITS*2] = {");
+	vli_print(sig, sizeof(sig));
+	printf("};\n");
+	printf("\n\n");
+        
+        
+        if (!uECC_verify(public, buf, sizeof(buf), sig,  uECC_secp256k1())) {
+		printf("uECC_verify() failed\n");
+		return 1;
+	}else{
+            printf("uECC_verify() OK\n");
+        } 
+        
+	return(0);
+}
+/*
+** \brief - funcao para mostrar valores em hexadecima
+ * \param
+ * \return
+*/
+void vli_print(uint8_t *p_vli, unsigned int size)
+{
+	unsigned i;
+	for (i = 0; i < size - 1; ++i) {
+		printf("0x%02X, ", (unsigned) p_vli[i]);
+	}
+	printf("0x%02X", (unsigned) p_vli[i]);
+}
+long file_lenght(FILE *file){
+    long pos, end;
+    pos = ftell(file);
+    fseek(file, 0, SEEK_END);
+    end=ftell(file);
+    fseek(file, pos, SEEK_SET);
+    return end;
+}
+//static void foo(void){
+//	return;
+//	int a=0;
+//}
+/********************************END OF FILE***********************************/

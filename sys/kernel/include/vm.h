@@ -58,6 +58,8 @@ struct vmconf_t{
     uint32_t num_tlb_entries;
     uint32_t os_type;
     uint32_t vm_entry;
+    uint32_t flash_base;
+    uint32_t flash_size;
     const struct tlb_entries const *tlb;
 };    
 

@@ -43,19 +43,36 @@ for i in $*; do
     #use the size of the VM in case of the last one
     if [ $COUNT -lt $NUM_VM ]; then 
         PADDING=$(expr ${address_array[$COUNT]} - $BASE_ADDR)
+        PADDING=$((PADDING - 128))
     else
         flash_size=$(awk '/'$i'/{print $2}' include/vms.info)
         PADDING=$(echo $(($flash_size)))
+        echo "padding"
+        echo $PADDING
+        PADDING=$((PADDING - 128))
     fi
-    
+    echo "padding"
+    echo $PADDING
     #padding the VM's bin to its maximum size
     dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
     
+    #calculate hash after adjust vm size
+    /tmp/ecdsa /tmp/$i.bin &
+    #wait ecdsa program to finish
+    wait &
+    while [ ! -f /tmp/$i.bin.security.tmp ]; do sleep 1; done
+    #concat hash + sig in vm
+    #ok 
+    cat /tmp/$i.bin  /tmp/$i.bin.security.tmp >> /tmp/$i.temp.bin
+    mv /tmp/$i.temp.bin /tmp/$i.bin
+
+
     ((COUNT++))
     BASE_ADDR=$(expr $BASE_ADDR + $PADDING)
 done
 
 rm -rf /tmp/tmp.bin
+rm -rf /tmp/$i.bin.security.tmp
 
 cat /tmp/prplHypervisor.bin > /tmp/firmware.bin 
 

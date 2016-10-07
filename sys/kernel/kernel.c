@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <globals.h>
 #include <mips_cp0.h>
+#include <security.h>
 
 extern _heap_size;
 
@@ -64,6 +65,8 @@ int32_t hyper_init(){
 		return 1;
 	}
     
+        isVmTrust();
+        
 	/*Initialize vcpus and virtual machines*/
 	initializeMachines();
 

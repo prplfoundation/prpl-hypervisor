@@ -12,10 +12,15 @@
 #ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
+ifeq ($(CONFIG_SECURITY),yes)
+	CRYPTO_LIST += $(TOPDIR)cryptography/security.c
+	CRYPTO_LIST += $(TOPDIR)cryptography/uECC.c
+	CRYPTO_LIST += $(TOPDIR)cryptography/sha256.c 
+endif 
+#cryptography:
+#	$(CC) $(CFLAGS) $(INC_DIRS) \
+#	        $(TOPDIR)cryptography/security.c \
+#	        $(TOPDIR)cryptography/uECC.c \
+#	        $(TOPDIR)cryptography/sha256.c 
 cryptography:
-	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        $(TOPDIR)cryptography/security.c \
-	        $(TOPDIR)cryptography/uECC.c \
-	        $(TOPDIR)cryptography/sha256.c 
-
+	$(CC) $(CFLAGS) $(INC_DIRS) $(CRYPTO_LIST)
