@@ -21,9 +21,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <arch.h>
 #include <libc.h>
 
-
-#define USB_VM_REGISTER 0x20
-
 struct descriptor_decoded{
     uint8_t bLength;
     uint8_t bDescriptorType;
@@ -40,12 +37,6 @@ struct descriptor_decoded{
     uint8_t iSerialNumber;
     uint8_t bNumConfigurations;
 };
-
-void hyper_usb_vm_register(uint32_t guest_id);
-
-uint32_t hyper_usb_get_descr(uint8_t* descriptor, uint32_t size);
-
-uint32_t wait_device(struct descriptor_decoded *descriptor, uint32_t size);
 
 #endif
 

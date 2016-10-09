@@ -98,7 +98,7 @@ asm volatile (                    \
  move $a1, %z2 \n \
  hypcall %3 \n\
  move %0, $v0" \
- : "=r" (__ret) : "r" ((uint32_t) (descriptor)), "r" ((uint32_t) (size)), "I" (USB_VM_GET_DESCRIPTOR) : "a0", "a1", "v0"); \
+ : "=r" (__ret) : "r" ((uint32_t) (descriptor)), "r" ((uint32_t) (size)), "I" (USB_GET_DESCRIPTOR) : "a0", "a1", "v0"); \
  __ret; })
  
 /* USB polling. Updates the USB state machines.   */
@@ -106,7 +106,7 @@ asm volatile (                    \
 asm volatile (                    \
 "hypcall %1 \n\
  move %0, $v0 " \
- : "=r" (__ret) : "I" (USB_VM_POLLING) : "v0"); \
+ : "=r" (__ret) : "I" (USB_POLLING) : "v0"); \
  __ret; })
  
 /* USB send data  */
@@ -116,7 +116,7 @@ asm volatile (                    \
  move $a1, %z2 \n \
  hypcall %3 \n\
  move %0, $v0" \
- : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (USB_VM_SEND_DATA) : "a0", "a1", "v0"); \
+ : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (USB_SEND_DATA) : "a0", "a1", "v0"); \
  __ret; })
  
 #endif

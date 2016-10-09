@@ -15,6 +15,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/**
+ * @file eth.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * Ethernet virtualized driver for picoTCP stack implementing the polling method.
+ * 
+ */
+
 #ifdef PICOTCP
 
 #include <eth.h>
@@ -23,40 +32,55 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define ETH_FRAME_SZ 1518
 
-#define MILISECOND (100000000/ 1000)
-
+/** 
+ * @brief Temporary buffer.
+ */
 uint8_t frame_buf[ETH_FRAME_SZ];
 
+/** 
+ * @brief Ethernet link state.
+ */
 static uint32_t link_state = 0;
 
-uint32_t calc_wait_time(uint32_t time, uint32_t ms_delay){
-    uint32_t now = mfc0(CP0_COUNT, 0);
-    if ( (now - time) > (ms_delay * MILISECOND)){
-        return 1;
-    }
-    return 0;
-}
-
-
+/** 
+ * @brief PicoTCP link state checker function.
+ * @param dev picoTCP device.
+ * @return 0 for down or 1 for link up.
+ */
 int eth_link_state(struct pico_device *dev){
     return link_state;
 }
 
+/** 
+ * @brief Ethernet watchdog. Must be pulled around 500ms to check the link state. 
+ *  If the link is up, it enables the packet reception. 
+ * @param time Old time.
+ * @param ms_delay Time interval. 
+ */
 void eth_watchdog(uint32_t *time, uint32_t ms_delay){
-    if (calc_wait_time(*time, ms_delay)){
+    if (wait_time(*time, ms_delay)){
 	    link_state = eth_watch();
             *time = mfc0(CP0_COUNT, 0);
     }
 }
 
-void eth_get_mac(uint8_t *mac){
-	eth_mac(mac);
-}
-
+/** 
+ * @brief PicoTCP send packet function. 
+ * @param dev picoTCP device. 
+ * @param buf Frame buffer.
+ * @param len frame size.
+ * @return number of bytes sent. 
+ */
 int eth_send(struct pico_device *dev, void *buf, int len){
 	return eth_send_frame(buf, len);
 }
 
+/** 
+ * @brief PicoTCP poll function. Perform polling for packet reception.
+ * @param dev picoTCP device. 
+ * @param loop_score Polling control. 
+ * @return Updated value of loop_score.
+ */
 int eth_poll(struct pico_device *dev, int loop_score){
     int32_t size;
     

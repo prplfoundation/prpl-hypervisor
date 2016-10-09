@@ -37,17 +37,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 
+#include <pico_defines.h>
+#include <pico_stack.h>
+#include <pico_ipv4.h>
+#include <pico_tcp.h>
+#include <pico_socket.h>
 
 #include <arch.h>
-#include <libc.h>
 #include <eth.h>
 #include <guest_interrupts.h>
-
-#include "pico_defines.h"
-#include "pico_stack.h"
-#include "pico_ipv4.h"
-#include "pico_tcp.h"
-#include "pico_socket.h"
+#include <hypercalls.h>
 
 #define LISTENING_PORT 80
 #define MAX_CONNECTIONS 1
@@ -174,7 +173,7 @@ int main()
     uint32_t timer = 0;
     
     /* Obtain the ethernet MAC address */
-    eth_get_mac(mac);
+    eth_mac(mac);
     
     const char *ipaddr="192.168.0.2";
     uint16_t port_be = 0;

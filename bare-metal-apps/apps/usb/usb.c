@@ -19,34 +19,25 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <arch.h>
 #include <libc.h>
-#include <usb_lib.h>
+#include <usb.h>
 #include <guest_interrupts.h>
 #include <hypercalls.h>
 
+/* OWI Robotic Arm */
 #define IDPRODUCT 0
 #define IDVENDOR 0x1267
 
-#define MILISECOND (100000000/ 1000)
-
 struct descriptor_decoded descriptor;
-
-uint32_t calc_wait_time(uint32_t time, uint32_t ms_delay){
-    uint32_t now = mfc0(CP0_COUNT, 0);
-    if ( (now - time) > (ms_delay * MILISECOND)){
-        return 1;
-    }
-    return 0;
-}
 
 int main() {
     int32_t ret = 0, old = 0;
     uint32_t tm_poll = 0;
     
-    printf("\nPlease any USB device.");
+    printf("\nPlease connect any USB device.");
     
     while (1){
         
-        if(calc_wait_time(tm_poll, 100)){
+        if(wait_time(tm_poll, 100)){
             ret = usb_polling();
             if (ret != old){
                 if(ret){

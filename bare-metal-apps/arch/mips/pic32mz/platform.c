@@ -99,3 +99,27 @@ void init_proc(){
 }
 
 
+/**
+ * @brief Determines if a time period was consumed.
+ * @param old_time Initial time.
+ * @param ms_delay Time period.
+ * @return 0 if the period was not consumed, 1 otherwise.
+ */
+uint32_t wait_time(uint32_t old_time, uint32_t ms_delay){
+	uint32_t diff_time;
+	uint32_t now = mfc0(CP0_COUNT, 0);
+    
+	if (now >= old_time)
+		diff_time = now - old_time;
+	else
+		diff_time = 0xffffffff - (old_time - now);
+
+	if(diff_time > (ms_delay * MILISECOND)){
+		return 1;
+	}
+	
+	return 0;
+}
+
+
+

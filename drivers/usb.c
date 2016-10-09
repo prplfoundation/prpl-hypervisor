@@ -445,12 +445,12 @@ void usb_start(){
     
 	INFO("USB interrupt vector at 0x%x", offset);
     
-	if (register_hypercall(usb_polling, USB_VM_POLLING) < 0){
+	if (register_hypercall(usb_polling, USB_POLLING) < 0){
 		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
 		return;
 	}
     
-	if (register_hypercall(get_descriptor, USB_VM_GET_DESCRIPTOR) < 0){
+	if (register_hypercall(get_descriptor, USB_GET_DESCRIPTOR) < 0){
 		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
 		return;
 	}

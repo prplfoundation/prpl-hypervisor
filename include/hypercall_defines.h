@@ -84,16 +84,20 @@ typedef void hypercall_t();
 /* Keep the USB state machines updated. 
  * V0 = 1 or 0 for device descriptor available/unavailable.
  */
-#define USB_VM_POLLING              8
+#define USB_POLLING              8
 
 /* Returns the device's descritpor 
  * A0 = buffer pointer
  * A1 = buffer size.
  * V0 = descriptor size
  */
-#define USB_VM_GET_DESCRIPTOR       9
+#define USB_GET_DESCRIPTOR       9
 
-#define USB_VM_SEND_DATA            10
+/* USB send data
+ * A0 = buffer pointer
+ * A1 = buffer size.
+ */
+#define USB_SEND_DATA            10
 
 
 /* Virtual IO Write Address .
