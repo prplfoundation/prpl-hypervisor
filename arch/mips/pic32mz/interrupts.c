@@ -15,6 +15,20 @@
  * 
  */
 
+/**
+ * @file interrupts.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * PIC32mz interrupt subsystem. Initializes the pic32mz interrupts
+ * and allows for the registration of interrupt handlers. 
+ * 
+ * The hypervisor configures the pic32mz in vectored mode and uses 
+ * the OFF register to configure the vector address of the interrupt. 
+ * A device driver, after invoke register_interrupt() must configure
+ * the corresponding OFF register with the function return.
+ *
+ */
 
 #include<pic32mz.h>
 #include <driver.h>
@@ -29,8 +43,19 @@
 
 typedef void  handler_vector_t();
 
+/** 
+ * @brief Interrupt handlers is an array of pointers to 
+ * functions. Device drivers calls register_interrupt() to 
+ * register a new interrupt handler. 
+ */
 handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS] = {NULL};
 
+/** 
+ * @brief Register a new interrupt handler. 
+ * @param handler Function pointer. 
+ * @return Relative interrupt address or 0 if the handler
+ * could not be registered. 
+ */
 uint32_t register_interrupt(handler_vector_t * handler){
     uint32_t i;
     for(i=0; i<MAX_NUM_INTERRUPTS; i++){
@@ -42,6 +67,11 @@ uint32_t register_interrupt(handler_vector_t * handler){
     return 0;
 }
 
+/** 
+ * @brief Configures the pic32mz in vectored interrupt mode. 
+ * Additionally, configure all interrupt levels to be handled
+ * at GPR shadow 0. 
+ */
 void interrupt_init(){
     uint32_t temp_CP0, offset;
     
