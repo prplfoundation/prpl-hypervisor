@@ -18,88 +18,80 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <config.h>
 #include <stdarg.h>
+#include <uart.h>
 
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 
-void udelay (uint32_t usec){
-    uint32_t now = getCounter();
-    uint32_t final = now + usec * (CPU_FREQ / 1000000) / 2;
-
-    for (;;) {
-        now = getCounter();
-        if ((int32_t) (now - final) >= 0) break;
-    }
-}
-
-
-
 void *memset(void *dst, int c, unsigned long bytes){
-  unsigned char *Dst = (unsigned char *)dst;
+	unsigned char *Dst = (unsigned char *)dst;
 
-  while((int)bytes-- > 0)
-    *Dst++ = (unsigned char)c;
-  return dst;
+	while((int)bytes-- > 0)
+		*Dst++ = (unsigned char)c;
+	
+	return dst;
 }
 
 void *memcpy(void *dst, const void *src, unsigned long bytes){
-  if(((unsigned int)dst | (unsigned int)src | bytes) & 3){
-    unsigned char *Dst = (unsigned char *)dst, *Src = (unsigned char *)src;
-    while((int)bytes-- > 0)
-      *Dst++ = *Src++;
-  }else{
-    unsigned int *Dst32 = (unsigned int *)dst, *Src32 = (unsigned int *)src;
-    bytes >>= 2;
-    while((int)bytes-- > 0)
-      *Dst32++ = *Src32++;
-  }
-  return dst;
+	if(((unsigned int)dst | (unsigned int)src | bytes) & 3){
+		unsigned char *Dst = (unsigned char *)dst, *Src = (unsigned char *)src;
+		while((int)bytes-- > 0)
+			*Dst++ = *Src++;
+	}else{
+	
+		unsigned int *Dst32 = (unsigned int *)dst, *Src32 = (unsigned int *)src;
+		bytes >>= 2;
+		while((int)bytes-- > 0)
+			*Dst32++ = *Src32++;
+	}
+	return dst;
 }
 
 int32_t puts(const char *str){
-  while(*str){
-    if(*str == '\n')
-      putchar('\r');
-    putchar(*str++);
-  }
+	while(*str){
+		if(*str == '\n')
+			putchar('\r');
+		putchar(*str++);
+	}
   return 0;
 }
 
 char *itoa(int i, char *s, int base){
-  char c;
-  char *p = s;
-  char *q = s;
-  unsigned int h;
+	char c;
+	char *p = s;
+	char *q = s;
+	unsigned int h;
 
-  if (base == 16){
-    h = (unsigned int)i;
-    do{
-      *q++ = '0' + (h % base);
-    } while (h /= base);
-    for (*q = 0; p <= --q; p++){
-      (*p > '9')?(c = *p + 39):(c = *p);
-      (*q > '9')?(*p = *q + 39):(*p = *q);
-      *q = c;
-    }
-  }else{
-    if (i >= 0){
-      do{
-	*q++ = '0' + (i % base);
-      } while (i /= base);
-    }else{
-      *q++ = '-';
-      p++;
-      do{
-	*q++ = '0' - (i % base);
-      } while (i /= base);
-    }
-    for (*q = 0; p <= --q; p++){
-      c = *p;
-      *p = *q;
-      *q = c;
-    }
-  }
-  return s;
+	if (base == 16){
+		h = (unsigned int)i;
+		do{
+			*q++ = '0' + (h % base);
+		} while (h /= base);
+	
+		for (*q = 0; p <= --q; p++){
+			(*p > '9')?(c = *p + 39):(c = *p);
+			(*q > '9')?(*p = *q + 39):(*p = *q);
+			*q = c;
+		}
+	}else{
+		if (i >= 0){
+			do{
+				*q++ = '0' + (i % base);
+			} while (i /= base);
+		}else{
+			*q++ = '-';
+			p++;
+			do{
+				*q++ = '0' - (i % base);
+			} while (i /= base);
+		}
+		for (*q = 0; p <= --q; p++){
+			c = *p;
+			*p = *q;
+			*q = c;
+		}
+	}
+	return s;
 }
 
 static void printchar(char **str, int c)
@@ -256,38 +248,39 @@ static int32_t print(char **out, const char *format, va_list args )
 contributed by Christian Ettinger*/
 int32_t printf(const char *format, ...)
 {
-        va_list args;
+	va_list args;
         
-        va_start( args, format );
-        return print( 0, format, args );
+	va_start( args, format );
+	
+	return print( 0, format, args );
 }
 
 int32_t sprintf(char *out, const char *format, ...)
 {
-        va_list args;
+	va_list args;
         
-        va_start( args, format );
-        return print( &out, format, args );
+	va_start( args, format );
+	
+	return print( &out, format, args );
 }
 
 //Some string manipulation functions
-
 int32_t strcmp(const char *s1, const char *s2)
 {
-  int ret = 0;
-  while (!(ret = *(unsigned char *) s1 - *(unsigned char *) s2) && *s2) ++s1, ++s2;
-  if (ret < 0)
-    ret = -1;
-  else if (ret > 0)
-    ret = 1 ;
-  return ret;
+	int ret = 0;
+	while	(!(ret = *(unsigned char *) s1 - *(unsigned char *) s2) && *s2) ++s1, ++s2;
+	if (ret < 0)
+		ret = -1;
+	else if (ret > 0)
+		ret = 1 ;
+	return ret;
 }
 
 char *strcpy(char *dest, const char *src)
 {
-   char *save = dest;
-   while(*dest++ = *src++);
-   return save;
+	char *save = dest;
+	while(*dest++ = *src++);
+	return save;
 }
 
 uint32_t strlen(const char *str)
@@ -298,12 +291,12 @@ uint32_t strlen(const char *str)
 }
 
 uint32_t hash(unsigned char *str) {
-    uint32_t hash = 5381;
-    int c;
+	uint32_t hash = 5381;
+	int c;
 
-    while (c = *str++) {
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    }
+	while (c = *str++) {
+		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+	}
 
-    return hash;
+	return hash;
 }

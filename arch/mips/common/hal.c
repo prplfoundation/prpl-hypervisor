@@ -569,4 +569,18 @@ uint32_t getRandom(){
 }
 
 
+/**
+ * @brief Wait for microseconds. 
+ * @param usec Wait time.
+ */
+void udelay (uint32_t usec){
+    uint32_t now = mfc0(CP0_COUNT, 0);
+    uint32_t final = now + usec * (CPU_FREQ / 1000000) / 2;
+
+    for (;;) {
+        now = mfc0(CP0_COUNT, 0);
+        if ((int32_t) (now - final) >= 0) break;
+    }
+}
+
 

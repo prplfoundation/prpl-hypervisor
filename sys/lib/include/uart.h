@@ -1,0 +1,13 @@
+#ifndef _UART_H
+#define _UART_H
+
+#include <types.h>
+
+void init_uart(uint32_t baudrate_u2, uint32_t baudrate_u6, uint32_t sysclk);
+void putchar(uint8_t c);
+inline int32_t kbhit(void){
+	return (U2STA & USTA_URXDA);
+}
+uint32_t getchar(void);
+
+#endif 

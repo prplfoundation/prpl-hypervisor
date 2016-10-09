@@ -55,5 +55,6 @@ uint32_t getCounter(void);
 void setGTOffset(int32_t gtoffset);
 void setGuestCTL2(uint32_t guestclt2);
 uint32_t getRandom();
+void udelay (uint32_t usec);
 
 #endif /* _HAL_H_ */
