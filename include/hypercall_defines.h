@@ -81,9 +81,18 @@ typedef void hypercall_t();
  */ 
 #define HCALL_ETHERNET_GET_MAC  7
 
-
+/* Keep the USB state machines updated. 
+ * V0 = 1 or 0 for device descriptor available/unavailable.
+ */
 #define USB_VM_POLLING              8
+
+/* Returns the device's descritpor 
+ * A0 = buffer pointer
+ * A1 = buffer size.
+ * V0 = descriptor size
+ */
 #define USB_VM_GET_DESCRIPTOR       9
+
 #define USB_VM_SEND_DATA            10
 
 

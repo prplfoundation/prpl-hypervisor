@@ -69,86 +69,86 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 enum USB_OPERATION_MODE {
-    HOST_MODE,
-    DEVICE_MODE
+	HOST_MODE,
+	DEVICE_MODE
 };
 
 enum USB_SPEED {
-    FULL_SPEED = 0,
-    HIGH_SPEED =1,
-    LOW_SPEED = 2
+	FULL_SPEED = 0,
+	HIGH_SPEED =1,
+	LOW_SPEED = 2
 };
 
-enum USB_STATE{
-    IDLE,
-    DEBOUNCE,
-    USB_RESET,
-    POST_RESET_DELAY,
-    HANDSHAKE,
-    REQUEST_DESCRIPTOR,
-    WAIT_TX_INT,
-    WAIT_DESCRIPTOR,
-    READ_DESCRIPTOR,
-    RUNNING,
-    VBUSERROR,
-    GENERALERROR
+enum USB_DEVICE_STATE{
+	IDLE,
+	DEBOUNCE,
+	USB_RESET,
+	AFTER_RESET_DELAY,
+	HANDSHAKE,
+	REQUEST_DESCRIPTOR,
+	WAIT_TX_INT,
+	WAIT_DESCRIPTOR,
+	READ_DESCRIPTOR,
+	RUNNING,
+	VBUSERROR,
+	GENERALERROR
 };
 
 enum USB_TRANSFER_STATE{
-    TRANSFER_INT_VM,
-    TRANSFER_IDLE,
-    TRANSFER_START,
-    TRANSFER_SENDING,
-    TRANSFER_WAIT_TX_INT,
-    TRANSFER_DONE
+	TRANSFER_INT_VM,
+	TRANSFER_IDLE,
+	TRANSFER_START,
+	TRANSFER_SENDING,
+	TRANSFER_WAIT_TX_INT,
+	TRANSFER_DONE
 };
 
 struct usb_transfer_status_t{
-    volatile uint32_t state;
-    uint8_t pkt_sz;
+	volatile uint32_t state;
+	uint8_t pkt_sz;
 };
 
 
 struct usb_status_t{
-    volatile uint32_t state;
-    uint32_t descriptor_available;
-    uint32_t connected;
-    uint32_t debounce;
-    uint32_t wait_debounce;
-    uint32_t speed;
+	volatile uint32_t state;
+	uint32_t descriptor_available;
+	uint32_t connected;
+	uint32_t debounce;
+	uint32_t wait_debounce;
+	uint32_t speed;
 };
 
 struct usb_setup_packet_t{
-    uint8_t bmRequestType;
-    uint8_t bRequest;
-    uint16_t wValue;
-    uint16_t wIndex;
-    uint16_t wLength;    
+	uint8_t bmRequestType;
+	uint8_t bRequest;	
+	uint16_t wValue;
+	uint16_t wIndex;
+	uint16_t wLength;    
 };
 
 struct descriptor_receive{
-    uint8_t descriptor[18];
-    uint32_t received;
-    uint32_t descr_sz;
-    uint32_t tranfer_sz;
+	uint8_t descriptor[18];
+	uint32_t received;
+	uint32_t descr_sz;
+	uint32_t tranfer_sz;
 };
 
 
 struct descriptor_decoded{
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    uint16_t bcdUSB;
-    uint8_t bDeviceClass;
-    uint8_t bDeviceSubClass;
-    uint8_t bDeviceProtocol;
-    uint8_t bMaxPacketSize;
-    uint16_t idVendor;
-    uint16_t idProduct;
-    uint16_t bcdDevice;
-    uint8_t iManufacturer;
-    uint8_t iProduct;
-    uint8_t iSerialNumber;
-    uint8_t bNumConfigurations;
+	uint8_t bLength;
+	uint8_t bDescriptorType;
+	uint16_t bcdUSB;
+	uint8_t bDeviceClass;
+	uint8_t bDeviceSubClass;
+	uint8_t bDeviceProtocol;
+	uint8_t bMaxPacketSize;
+	uint16_t idVendor;
+	uint16_t idProduct;
+	uint16_t bcdDevice;
+	uint8_t iManufacturer;
+	uint8_t iProduct;
+	uint8_t iSerialNumber;
+	uint8_t bNumConfigurations;
 };
 
 #define DEBOUNCE_MS 500
