@@ -23,6 +23,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 
+static void printchar(char **str, int c);
+static int32_t prints(char **out, const char *string, int width, int pad);
+static int32_t printi(char **out, int i, int b, int sg, int width, int pad, int letbase);
+static int32_t print(char **out, const char *format, va_list args );
+
+
 void *memset(void *dst, int c, unsigned long bytes){
 	unsigned char *Dst = (unsigned char *)dst;
 
@@ -94,8 +100,7 @@ char *itoa(int i, char *s, int base){
 	return s;
 }
 
-static void printchar(char **str, int c)
-{		
+static void printchar(char **str, int c){		
 	if (str) {
 		**str = c;
 		++(*str);
@@ -103,8 +108,7 @@ static void printchar(char **str, int c)
 	else (void)putchar(c);
 }
 
-static int32_t prints(char **out, const char *string, int width, int pad)
-{
+static int32_t prints(char **out, const char *string, int width, int pad){
 	register int pc = 0, padchar = ' ';
 
 	if (width > 0) {
