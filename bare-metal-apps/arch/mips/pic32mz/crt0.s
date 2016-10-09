@@ -173,25 +173,7 @@ hyp_flash_write:
         .set reorder
 .end hyp_flash_write
         
-        .global hyp_get_guest_id
-        .ent hyp_get_guest_id        
-hyp_get_guest_id:
-        .set noreorder 
-        hypcall 0
-        jr $ra
-        nop
-        .set reorder        
-.end hyp_get_guest_id
-        
-        .global guest_is_up
-        .ent guest_is_up        
-guest_is_up:
-        .set noreorder 
-        hypcall 0x3
-        jr $ra
-        nop
-        .set reorder        
-.end guest_is_up
+      
 
 
         .global spinlock

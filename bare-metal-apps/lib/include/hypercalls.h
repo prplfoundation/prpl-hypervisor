@@ -56,7 +56,15 @@ asm volatile (                    \
  move %0, $v0 " \
  : "=r" (__ret) : "r" ((uint32_t) (source_id)), "r" ((uint32_t) (msg)), "I" (HCALL_IPC_RECV_MSG) : "a0", "v0"); \
  __ret; })
-
+ 
+/* Get own guest ID  */
+#define get_guestid() ({ int32_t __ret; \
+asm volatile (                    \
+"hypcall %1 \n\
+ move %0, $v0 " \
+ : "=r" (__ret) : "I" (HCALL_GET_VM_ID) : "a0", "v0"); \
+ __ret; })
+ 
  /* Ethernert link checker */
 #define eth_watch() ({ int32_t __ret; \
 asm volatile (                    \

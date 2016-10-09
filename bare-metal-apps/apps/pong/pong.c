@@ -17,22 +17,22 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /*************************************************************
  * Ping-Pong application - Inter-VM communication.
- * To execute the Ping-Pong modify the APP_LIST variable in 
- * the main Makefile to compile the ping.c and pong.c files.
- * Example:
- *      APP_LIST=  ping pong
- * */
-
+ * 
+ * To execute the Ping-Pong set the CFG_FILE on the main 
+ * Makefile to the sample-2VMs.cfg configuration file.  
+ * 
+ */
 
 #include <arch.h>
 #include <libc.h>
 #include <guest_interrupts.h>
+#include <hypercalls.h>
 
 
 volatile int32_t t2 = 0;
 
 void irq_timer(){
- t2++;     
+	t2++;     
 }
 
 
@@ -40,23 +40,23 @@ char buffer[128];
 char resp[] = "pong!";
 
 int main() {
-    uint32_t source;
-    int32_t ret;
+	uint32_t source;
+	int32_t ret;
     
-    interrupt_register(irq_timer, GUEST_TIMER_INT);
+	interrupt_register(irq_timer, GUEST_TIMER_INT);
     
-    serial_select(UART2);
-    printf("\npong VM ID %d", hyp_get_guest_id());
-    while (1){
-        ret = ReceiveMessage(&source, buffer, sizeof(buffer), 1);
-        if (ret<0){
-            print_net_error(ret);
-        }else{
-            printf("\npong VM: message from VM ID %d: \"%s\" (%d bytes)", source, buffer, ret);
-            SendMessage(source, resp, strlen(resp)+1);
-        }
-   }
+	serial_select(UART2);
+	printf("\npong VM ID %d", get_guestid());
+	while (1){
+		ret = ReceiveMessage(&source, buffer, sizeof(buffer), 1);
+		if (ret<0){
+			print_net_error(ret);
+		}else{
+			printf("\npong VM: message from VM ID %d: \"%s\" (%d bytes)", source, buffer, ret);
+			SendMessage(source, resp, strlen(resp)+1);
+		}
+	}
     
-    return 0;
+	return 0;
 }
 

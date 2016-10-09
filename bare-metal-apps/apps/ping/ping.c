@@ -15,26 +15,25 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-
 /*************************************************************
  * Ping-Pong application - Inter-VM communication.
- * To execute the Ping-Pong modify the APP_LIST variable in 
- * the main Makefile to compile the ping.c and pong.c files.
- * Example:
- *      APP_LIST=  ping pong
- * */
-
+ * 
+ * To execute the Ping-Pong set the CFG_FILE on the main 
+ * Makefile to the sample-2VMs.cfg configuration file.  
+ * 
+ */
 
 #include <arch.h>
 #include <libc.h>
 #include <network.h>
 #include <guest_interrupts.h>
+#include <hypercalls.h>
 
 
 volatile int32_t t2 = 0;
 
 void irq_timer(){
- t2++;     
+	t2++;     
 }
 
 
@@ -42,28 +41,29 @@ char message_buffer[128];
 
 
 int main() {
-    int32_t ret, source;
+	int32_t ret, source;
     
-    interrupt_register(irq_timer, GUEST_TIMER_INT);
+	interrupt_register(irq_timer, GUEST_TIMER_INT);
     
-    serial_select(UART2);
-    printf("\nping VM ID %d", hyp_get_guest_id());
-    while (1){
-        sprintf(message_buffer, "%s %d", "ping?", t2);
-        ret = SendMessage(2, message_buffer, strlen(message_buffer)+1);
-        if (ret<0){
-            print_net_error(ret);
-        }else{
-            ret = ReceiveMessage(&source, message_buffer, sizeof(message_buffer), 1);
-            if (ret<0){
-                print_net_error(ret);
-            }else{
-                if(ret)
-                    printf("\nping VM: message from VM ID %d: \"%s\" (%d bytes)", source, message_buffer, ret);
-            }
-        }
-    }
-    
-    return 0;
+	serial_select(UART2);
+	
+	printf("\nping VM ID %d", get_guestid());
+	while (1){
+		sprintf(message_buffer, "%s %d", "ping?", t2);
+		ret = SendMessage(2, message_buffer, strlen(message_buffer)+1);
+		if (ret<0){
+			print_net_error(ret);
+		}else{
+			ret = ReceiveMessage(&source, message_buffer, sizeof(message_buffer), 1);
+			if (ret<0){
+				print_net_error(ret);
+			}else{
+				if(ret)
+					printf("\nping VM: message from VM ID %d: \"%s\" (%d bytes)", source, message_buffer, ret);
+			}
+		}
+	}
+	
+	return 0;
 }
 
