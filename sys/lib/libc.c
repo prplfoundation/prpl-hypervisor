@@ -279,7 +279,7 @@ int32_t strcmp(const char *s1, const char *s2)
 char *strcpy(char *dest, const char *src)
 {
 	char *save = dest;
-	while(*dest++ = *src++);
+	while( (*dest++ = *src++) );
 	return save;
 }
 
@@ -294,7 +294,7 @@ uint32_t hash(unsigned char *str) {
 	uint32_t hash = 5381;
 	int c;
 
-	while (c = *str++) {
+	while ( (c = *str++) ) {
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 	}
 
