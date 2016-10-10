@@ -15,12 +15,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#include "tlb.h"
-#include "types.h"
-#include "hypercall_defines.h"
+#include <tlb.h>
+#include <types.h>
+#include <hypercall_defines.h>
 #include <vcpu.h>
 #include <globals.h>
 #include <mips_cp0.h>
+#include <hal.h>
+
 
 
 /** Get a random tlb index  */

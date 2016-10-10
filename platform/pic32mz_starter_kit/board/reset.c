@@ -25,9 +25,12 @@
  * 
  */
 
-#include<pic32mz.h>
+#include <pic32mz.h>
 #include <driver.h>
 #include <globals.h>
+#include <libc.h>
+#include <hal.h>
+#include <interrupts.h>
 
 
 /**
@@ -48,7 +51,7 @@ void SoftReset(){
 	RSWRST |= 1;
     
 	/* read RSWRST register to trigger reset */
-	volatile int* p = &RSWRST;
+	volatile uint32_t* p = (uint32_t*)&RSWRST;
 	*p;
     
 	/* prevent any unwanted code execution until reset occurs*/

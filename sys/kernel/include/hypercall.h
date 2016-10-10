@@ -12,31 +12,15 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OT
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
 */
+ 
+#ifndef _HYPERCALL_H
+#define _HYPERCALL_H
 
-#ifndef _HYPERCALL_H_
-#define _HYPERCALL_H_
-
-#include <hypercall_defines.h>
 #include <types.h>
+#include <hypercall_defines.h>
 
-/**HYPERCALLS PARAMETERS STRUCTS**/
-
-/*RT Create vcpu parameters struct*/
-typedef struct rtvcpu_par{
-  char service_name[32];
-  unsigned deadline;
-  unsigned period;
-  unsigned wcet;
-  unsigned entry_point;
-  char* stack_pointer;
-  unsigned task_addr;
-} rtvcpu_par;
-
-
-//Hypercall handler
-int32_t HypercallHandler();
+int32_t register_hypercall(hypercall_t* hyper, uint32_t code);
+void hypercall_execution();
 
 #endif
-

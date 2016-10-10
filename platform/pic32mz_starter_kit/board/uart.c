@@ -1,6 +1,7 @@
 #include <config.h>
 #include <types.h>
 #include <pic32mz.h>
+#include <uart.h>
 
 /**
  * @file uart.c
@@ -43,7 +44,7 @@ void init_uart(uint32_t baudrate_u2, uint32_t baudrate_u6, uint32_t sysclk){
  * @brief Write char to UART2. 
  * @param c Character to be writed. 
  */
-void putchar(char c){   
+void putchar(uint8_t c){   
 	while(U2STA&USTA_UTXBF);
 	U2TXREG = c;   
 }
@@ -54,7 +55,7 @@ void putchar(char c){
  * @return Read character. 
  */
 uint32_t getchar(void){
-	while(!kbhit());
+	while(!(U2STA & USTA_URXDA));
 	return (uint32_t)U2RXREG;
 }
 

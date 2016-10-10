@@ -37,11 +37,11 @@
 #include <config.h>
 #include <globals.h>
 #include <driver.h>
+#include <interrupts.h>
+#include <libc.h>
 
 #define MAX_NUM_INTERRUPTS 10
 #define VECTOR_1_OFFSET 0x220
-
-typedef void  handler_vector_t();
 
 /** 
  * @brief Interrupt handlers is an array of pointers to 
@@ -72,8 +72,8 @@ uint32_t register_interrupt(handler_vector_t * handler){
  * Additionally, configure all interrupt levels to be handled
  * at GPR shadow 0. 
  */
-void interrupt_init(){
-    uint32_t temp_CP0, offset;
+static void interrupt_init(){
+    uint32_t temp_CP0;
     
     /* All root interrupt levels are handled at GPR shadow 0 where the
      * hypervisor resides.  Other GPR shadows are used for VM's execution. 

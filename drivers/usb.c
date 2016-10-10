@@ -37,6 +37,9 @@
 #include <hal.h>
 #include <driver.h>
 #include <hypercall_defines.h>
+#include <hypercall.h>
+#include <libc.h>
+#include <interrupts.h>
 
 static struct usb_status_t usb_status;
 static struct descriptor_receive descriptor_data;
@@ -57,7 +60,7 @@ void usb_send_data(uint8_t* buf, uint32_t size){
  *   Input: 	a0 = Destination buffer.
  *   Output: 	v0 = Message size. 
  */
-uint32_t get_descriptor(){
+void get_descriptor(){
 	uint8_t *buf  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
 
 	uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
@@ -186,9 +189,6 @@ void usb_fill_setup_packet(struct usb_setup_packet_t *packet,
  */
 void update_state_machine(){
 	static uint32_t request_count = 0;
-	uint32_t sz;
-	uint32_t i;
-	vcpu_t* vcpu = NULL;
     
 	switch (usb_status.state){
 		/* USB activity detected. Wait for the device debounce time.*/
@@ -303,9 +303,6 @@ void update_state_machine(){
  * periodically during data transfers. 
  */
 void update_transfer_state_machine(){
-	uint32_t i;
-	static uint32_t flag=0;
-	vcpu_t *vcpu=NULL;
     
 	switch(usb_transfer_status.state){
 		/* There are no transfers happening now. */

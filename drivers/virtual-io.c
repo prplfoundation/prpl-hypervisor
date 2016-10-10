@@ -36,6 +36,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercall_defines.h>
 #include <mips_cp0.h>
 #include <hal.h>
+#include <scheduler.h>
+#include <libc.h>
 
 /**
  * @brief A local array of pointers to the vmconf_t data structure.

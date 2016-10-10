@@ -19,7 +19,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define __VCPU_H
 
 #include <types.h>
-#include <scheduler.h>
 #include <vm.h>
 
 #define NUM_ASIDS 64
@@ -135,6 +134,10 @@ typedef struct {
 
 extern processor_t* proc; 
 extern vcpu_t *idle_vcpu;
+
+void contextSave();
+uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount);
+void contextRestore();
 
 
 #endif

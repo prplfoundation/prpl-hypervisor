@@ -23,8 +23,9 @@
  * Specific platform initialization.
  */
 
-#include<pic32mz.h>
-#include<config.h>
+#include <pic32mz.h>
+#include <config.h>
+#include <uart.h>
 
 /**
  * @brief Called on early hypervisor initialization and responsable for basic the

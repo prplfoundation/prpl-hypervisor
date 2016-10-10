@@ -47,7 +47,7 @@ VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 LINKER_SCRIPT = ../../arch/mips/pic32mz/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS = -EL -O2 -mips32r5 -mmicromips 
+CFLAGS = -EL -O2 -mips32r5 -mmicromips -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt 
 #flointing pointing options
@@ -62,6 +62,7 @@ LDFLAGS = -EL
 ### Include dirs ###
 INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz/include \
            -I$(TOPDIR)arch/mips/common/include \
+           -I$(TOPDIR)/platform/include \
            -I$(TOPDIR)sys/lib/include \
            -I$(TOPDIR)sys/kernel/include \
            -I$(TOPDIR)platform/pic32mz_starter_kit/include \

@@ -32,6 +32,9 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include <pic32mz.h>
 #include <mips_cp0.h>
 #include <guest_interrupts.h>
+#include <scheduler.h>
+#include <interrupts.h>
+#include <libc.h>
 
 /**
  * @brief Number of timer ticks. 
@@ -60,8 +63,6 @@ inline void calc_next_timer_interrupt(uint32_t interval){
  * Perfoms VCPUs scheduling and virtual timer interrupt injection on guests. 
  */
 static void timer_interrupt_handler(){
-	uint32_t temp_CP0;
-	uint32_t ret;
     
 	run_scheduler();
 	

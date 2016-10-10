@@ -33,6 +33,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercall_defines.h>
 #include <mips_cp0.h>
 #include <guest_interrupts.h>
+#include <libc.h>
 
 
 /**

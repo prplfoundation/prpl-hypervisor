@@ -83,6 +83,7 @@ typedef struct vm_t {
 
 vm_t *create_vm(const struct vmconf_t const *vm);
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point);
+void initializeMachines(void);
 
 
 #endif

@@ -29,9 +29,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 #include <globals.h>
 #include <mips_cp0.h>
+#include <board.h>
+#include <malloc.h>
+#include <vm.h>
+#include <driver.h>
+#include <timer.h>
+#include <libc.h>
 
 /* HEAP size as calculated by the linker script. */
-extern _heap_size;
+extern uint32_t _heap_size;
 
 /* Stringfy compiler parameters. */
 #define STR(x) #x
@@ -139,7 +145,6 @@ int32_t hasVZ(){
  */
 int32_t ConfigureGPRShadow(){
 	int32_t srsclt_reg;
-	int32_t guestsrsclt_reg;
 	int32_t num_shadow_gprs = 0;
 
 	/* Configure the GPR Shadow. The hypervisor will use the lowest shadow page. 

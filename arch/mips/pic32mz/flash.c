@@ -17,7 +17,8 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 
 #include <config.h>
 #include <types.h>
-#include "pic32mz.h"
+#include <pic32mz.h>
+#include <hal.h>
 
 /* Uses the last page 16Kb of the flash to data persistance */
 uint32_t* pageFlash = (uint32_t *)0xbd1fc000;
@@ -98,5 +99,6 @@ uint8_t * flash_write1Kbuffer(uint8_t *buffer){
     for(i=0; i<256; i+=4){
         NVMWriteQuad((pageFlash+i), ((uint32_t*)buffer)+i);    
     }
+    return 0;
 }
 

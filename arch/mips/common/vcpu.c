@@ -29,6 +29,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <hal.h>
 #include <mips_cp0.h>
+#include <scheduler.h>
 
 /**
  * @brief Save the VCPU context. Saving only the necessary registers for 
