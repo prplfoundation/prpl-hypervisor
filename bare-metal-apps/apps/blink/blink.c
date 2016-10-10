@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <hypercalls.h>
 #include <guest_interrupts.h>
+#include <platform.h>
 
 
 volatile int32_t t2 = 0;
@@ -31,8 +32,6 @@ void irq_timer(){
 }
 
 int main() {
-    /* Pin RH0 as ouput (LED 1)*/
-    uint32_t a;
     
     interrupt_register(irq_timer, GUEST_TIMER_INT);
     

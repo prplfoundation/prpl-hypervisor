@@ -57,7 +57,7 @@ CC= $(CROSS_COMPILER)gcc
 LINKER_SCRIPT = ../../apps/$(APP)/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -O2 -mtune=m14k -mips32r2
+CFLAGS += -EL -O2 -mtune=m14k -mips32r2 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options

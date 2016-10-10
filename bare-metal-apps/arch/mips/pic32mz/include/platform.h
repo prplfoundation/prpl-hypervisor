@@ -15,42 +15,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#ifndef ETH_H
-#define ETH_H
+#ifndef _PLATFORM_H
+#define _PLATFORM_H
 
-#ifdef PICOTCP
+#include <types.h>
 
-#include <arch.h>
-#include <libc.h>
-#include <network.h>
+typedef void interrupt_handler_t();
 
-#include "pico_defines.h"
-#include "pico_stack.h"
+uint32_t interrupt_register(interrupt_handler_t *handler, uint32_t interrupt);
+void init_proc();
+uint32_t wait_time(uint32_t old_time, uint32_t ms_delay);
 
-
-
-#define ETH_MESSAGE_SZ 1536
-#define ETH_MESSAGELIST_SZ 5
-
-struct eth_message_t{
-        uint32_t size; /* size of each message in message_list */
-        uint8_t packet[ETH_MESSAGE_SZ];
-};
-
-
-struct eth_message_list_t{
-        uint32_t in;
-        uint32_t out;
-        volatile uint32_t num_packets;
-        struct eth_message_t ringbuf[ETH_MESSAGELIST_SZ];
-};
-
-
-int eth_send(struct pico_device *dev, void *buf, int len);
-int eth_poll(struct pico_device *dev, int loop_score);
-int eth_link_state(struct pico_device *dev);
-void eth_watchdog(uint32_t *time, uint32_t ms_delay);
-    
 #endif
-#endif
-

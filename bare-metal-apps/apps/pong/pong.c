@@ -27,6 +27,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <guest_interrupts.h>
 #include <hypercalls.h>
+#include <platform.h>
+#include <network.h>
 
 
 volatile int32_t t2 = 0;

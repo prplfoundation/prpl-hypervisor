@@ -28,6 +28,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <network.h>
 #include <guest_interrupts.h>
 #include <hypercalls.h>
+#include <platform.h>
 
 
 volatile int32_t t2 = 0;
@@ -41,7 +42,8 @@ char message_buffer[128];
 
 
 int main() {
-	int32_t ret, source;
+	int32_t ret;
+	uint32_t source;
     
 	interrupt_register(irq_timer, GUEST_TIMER_INT);
     

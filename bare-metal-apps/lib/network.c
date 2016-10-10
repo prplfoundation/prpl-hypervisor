@@ -20,10 +20,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <hypercalls.h>
 #include <guest_interrupts.h>
+#include <platform.h>
 
 static struct message_list_t message_list;
 
-int ReceiveMessage(int *source, char *message, int bufsz, int block){
+int32_t ReceiveMessage(uint32_t *source, void* message, uint32_t bufsz, uint32_t block){
         unsigned int size, out;
         
         asm volatile("di");
@@ -56,13 +57,13 @@ int ReceiveMessage(int *source, char *message, int bufsz, int block){
         return size;
 }
 
-int SendMessage(unsigned target_id, void* message, unsigned size){
+int32_t SendMessage(uint32_t target_id, void* message, uint32_t size){
 	return ipc_send(target_id, message, size);
 }
 
 
 void irq_network(){
-        int ret = 1, in, flag=0;
+        int ret = 1, in;
         
         if(message_list.num_messages == MESSAGELIST_SZ){
                 return;

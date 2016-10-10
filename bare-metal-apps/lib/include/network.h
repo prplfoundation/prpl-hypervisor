@@ -54,9 +54,10 @@ struct message_list_t{
 
 
 void init_network();
-int ReceiveMessage(int *source, char *message, int bufsz, int block);
-int SendMessage(unsigned target_id, void* message, unsigned size);
+int32_t ReceiveMessage(uint32_t *source, void* message, uint32_t bufsz, uint32_t block);
+int32_t SendMessage(uint32_t target_id, void* message, uint32_t size);
 void network_int_handler();
+void print_net_error(int32_t error);
 
 #endif
 

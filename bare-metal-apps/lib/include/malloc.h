@@ -20,22 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <types.h>
 
-#define NULL            ((void *)0)
-
-#if 0
-typedef int32_t word_align;
-
-union header{    /* block header */
-struct{
-union header *ptr;  /* mnext block if on free list */
-uint32_t size;   /* size of this block */
-} s;
-word_align x;    /* force block alignment */
-};
-
-typedef union header mem_header;
-
-#else
+#define NULL   ((void *)0)
 
 #define align4(x) ((((x) + 3) >> 2) << 2)
 
@@ -46,6 +31,10 @@ struct mem_block {
 	size_t size;			/* aligned block size. the LSB is used to define if the block is used */
 };
 
-#endif 
+void free(void *ptr);
+void *malloc(uint32_t size);
+void *calloc(uint32_t qty, uint32_t type_size);
+void *realloc(void *ptr, uint32_t size);
+void init_mem();
 
 #endif

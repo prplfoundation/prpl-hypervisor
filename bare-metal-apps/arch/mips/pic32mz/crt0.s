@@ -99,7 +99,6 @@ isr_return:
 	.align 2
 	.section .e_entry
 	.global _entry
-	.ent	_entry
 _entry:
 	.set noreorder
 
@@ -140,7 +139,7 @@ $COPY_DATA:
 $L1:
 	beq	$zero, $zero, $L1
 	nop
-.end _entry
+
 
         .text
         .global hyp_puf_shared_memory

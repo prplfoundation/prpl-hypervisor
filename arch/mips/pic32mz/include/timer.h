@@ -11,17 +11,13 @@ FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATS
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
+This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/Brazil.
 
 */
 
-#ifndef __ARCH_H
-#define __ARCH_H
+#ifndef _TIMER_H
+#define _TIMER_H
 
-#define MILISECOND (100000000/ 1000)
+void start_timer();
 
-#include <../../../../../arch/mips/pic32mz/include/pic32mz.h>
-#include <../../../../../arch/mips/common/include/mips_cp0.h>   
-
-#endif
-
+#endif 

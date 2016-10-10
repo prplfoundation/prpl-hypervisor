@@ -29,6 +29,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <eth.h>
 #include <libc.h>
 #include <hypercalls.h>
+#include <platform.h>
 
 #define ETH_FRAME_SZ 1518
 

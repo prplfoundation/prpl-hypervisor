@@ -19,6 +19,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <guest_interrupts.h>
 #include <malloc.h>
+#include <libc.h>
 
 #define NUM_GUEST_INTERRUPTS 10
 
@@ -92,7 +93,7 @@ void init_proc(){
 	temp_CP0 |= 8<<INTCTL_VS_SHIFT;
 	mtc0(CP0_INTCTL, 1, temp_CP0);
     
-	memset(interrupt_handlers, NULL, sizeof(interrupt_handlers));
+	memset(interrupt_handlers, 0, sizeof(interrupt_handlers));
 
 	asm volatile ("ei");
     
