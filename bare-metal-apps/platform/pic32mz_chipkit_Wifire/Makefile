@@ -42,8 +42,8 @@ INC_DIRS += -I$(TOPDIR)/lib/include \
 
 include $(TOPDIR)lib/lib.mk
 include $(TOPDIR)arch/mips/pic32mz/hal.mk
+include $(TOPDIR)platform/pic32mz_chipkit_Wifire/platform.mk
 include $(TOPDIR)apps/$(APP)/app.mk
-include $(TOPDIR)platform/pic32mz_starter_kit/platform.mk
            
 #Configure CROSS COMPILER
 AS = $(CROSS_COMPILER)as 

@@ -14,13 +14,13 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = ../samples_cfg/sample-1VM.cfg
+CFG_FILE = ../samples_cfg/sample-2VMs.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
 # Optional Device Drivers
-CONFIG_INTERVM_COMM = no
+CONFIG_INTERVMCOMM = yes
 CONFIG_PIC32MZ_USB = no
 CONFIG_VIRTUAL_IO = yes
 
@@ -62,6 +62,7 @@ LDFLAGS = -EL
 INC_DIRS = -I$(TOPDIR)arch/mips/pic32mz/include \
            -I$(TOPDIR)arch/mips/common/include \
            -I$(TOPDIR)sys/lib/include \
+           -I$(TOPDIR)platform/include \
            -I$(TOPDIR)sys/kernel/include \
            -I$(TOPDIR)platform/pic32mz_chipkit_Wifire/include \
            -I$(TOPDIR)/include
@@ -109,8 +110,8 @@ debug: serial
 
 bare_apps:
 	for i in $(APP_LIST) ; do \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
+		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_chipkit_Wifire APP=$$i CLEAN=1 clean; \
+		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_chipkit_Wifire APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
 	;done
 
 generate_firmware:
@@ -134,6 +135,6 @@ clean: config_vms
 	rm -f genconf
 	
 	for i in $(APP_LIST) ; do \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean \
+		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_chipkit_Wifire APP=$$i CLEAN=1 clean \
 	;done
 

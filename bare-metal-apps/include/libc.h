@@ -74,6 +74,3 @@ void lock(mutex_t *mutex);
 void spinlock(mutex_t *mutex);
 void unlock(mutex_t *mutex);
 
-#define UART2   2
-#define UART6   6
-

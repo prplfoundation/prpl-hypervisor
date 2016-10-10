@@ -19,23 +19,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <hypercalls.h>
 
-extern void putchar(int32_t value);
-extern uint32_t getchar(void);
-
-static uint32_t serial_port = UART2;
-
-int32_t serial_select(uint32_t serial_number){
-	/* select serial 2 or 4 as output */
-	switch (serial_number){
-		case UART2: serial_port = UART2;
-			return UART2;
-		case UART6: serial_port = UART6;
-			return UART6;
-		default:
-			return -1;
-	}	
-}
-
 char *strcpy(char *dst, const char *src){
 	char *dstSave=dst;
 	int32_t c;
@@ -529,44 +512,6 @@ void udelay(uint32_t usec){
     }
 }
 
-void putchar(int32_t value){
-#ifdef VIRTUALIZED_IO
-	if (serial_port == UART2){
-		while(read(U2STA) & USTA_UTXBF);
-		write(U2TXREG, value);    
-	}else if (serial_port == UART6){
-		while(read(U6STA) & USTA_UTXBF);
-		write(U6TXREG, value);    
-	}
-#else
-	if (serial_port == UART2){
-		while(U2STA & USTA_UTXBF);
-		U2TXREG = value;    
-	}else if (serial_port == UART6){
-		while(U6STA & USTA_UTXBF);
-		U6TXREG = value;    
-	}
-#endif	
-}
-
-int32_t kbhit(void){
-	if (serial_port == UART2){
-		return (U2STA & USTA_URXDA);
-	}else if (serial_port == UART6){
-		return (U6STA & USTA_URXDA);
-	}
-	return 0;
-}
-
-uint32_t getchar(void){
-	while(!kbhit());
-	if (serial_port == UART2){
-		return (uint32_t)U2RXREG;
-	}else if (serial_port == UART6){
-		return (uint32_t)U6RXREG;
-	}
-	return 0;
-}
 
 /*
 software implementation of multiply/divide and 64-bit routines
