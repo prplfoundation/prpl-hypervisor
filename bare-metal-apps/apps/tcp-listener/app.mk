@@ -14,13 +14,13 @@
 
 
 # Define your additional include paths
-INC_DIRS = -I ../../../../picotcp/build/include/
+INC_DIRS += -I ../../../../picotcp/build/include/
 
 #Aditional C flags
-CFLAGS = -DPICOTCP -msoft-float
+CFLAGS += -DPICOTCP -msoft-float
 
 #Aditional Libraries
-LIBS=../../../../picotcp/build/lib/libpicotcp.a
+LIBS += ../../../../picotcp/build/lib/libpicotcp.a
 
 #default stack size 512 bytes
 STACK_SIZE = 4096
