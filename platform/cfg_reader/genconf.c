@@ -45,13 +45,13 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
 
 /* Intermediate Physical address of the first VM on the RAM */
-#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80010000
+#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80008000
 
 /* Virtual address for VM's RAM */
 #define VMS_RAM_VIRTUAL_BASE_ADDRESS  0x80000000
 
 /* Intermediate Physical address of the first VM on the FLASH */
-#define VMS_FLASH_INTERMEDIATE_BASE_ADDRESS  0x9D010000
+#define VMS_FLASH_INTERMEDIATE_BASE_ADDRESS  0x9D008000
 
 /* Virtual address for VM's FLASH */
 #define VMS_FLASH_VIRTUAL_BASE_ADDRESS  0x9D000000
