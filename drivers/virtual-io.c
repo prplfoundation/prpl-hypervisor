@@ -68,7 +68,7 @@ void read_address(){
 	for(i = 0; i < vmconf_p[vcpu_index]->devices_mapping_sz; i++){
 		if(vmconf_p[vcpu_index]->devices[i].start_addr <= memory_addr &&
 			vmconf_p[vcpu_index]->devices[i].start_addr + vmconf_p[vcpu_index]->devices[i].size >= memory_addr){
-			MoveToPreviousGuestGPR(REG_V0, *(uint32_t*)memory_addr);
+			MoveToPreviousGuestGPR(REG_V0, *(volatile unsigned*)memory_addr);
 			return;
 		}
 	}
@@ -97,8 +97,7 @@ void write_address(){
 	for(i = 0; i < vmconf_p[vcpu_index]->devices_mapping_sz; i++){
 		if(vmconf_p[vcpu_index]->devices[i].start_addr <= memory_addr &&
 			vmconf_p[vcpu_index]->devices[i].start_addr + vmconf_p[vcpu_index]->devices[i].size >= memory_addr){
-			
-			*(uint32_t*)memory_addr = value;
+			*(volatile unsigned*)memory_addr = value;
 			MoveToPreviousGuestGPR(REG_V0, 0);
 			return;
 		}
