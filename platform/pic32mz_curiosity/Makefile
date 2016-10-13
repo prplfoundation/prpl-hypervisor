@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = ../samples_cfg/sample-1VM.cfg
+CFG_FILE = ../cfg/sample-1VM.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
