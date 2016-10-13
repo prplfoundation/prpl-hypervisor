@@ -179,7 +179,7 @@ void intervm_init(){
 		return;
 	}
     
-	INFO("Inter-VM comunication hypercalls registered.");
+	INFO("Inter-VM communication hypercalls registered.");
 }
 
 driver_init(intervm_init);
