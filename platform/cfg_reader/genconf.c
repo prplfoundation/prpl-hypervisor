@@ -522,12 +522,6 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return ret;
 		}
         
-		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
-		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
-		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
-			return ret;
-		}
-        
 		/* write num of tlb entries */
 		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
 		aux = mem_maps? config_setting_length(mem_maps) : 0;
@@ -702,9 +696,16 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
         
 		/* Close the TLB array group  */
-		if ( (ret = write_to_conf_file(outfile, "\t\t}\n")) ) {
+		if ( (ret = write_to_conf_file(outfile, "\t\t},\n")) ) {
 			return ret;
 		}
+		
+		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
+		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x\n", vm_ram_inter_addr);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+		
         
 		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_flash_inter_addr);
 		strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
@@ -721,8 +722,8 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		/* Close the VM group  */
 		if ( (ret = write_to_conf_file(outfile, "\t},\n")) ) {
 			return ret;
-		}	
-
+		}
+		
 	}
 
 	/* Close VM's conf. */
