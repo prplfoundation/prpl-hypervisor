@@ -17,7 +17,7 @@
 INC_DIRS += -I ../../../../picotcp/build/include/
 
 #Aditional C flags
-CFLAGS += -DPICOTCP -msoft-float
+CFLAGS += -DPICOTCP 
 
 #Aditional Libraries
 LIBS += ../../../../picotcp/build/lib/libpicotcp.a
