@@ -45,7 +45,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 void initializeMachines(void) {
 	unsigned int i;
 
-	printf("\nInitializing Virtual Machines");
+	INFO("Initializing Virtual Machines.");
 
 	scheduler_info.vcpu_ready_list = NULL;
 	
@@ -59,7 +59,7 @@ void initializeMachines(void) {
 			create_vm(&VMCONF[i]);
 		}
 	}else{
-		Warning("\nThere is no VM configuration. ");
+		WARNING("There is no VM configuration. ");
 	}
 }
 
@@ -73,10 +73,13 @@ void initializeMachines(void) {
 vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	static uint32_t vm_id = 1;  /* vm_id is the used as guestid */	
 	static uint32_t tlbindex = 0; 	/* unique tlb entry */
+	uint32_t entry_point = 0;
 
 	vm_t *vm;
 	uint32_t i;
 	vcpu_t *vcpu;
+	
+	INFO("Configuring %s VM starting at 0x%x RAM address.", vm_conf->vm_name, vm_conf->ram_base);
     
 	/* Number of fix TLB entries */
 	uint32_t ntlbent = vm_conf->num_tlb_entries;
@@ -84,6 +87,10 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	vm = (vm_t*)malloc(sizeof(vm_t));
 	
 	vm->vcpus = NULL;
+	
+	vm->vmconf = vm_conf;
+	
+	vm->vm_name = vm_conf->vm_name;
 	
 	vm->base_addr = vm_conf->ram_base;
 	
@@ -93,7 +100,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	vm->init = 1;
 
 	vm->tlbentries = NULL;
-        
+	
 	/* Allocate a TLB entry to the VM */
 	vm->tlbentries = (struct tlbentry *)malloc(sizeof(struct tlbentry)*(ntlbent)); 
 	memset(vm->tlbentries, 0, sizeof(struct tlbentry)*ntlbent);
@@ -115,8 +122,14 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 		tlbEntryWrite(&vm->tlbentries[i]);
 	}
 
+	if(vm->os_type == BARE_METAL){
+		entry_point = BARE_METAL_ENTRY_POINT;
+	}else{
+		WARNING("OS type not defined.");
+	}
+	
 	/* Set the VM entry Point and scheduler*/
-	vcpu = create_vcpu(vm, vm_conf->vm_entry);	
+	vcpu = create_vcpu(vm, entry_point);	
 	
 	list_append(&scheduler_info.vcpu_ready_list, vcpu);
 	list_append(&scheduler_info.virtual_machines_list, vm);
@@ -134,7 +147,6 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
  */
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){	
 	static uint32_t vcpu_id=1;
-	static uint32_t shadow_gpr_to_assign = 0;
 	uint32_t num_shadow_gprs;
 	
 	vcpu_t *vcpu;
@@ -146,13 +158,8 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){
 	num_shadow_gprs = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (num_shadow_gprs & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	
-	/* Highest shadown gpr is used to the hypervisor */
-	if(shadow_gpr_to_assign==num_shadow_gprs){
-		vcpu->gprshadowset=shadow_gpr_to_assign-1;
-	}else{
-		vcpu->gprshadowset = shadow_gpr_to_assign;
-		shadow_gpr_to_assign++;
-	}
+	/* Lowest GPR shadown (zero) is used by the hypervisor */
+	vcpu->gprshadowset = vcpu_id;
 	
 	vcpu->id = vcpu_id;	
 	vcpu_id++;

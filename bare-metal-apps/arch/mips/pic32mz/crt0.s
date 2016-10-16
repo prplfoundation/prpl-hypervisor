@@ -15,6 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+#include <hypercall_defines.h>
+
+
 
 	.section .exception
 	.org    0xf8
@@ -140,38 +143,6 @@ $L1:
 .end _entry
 
         .text
-        .global hypcall_enable_timer
-        .ent    hypcall_enable_timer
-hypcall_enable_timer:
-        .set noreorder 
-        hypcall 0x002
-        nop
-        jr $ra
-        nop
-        .set reorder
-.end hypcall_enable_timer
-
-        
-        .global hyp_ipc_send_message
-        .ent hyp_ipc_send_message
-hyp_ipc_send_message:
-        .set noreorder 
-        hypcall 0x2
-        jr $ra
-        nop
-        .end hyp_ipc_send_message
-
-        .global hyp_ipc_receive_message
-        .ent hyp_ipc_receive_message
-hyp_ipc_receive_message:
-        .set noreorder 
-        hypcall 0x1
-        sw $v1, 0($a0)
-        jr $ra
-        nop
-.end hyp_ipc_receive_message
-        
-
         .global hyp_puf_shared_memory
         .ent hyp_puf_shared_memory        
 hyp_puf_shared_memory:
@@ -223,58 +194,6 @@ guest_is_up:
 .end guest_is_up
 
 
-        .global read_devcofg3
-        .ent read_devcofg3        
-read_devcofg3:
-        .set noreorder 
-        hypcall 0x170
-        jr $ra
-        nop
-        .set reorder        
-.end read_devcofg3
-
-    .global hyper_eth_send
-    .ent hyper_eth_send
-hyper_eth_send:
-    .set noreorder 
-    hypcall 0x5
-    jr $ra
-    nop
-    .set reorder
-.end hyper_eth_send
-
-        .global hyper_eth_recv
-        .ent hyper_eth_recv
-hyper_eth_recv:
-        .set noreorder 
-        hypcall 0x6
-        jr $ra
-        nop
-        .set reorder
-.end hyper_eth_recv
-
-        .global hyper_eth_mac
-        .ent hyper_eth_mac
-hyper_eth_mac:
-        .set noreorder 
-        hypcall 0x7
-        jr $ra
-        nop
-        .set reorder
-.end hyper_eth_mac
-
-        
-        .global hyper_eth_link_check
-        .ent hyper_eth_link_check
-hyper_eth_link_check:
-        .set noreorder 
-        hypcall 0x4
-        jr $ra
-        nop
-        .set reorder
-        .end hyper_eth_link_check
-
-        
         .global spinlock
         .ent spinlock
 spinlock:

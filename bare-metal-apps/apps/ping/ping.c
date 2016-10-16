@@ -25,9 +25,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * */
 
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
 #include <network.h>
+#include <guest_interrupts.h>
 
 
 volatile int32_t t2 = 0;
@@ -42,6 +43,9 @@ char message_buffer[128];
 
 int main() {
     int32_t ret, source;
+    
+    interrupt_register(irq_timer, GUEST_TIMER_INT);
+    
     serial_select(UART2);
     printf("\nping VM ID %d", hyp_get_guest_id());
     while (1){

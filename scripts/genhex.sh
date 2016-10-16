@@ -20,7 +20,7 @@ BASE_ADDR=0x9d000000
 # Determine the list of the VM's flash start addresses.
 NUM_VM=0
 for i in $*; do 
-    START_ADDR=$(awk '/'$i'/{print $4}' include/vms.info)
+    START_ADDR=$(awk '$1=='\"$i\"' {print $4}' include/vms.info)
     address_array[$NUM_VM]=$(echo $(($START_ADDR)))
     ((NUM_VM++))
     
@@ -45,7 +45,7 @@ for i in $*; do
         PADDING=$(expr ${address_array[$COUNT]} - $BASE_ADDR)
         PADDING=$((PADDING - 128))
     else
-        flash_size=$(awk '/'$i'/{print $2}' include/vms.info)
+        flash_size=$(awk '$1=='\"$i\"' {print $2}' include/vms.info)
         PADDING=$(echo $(($flash_size)))
         echo "padding"
         echo $PADDING

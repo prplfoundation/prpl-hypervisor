@@ -178,7 +178,7 @@ virtual_machines group contains the configuration of each VM on the resulting sy
 System group properties description. 
 
 | **Proprierty** | **Type** | **Description** | **Valid Range** |
-| debug | Array of strings | Optional list of defines for output messages for debug purposes. | DEBUG, WARNINGS, INFOS, CRITICALS and VERBOSE.
+| debug | Array of strings | Optional list of defines for output messages for debug purposes. | WARNINGS, INFOS, and ERRORS.
 | platform | Proprierty group | Specific platform information | Not applicable. 
 | platform.cpu | string | Processor's name description. | Any valid string. 
 | platform.platform_str | string | Platform description. | Any valid string. 
@@ -191,7 +191,7 @@ Example of a valid system configuration.
 
 ```
 system = {
-    debug =  [ "DEBUG", "WARNINGS", "INFOS", "CRITICALS", "VERBOSE"];
+    debug =  [ "WARNINGS", "INFOS", "ERRORS"];
     platform = { 
         cpu = "M5150";
         platform_str = "Microchip Starter Kit";
@@ -199,8 +199,6 @@ system = {
     };
     uart_speed = 115200;
     scheduler_quantum_ms = 1;
-    heap_size_bytes = 0x8000;
-    heap_address = 0x80002000;
 }; 
 ```
 
@@ -210,10 +208,11 @@ virtual_machines group proprierties description.
 
 | **Proprierty** | **Type** | **Description** | **Valid Range** |
 | app_name | string | Name of the bare-metal application directory. | Any valid barel-metal app directory. 
-| os_type | string | Type of the virtualized OS | BAREOS
+| os_type | string | Type of the virtualized OS | BARE_METAL
 | RAM_size_bytes | string | Size of the VM's SRAM | MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB and MEM_SIZE_256KB
 | flash_size_bytes | string | Size of the VM's FLASH | MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB
-| vm_entry_point | integer | VM's entry point | Positive integers.
+| fast_interrupts | Array of strings | List of associated interrupts. Allows for the hypervisor to fast delivery an interrupt to a VM.  | IRQ_ETH
+| device_mapping | Array of strings | List of associated devices for virtualized I/O. | PORTA through PORTK, UART1 through UART6, SPI1 through SPI1 through SP16, PM and AD1.
 | memory_maps | Array of proprierties. | Indicate the VM's memory mapping. | Not applicable. 
 | memory_maps.base_addr | integer | Memory mapping base address | Any virtual address.
 | memory_maps.page_size | string | Memory mapping size | MEM_SIZE_4KB, MEM_SIZE_8KB, MEM_SIZE_16KB, MEM_SIZE_32KB, MEM_SIZE_64KB, MEM_SIZE_128KB, MEM_SIZE_256KB, MEM_SIZE_512KB and MEM_SIZE_1MB
@@ -226,27 +225,22 @@ mapping for peripheral access.
 virtual_machines = (
     { 
         app_name = "blink";
-        os_type = "BAREOS";
+	os_type = "BARE_METAL";
         RAM_size_bytes = "MEM_SIZE_32KB";
         flash_size_bytes = "MEM_SIZE_64KB";
-        vm_entry_point = 0x9d001000;
-        memory_maps = ({ /* Two 4K page mapping for peripheral access. */
+        device_mapping = [ "PORTH", "UART2"];
+    },
+    { 
+        app_name = "pong";
+        os_type = "BARE_METAL";
+        RAM_size_bytes = "MEM_SIZE_32KB";
+        flash_size_bytes = "MEM_SIZE_32KB";
+        memory_maps = ({ /* Two 4K page mapping for direct peripheral access. */
                 base_addr = 0xbf822000;
                 page_size = "MEM_SIZE_4KB";
             },
             {
                 base_addr = 0xbf860000;
-                page_size = "MEM_SIZE_4KB";
-            })
-    },
-    { 
-        app_name = "pong";
-        os_type = "BAREOS";
-        RAM_size_bytes = "MEM_SIZE_32KB";
-        flash_size_bytes = "MEM_SIZE_32KB";
-        vm_entry_point = 0x9d001000;
-        memory_maps = ({ /* Two 4K page mapping for peripheral access. */
-                base_addr = 0xbf822000;
                 page_size = "MEM_SIZE_4KB";
             })
     }
@@ -349,7 +343,20 @@ I/O calls, like printf() or getchar() will assume by default the UART2 port (J11
 int32_t serial_select(uint32_t serial_number);
 ```
 
-Use the defined parameters UART2 and UART6 to select each one of the UARTS. 
+Use the defined parameters UART2 and UART6 to select each one of the UARTs. If the guest if configured with the proprierty device_mapping the UART access is throught virtualized I/O. Otherwise, it is needed 
+to mapped a memory area using memory_maps proprierty for directy memory access. 
+
+== Virtualized I/O ==
+
+For a complete guest memory space separation use the proprierty device_mapping to describe which peripherals the guest can access through virtualized I/O. On the guest, use read()/write() calls for peripheral acess.
+For example:
+
+```
+uint32_t v;
+write(TRISHCLR, 1);
+    
+v = read(LATD);
+```
 
 = Considerations =
 

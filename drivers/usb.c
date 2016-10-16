@@ -377,24 +377,24 @@ void usb_start(){
     uint32_t speed = FULL_SPEED;
     uint32_t offset;
     
-    printf("\nInitializing USB device in Host mode.");
+    INFO("Initializing USB device in Host mode.");
     
     if (operation_mode != HOST_MODE){
-        Warning("Only Host Mode is supported");
+        WARNING("Only Host Mode is supported");
     }
     
     offset = register_interrupt(usb_int_handler);
     OFF(132) = offset;
     
-    printf("USB interrupt vector at 0x%x", offset);
+    INFO("USB interrupt vector at 0x%x", offset);
     
     if (register_hypercall(usb_polling, USB_VM_POLLING) < 0){
-        printf("\nError registering the HCALL_GET_VM_ID hypercall");
+        ERROR("Error registering the HCALL_GET_VM_ID hypercall");
         return;
     }
     
     if (register_hypercall(get_descriptor, USB_VM_GET_DESCRIPTOR) < 0){
-        printf("\nError registering the HCALL_GET_VM_ID hypercall");
+        ERROR("Error registering the HCALL_GET_VM_ID hypercall");
         return;
     }
     

@@ -30,14 +30,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <tlb.h>
 #include <vcpu.h>
 
+#define VM_NAME_SZ 16
 
 /* Identification for different operating system types */
-#define GENERIC		0
-#define BAREOS		1
-#define BAREOS_RT   2
-#define	HELLFIRE	3
-#define LINUX		4
-#define IDLEVCPU	5
+#define BARE_METAL	1
+
+#define BARE_METAL_ENTRY_POINT 0x9d001000
 
 struct vcpu_t;
 typedef struct vcpu_t vcpu_t;
@@ -52,25 +50,40 @@ struct tlb_entries{
     uint32_t coherency;
 };
 
+struct device_mapping_t{
+	uint32_t start_addr;
+	uint32_t size;
+};
+
 /* VM description used in the config.h file. Used only for initialization purposes. */
 struct vmconf_t{
+    char vm_name[VM_NAME_SZ];
     uint32_t ram_base;
     uint32_t num_tlb_entries;
     uint32_t os_type;
+/*<<<<<<< HEAD
     uint32_t vm_entry;
     uint32_t flash_base;
     uint32_t flash_size;
+=======*/
+    uint32_t fast_int_sz;
+    uint32_t *fast_interrupts;
+//>>>>>>> upstream/master
     const struct tlb_entries const *tlb;
+    uint32_t devices_mapping_sz;
+    const struct device_mapping_t const *devices;
 };    
 
 /* Holds information about a Virtual machine on runtime.  */
 typedef struct vm_t {
+	const char *vm_name;
 	unsigned int id;
 	unsigned int base_addr;
 	struct list_t *vcpus;
 	uint32_t os_type;
-	uint32_t ntlbent;
 	uint32_t init;	
+	const struct vmconf_t * vmconf;
+	uint32_t ntlbent;
 	struct tlbentry *tlbentries;
 }vm_t;
 

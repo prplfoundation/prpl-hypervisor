@@ -26,7 +26,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <vcpu.h> 
 #include <types.h>
 #include <libc.h>
-#include <rw_regs.h>
 #include <globals.h>
 #include <hal.h>
 #include <mips_cp0.h>
@@ -36,7 +35,13 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * the supported OSs. 
  */
 void contextSave(){
-	vcpu_t *vcputosave = vcpu_executing;
+	vcpu_t *vcputosave;
+	
+	if (!is_vcpu_executing){
+		return;
+	}
+	
+	vcputosave = vcpu_executing;
 	
 	if (vcputosave->init == 0){
 		/* already Initialized VCPU - save the context */
@@ -69,7 +74,9 @@ void contextSave(){
 		 vcputosave->cp0_registers[17][0] = mfgc0(17,0);
 		 vcputosave->cp0_registers[16][3] = mfgc0(16,3);
 		 vcputosave->cp0_registers[30][0] = mfgc0(30,0);
-		 
+
+		 vcputosave->guestclt2 |= getGuestCTL2();
+
 		 vcputosave->pc = getEPC();
 	}
 }
@@ -105,7 +112,6 @@ void contextRestore(){
 	setLowestGShadow(vcpu->gprshadowset);	
 	setGuestID(vcpu->id);
 	
-	/* Avoid to enter in guest mode for hypervisor tasks. */
 	setGuestMode();
 	
 	/* Mark the VCPU as initialized. */
@@ -130,135 +136,7 @@ void contextRestore(){
 	mtgc0(16, 3, vcpu->cp0_registers[16][3]);
 	mtgc0(30, 0, vcpu->cp0_registers[30][0]);
 	
-	
-	if(vcpu->guestclt2){
-		setGuestCTL2(vcpu->guestclt2);
-		vcpu->guestclt2 = 0;
-	}else{
-		setGuestCTL2(vcpu->guestclt2);
-	}
+	setGuestCTL2(vcpu->guestclt2);
 	
 	setEPC(vcpu->pc);
 }
-
-
-/**
- * @brief  Implement instruction emulation. 
- */
-uint32_t InstructionEmulation(uint32_t epc){
-	uint32_t badinstr = mfc0(CP0_BADVADDR, 2);
-	uint32_t regvalue;
-	uint32_t currentValue;
-	uint32_t rs, rt, rd;
-	uint32_t opcode, flag = 0;
-	uint32_t co, func, emulinstr;
-	
-	opcode = OPCODE(badinstr);	
-	rs = RS(badinstr);
-	rt = RT(badinstr);
-	rd = RD(badinstr);
-	co = CO(badinstr);
-	func = FUNC(badinstr);
-	
-	switch(opcode){
-		/* COP0 instructions */
-		case CP0:
-			switch (co){
-				case	0x1: 
-					switch (func){
-						case WAIT: /* wait */
-							Warning("Wait emulation ignored.");
-							break;
-						default:
-							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-							break;
-					}
-					break;
-				case 	0:
-					switch (rs){
-						case MTC:
-							regvalue = MoveFromPreviousGuestGPR(rt);
-							switch (rd){
-								case 0x0C:
-									switch(SEL(badinstr)){
-										case 0:
-											currentValue = mfgc0(rd ,0);
-											regvalue = (regvalue & STATUS_MASK) | (currentValue & !STATUS_MASK);
-											mtgc0(rd, 0, regvalue);
-											flag = 1;
-											break;
-										case 3: /* srsctl */
-											Warning("Write to CP0 SRSCTL ignored");
-											break;
-										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-											break;
-									}
-								break;
-								case 0x09:
-									switch(SEL(badinstr)){
-										case 0:
-											currentValue = mfgc0(0x9, 0);
-											currentValue = (~currentValue) + 1;
-											setGTOffset(currentValue);
-											break;
-										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-											break;
-									}
-								break;
-								
-								default:
-									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-									break;
-							}
-							break;
-						case MFC:
-							switch (rd){
-								case 0xf: /* read from COP0 15.*/
-									regvalue = (mfc0(CP0_PRID,0) & ~0xff00) | 0x8000;
-									MoveToPreviousGuestGPR(rt, regvalue);
-									break;
-								case 0xc: /* read from COP0 12.*/
-									switch(SEL(badinstr)){
-										case 2:
-											regvalue = mfc0(CP0_SRSCTL, 2) & ~SRSCLT_HSS;
-											MoveToPreviousGuestGPR(rt, regvalue);
-											break;
-										default:
-											Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-											break;
-									}
-									break;
-								case 0x19: /* read from COP0 25.*/
-									regvalue = mfc0(CP0_PERFCTL0, 0);
-									MoveToPreviousGuestGPR(rt, regvalue);
-									break;
-						
-								default:
-									Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-									break;
-							}
-							break;
-						default:
-							Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-							break;
-					}
-					break;
-				default:
-					Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-					break;
-			}
-			break;
-			/* Cache instructions */
-		case CACHE:
-			Warning("Cache instruction 0x%x at 0x%x not supported on VCPU 0x%x ", badinstr, epc, vcpu_executing->id);
-			break;
-		default:
-			Warning("Instruction 0x%x at 0x%x not supported on VCPU 0x%x", badinstr, epc, vcpu_executing->id);
-			break;
-	}
-
-	return SUCEEDED;
-}
-

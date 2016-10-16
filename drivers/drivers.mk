@@ -23,6 +23,11 @@ ifeq ($(CONFIG_PIC32MZ_USB),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/usb.c
 endif 
 
+ifeq ($(CONFIG_VIRTUAL_IO),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/virtual-io.c
+endif 
+
+
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
 	     

@@ -15,7 +15,6 @@
 
 common:
 	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        $(TOPDIR)arch/mips/common/common.c \
 	        $(TOPDIR)arch/mips/common/hal.c \
 	        $(TOPDIR)arch/mips/common/tlb.c \
 	        $(TOPDIR)arch/mips/common/vcpu.c 

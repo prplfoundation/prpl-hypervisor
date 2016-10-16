@@ -41,18 +41,19 @@
         "mtgc0   %z0, $%1, %2"                                   \
         : : "r" ((uint32_t) (value)), "K" (reg), "K" (sel))
 
-/* */
-#define wrpgpr(reg, value) asm volatile (                    \
+/* write to previous gpr shadow */
+#define MoveToPreviousGuestGPR(reg, value) asm volatile (                    \
         "wrpgpr   $%0, %1"                                   \
         : : "K" (reg), "r" ((uint32_t) (value)))
-        
-#define rdpgpr(reg) ({ int32_t __value;                      \
+
+/* read from previous gpr shadow */        
+#define MoveFromPreviousGuestGPR(reg) ({ int32_t __value;                      \
         asm volatile (                                          \
-        "mfgc0   %0, $%1"                                    \
+        "rdpgpr   %0, $%1"                                    \
         : "=r" (__value) : "K" (reg));               \
         __value; })
 
-        
+/* TBL write */        
 #define tlb_commit() asm volatile ("tlbwi" : : )
 
         
@@ -140,6 +141,7 @@
 #define CAUSE_DC                0x08000000
 #define CAUSE_IV                0x00800000
 #define CAUSE_RIPL(r)           ((r)>>10 & 63)
+#define CAUSE_RIPL_MASK         0xFC00
 #define CAUSE_IP1               0x00020000
 #define CAUSE_IP0               0x00010000
 #define CAUSE_EXC_CODE          0x0000007c
@@ -293,7 +295,12 @@
 
 #define PERFORMANCE_COUNTER_INT (1<<31)
 
-#define GUESTEXITEXCEPTION      0x1b
+#define TLB_LOAD_FETCH_EXCEPTION    	0x2
+#define TLB_STORE_EXCEPTION    		0x3
+#define GUEST_EXIT_EXCEPTION   		0x1b
+#define GUEST_INSTRUCTION_EMULATION 0
+#define GUEST_HYPERCALL 2
+
 
 
 #endif 

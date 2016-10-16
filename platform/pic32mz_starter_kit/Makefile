@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = samples_cfg/sample-2VMs.cfg
+CFG_FILE = ../samples_cfg/sample-2VMs.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -24,6 +24,7 @@ CONFIG_INTERVMCOMM = yes
 CONFIG_PIC32MZ_USB = yes
 CONFIG_PIC32MZ_ETHERNET = yes
 CONFIG_SECURITY = yes
+CONFIG_VIRTUAL_IO = yes
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -113,14 +114,14 @@ load: serial
 bare_apps:
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk '/'$$i'/{print $$2}' include/vms.info` RAM_SIZE=`awk '/'$$i'/{print $$3}' include/vms.info` \
+		$(MAKE) -C ../../bare-metal-apps/apps/$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
 	;done
 
 generate_firmware:
 	../../scripts/genhex.sh $(APP_LIST)
 
 make_genconf:
-	gcc -o genconf cfg_reader/genconf.c -lconfig
+	gcc -o genconf ../cfg_reader/genconf.c -lconfig
 	
 config_vms: make_genconf
 	#execute first and exit in case of errors
@@ -133,8 +134,9 @@ clean: config_vms
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
-	rm -f include/vms.info
+	rm -rf include
 	rm -f genconf
+	
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/apps/$$i CLEAN=1 clean \
 	;done

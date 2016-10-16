@@ -78,14 +78,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /* Mask bits for instruction emulation */
 #define STATUS_MASK	0x005FFFFF
 
-
-/*Return values, instruction emulation*/
-#define SUCEEDED 0
-#define PROGRAM_ENDED 1
-#define RESCHEDULE 2
-#define CHANGE_TO_TARGET_VCPU 3
-#define ERROR -1
-
 /** Return values for communication */
 #define MESSAGE_VCPU_NOT_FOUND	-1
 #define MESSAGE_FULL		-2
@@ -136,9 +128,7 @@ typedef struct vcpu_t {
 }vcpu_t;
 
 typedef struct {
-  //unsigned int id;
   unsigned int lastTime;
-//  irq_handler_t irq_handlers[8];     
   vcpu_t *curr_vcpu;
 } processor_t;
 
@@ -146,6 +136,5 @@ typedef struct {
 extern processor_t* proc; 
 extern vcpu_t *idle_vcpu;
 
-uint32_t InstructionEmulation();
 
 #endif

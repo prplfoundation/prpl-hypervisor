@@ -15,18 +15,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+#ifndef __ARCH_H
+#define __ARCH_H
 
+#include <pic32mz.h>
 
-#include <libc.h>
-#include <types.h>
-#include <mips_cp0.h>
-
-void dumpCP0(){
-    uint32_t temp;
-    
-    printf("\nSTATUS      0x%x", mfc0(CP0_STATUS, 0));
-    printf("\nCAUSE      0x%x", mfc0(CP0_CAUSE, 0));
-    printf("\nSRSCTL     0x%x", mfc0(CP0_SRSCTL, 2 ));
-   
-    
-}
+#endif

@@ -8,7 +8,7 @@
 #include "./include/types.h"
 #include <sha256.h>
 #include <security.h>
-#include <rw_regs.h>
+//#include <rw_regs.h>
 
 #include <libc.h>
 #include <vm.h>

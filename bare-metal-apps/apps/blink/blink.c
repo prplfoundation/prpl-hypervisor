@@ -15,10 +15,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample */
+/* Simple UART and Blink Bare-metal application sample using virtualized IO. */
 
-#include <pic32mz.h>
+#include <arch.h>
 #include <libc.h>
+#include <hypercalls.h>
+#include <guest_interrupts.h>
 
 
 volatile int32_t t2 = 0;
@@ -30,11 +32,18 @@ void irq_timer(){
 
 int main() {
     /* Pin RH0 as ouput (LED 1)*/
-    TRISHCLR = 1;
+    uint32_t a;
+    
+    interrupt_register(irq_timer, GUEST_TIMER_INT);
+    
+    write(TRISHCLR, 1);
+    
     while (1){
-        printf("\nTimer tick count: %d", t2);
-        /* Blink Led */
-        LATHINV = 1;
+        printf("\nBlink red LED! Total of %d timer ticks.", t2);
+        
+	/* Blink Led */
+	write(LATHINV, 1);
+	
         /* 1 second delay */
         udelay(1000000);
    }
