@@ -20,11 +20,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 	To compile this application, first download the picoTCP sources from:
 	https://github.com/tass-belgium/picotcp/releases/tag/prpl-v0.1. Then, compile with:
       
-	make clean; make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -Os -c -Wa,-mvirt -mips32r2 -mtune=m14k \
-	-mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer -G 0" \
-	DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=0 ICMP4=0 DNS_CLIENT=0 MDNS=0 DNS_SD=0 SNTP_CLIENT=0 \
-	PPP=0 MCAST=0 MLD=0 IPFILTER=0 ARCH=pic32
-	
+	make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -Os -c -Wa,-mvirt -mips32r5 -mtune=m14k \
+	-mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer \
+	-G 0" DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=1 ICMP4=1 DNS_CLIENT=0 MDNS=0 DNS_SD=0 \
+	SNTP_CLIENT=0 PPP=0 MCAST=1 MLD=0 IPFILTER=0 ARCH=pic32
+
 	The compiled picoTCP directory tree must be at the same directory level of the prpl-hypervisor, 
 	example:
    
