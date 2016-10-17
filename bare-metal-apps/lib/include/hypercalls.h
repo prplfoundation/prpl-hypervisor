@@ -30,11 +30,14 @@ move	%0, $v0" \
 __value; })
 
 /* Write to privileged address */
-#define write(reg, value) asm volatile (                    \
-"move $a0, %z0 \n \
- move $a1, %z1 \n \
- hypcall %2" \
- : : "r" ((uint32_t) (&reg)), "r" ((uint32_t) (value)), "I" (HCALL_WRITE_ADDRESS) : "a0", "a1")
+#define write(reg, value) ({ int32_t __ret; \
+asm volatile (                 \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n \
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (&reg)), "r" ((uint32_t) (value)), "I" (HCALL_WRITE_ADDRESS) : "a0", "a1", "v0"); \
+ __ret; })
 
 /* interVM send message  */
 #define ipc_send(targed_id, msg, size) ({ int32_t __ret; \
