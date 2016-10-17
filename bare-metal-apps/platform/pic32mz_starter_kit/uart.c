@@ -55,20 +55,37 @@ void putchar(int32_t value){
 }
 
 int32_t kbhit(void){
+#ifdef VIRTUALIZED_IO	
+	if (serial_port == UART2){
+		return (read(U2STA) & USTA_URXDA);
+	}else if (serial_port == UART6){
+		return (read(U6STA) & USTA_URXDA);
+	}
+	return 0;
+#else	
 	if (serial_port == UART2){
 		return (U2STA & USTA_URXDA);
 	}else if (serial_port == UART6){
 		return (U6STA & USTA_URXDA);
 	}
 	return 0;
+#endif	
 }
 
 uint32_t getchar(void){
 	while(!kbhit());
+#ifdef VIRTUALIZED_IO		
+	if (serial_port == UART2){
+		return (uint32_t)read(U2RXREG);
+	}else if (serial_port == UART6){
+		return (uint32_t)read(U6RXREG);
+	}
+#else
 	if (serial_port == UART2){
 		return (uint32_t)U2RXREG;
 	}else if (serial_port == UART6){
 		return (uint32_t)U6RXREG;
 	}
+#endif
 	return 0;
 }
