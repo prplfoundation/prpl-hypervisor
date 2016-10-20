@@ -59,10 +59,12 @@ struct device_mapping_t{
 struct vmconf_t{
     char vm_name[VM_NAME_SZ];
     uint32_t ram_base;
-    uint32_t num_tlb_entries;
     uint32_t os_type;
     uint32_t fast_int_sz;
     uint32_t *fast_interrupts;
+    uint32_t interrupt_redirect_sz;
+    uint32_t *interrupt_redirect;
+    uint32_t num_tlb_entries;
     const struct tlb_entries const *tlb;
     uint32_t devices_mapping_sz;
     const struct device_mapping_t const *devices;

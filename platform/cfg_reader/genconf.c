@@ -522,25 +522,6 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return ret;
 		}
         
-		/* write num of tlb entries */
-		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
-		aux = mem_maps? config_setting_length(mem_maps) : 0;
-		/* RAM and FLASH mapping requires 2 additional TLB entries */
-		aux += 2;
-		snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
-		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
-			return ret;
-		}
-        
-		/* The current hypervisor implementation uses static tlb configuration.	
-		Only 15 TLB entries are available, 1 is reserved for interVM communication. 
-		Stop compilation if more then 15 TLB entries are used. */
-		total_tlb_entries += aux;
-		if(total_tlb_entries > TOTAL_TLB_ENTRIES){
-			fprintf(stderr, "You are using more than %d TLB entries.\n", TOTAL_TLB_ENTRIES);
-			return EXIT_FAILURE;
-		}
-        
 		/* get OS type  */
 		if( !config_setting_lookup_string(vm_conf, "os_type", &auxstrp)){
 			fprintf(stderr, "Missing os_type proprierty on virtual_machines group.\n");
@@ -627,7 +608,57 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			}
 		}
 		
+		/* interrupt_redirect array  */
+		config_setting_t * int_redirect_setting = config_setting_lookup(vm_conf, "interrupt_redirect");
+		if(int_redirect_setting){
+			int int_red_sz = config_setting_length(int_redirect_setting);
+			int i;
+			/* get fast_int_sz */
+			snprintf(str, STRSZ, "\t\tinterrupt_redirect_sz: %d,\n", int_red_sz);
+			if ( (ret = write_to_conf_file(outfile, str)) ) {
+				return ret;
+			}
+			
+			if ( (ret = write_to_conf_file(outfile, "\t\tinterrupt_redirect: (uint32_t []) {")) ) {
+				return ret;
+			}
+			
+			for(i = 0; i < int_red_sz; ++i){
+				if(i>0){
+					if ( (ret = write_to_conf_file(outfile, ", ")) ) {
+						return ret;
+					}
+				}
+				const char* int_red = config_setting_get_string_elem(int_redirect_setting, i);
+				if ( (ret = write_to_conf_file(outfile, (char*)int_red)) ) {
+					return ret;
+				}
+			}
+			
+			if ( (ret = write_to_conf_file(outfile, " },\n")) ) {
+				return ret;
+			}
+		}
+		
+		/* write num of tlb entries */
+		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
+		aux = mem_maps? config_setting_length(mem_maps) : 0;
+		/* RAM and FLASH mapping requires 2 additional TLB entries */
+		aux += 2;
+		snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
         
+		/* The current hypervisor implementation uses static tlb configuration.	
+		Only 15 TLB entries are available, 1 is reserved for interVM communication. 
+		Stop compilation if more then 15 TLB entries are used. */
+		total_tlb_entries += aux;
+		if(total_tlb_entries > TOTAL_TLB_ENTRIES){
+			fprintf(stderr, "You are using more than %d TLB entries.\n", TOTAL_TLB_ENTRIES);
+			return EXIT_FAILURE;
+		}
+		
 		/* Generate the TLB entries to the current VM's configuration */
 		if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
 			return ret;
