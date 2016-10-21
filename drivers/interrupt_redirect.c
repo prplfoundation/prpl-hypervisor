@@ -27,18 +27,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * 
  * The interrupt IRQ_PORTB will be redirected to the target guest. 
  * 
- * IMPORTANT: Once an interrupt is handled, this driver disables it and inject a 
- * virtual interrupt to the guest. In order to receive further interrupts, on its
+ * IMPORTANT: Once an interrupt is handled, this driver disables it (cleaning the IEC bit) and 
+ * inject a virtual interrupt to the guest. In order to receive further interrupts, on its
  * interrupt handler, the guest must do the hypercall reenable_interrupt(). 
  * 
- * Some hardware controllers requires 
- * cleaning its respective IFS bit. For exemple, IRQ_UxRX (UARTx receive IRQ) will 
- * keep generating interrupts even after cleaning the IFS bit. The UART controller 
- * requires sucessive reads until the input FIFO to be empty.
+ * Some hardware controllers require some action other them only clean its IFS bit. 
+ * For exemple, IRQ_UxRX (UARTx receive IRQ) will keep generating interrupts 
+ * even after cleaning the IFS bit. The UART controller requires sucessive reads 
+ * until the input FIFO to be empty. Disabling the controller interrupts momentaneally allows 
+ * the guest manage the cotroller and re-enable the interrutps. 
  *
- * The solution for controllers with behavior similar to UARTx is to implement 
- * the device driver at hypervisor level and use a para-virtualized interface 
- * with the guest.  
  */
 
 #include <hypercall.h>
