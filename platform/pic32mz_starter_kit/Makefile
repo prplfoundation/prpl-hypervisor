@@ -24,6 +24,7 @@ CONFIG_INTERVMCOMM = yes
 CONFIG_PIC32MZ_USB = yes
 CONFIG_PIC32MZ_ETHERNET = yes
 CONFIG_VIRTUAL_IO = yes
+CONFIG_INTERRUPT_REDIRECT_DRV = yes
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
