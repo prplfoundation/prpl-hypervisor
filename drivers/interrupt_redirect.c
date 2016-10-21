@@ -20,14 +20,25 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * 
  * @section DESCRIPTION
  * 
- * This is a hypercall driver implementation to allow for virtualized I/O.
+ * Allows for the interrupt redirection for guests. Use the interrupt_redirect property on 
+ * the VM's configuration. For exemple:
+ * 
+ * interrupt_redirect = ["IRQ_PORTB"];
+ * 
+ * The interrupt IRQ_PORTB will be redirected to the target guest. 
+ * 
+ * IMPORTANT: Once an interrupt is handled, this driver disables it and inject a 
+ * virtual interrupt to the guest. In order to receive further interrupts, on its
+ * interrupt handler, the guest must do the hypercall reenable_interrupt(). 
+ * 
+ * Some hardware controllers requires 
+ * cleaning its respective IFS bit. For exemple, IRQ_UxRX (UARTx receive IRQ) will 
+ * keep generating interrupts even after cleaning the IFS bit. The UART controller 
+ * requires sucessive reads until the input FIFO to be empty.
  *
- * A guest must be allowed to access memory address space. Thus, devices can be mapped 
- * to a VMs using the device_mapping proprierty list on the hypervisor's configuration
- * file. Example:
- * 
- * device_mapping = ["PORTH", "UART1"];
- * 
+ * The solution for controllers with behavior similar to UARTx is to implement 
+ * the device driver at hypervisor level and use a para-virtualized interface 
+ * with the guest.  
  */
 
 #include <hypercall.h>
@@ -39,18 +50,69 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <scheduler.h>
 #include <libc.h>
 #include <vm.h>
+#include <guest_interrupts.h>
 
 /**
- * @brief 
+ * @struct
+ * @brief Makes the association between interrupts and guests. 
  */
-//static const struct vmconf_t *vmconf_p[NVMACHINES];
+struct interrupt_mapping{
+	uint32_t irq_number; /**< IRQ number on the system. */
+	uint32_t irq_guest; /**< IRQ number on guest. */
+	vcpu_t *vcpu;	/**< Target VCPU. */
+};
 
+static uint32_t interrupt_mapping_sz = 0;
+static struct interrupt_mapping * interrupt_mapping_list = NULL;
 
-void interrupt_redirect(){
-	uint8_t a;
-	IFSCLR(146>>5) = 1 << (146 & 31);
-	a = U2RXREG;
-	putchar('!');
+/**
+ * @brief Performs virtual interrupt injection on guests.
+*/
+void interrupt_injection(){
+	uint32_t i;
+
+	/* Find which interrupt is active. */
+	for(i=0;i<interrupt_mapping_sz;i++){
+		if( IFS(interrupt_mapping_list[i].irq_number >> 5) & (1 << (interrupt_mapping_list[i].irq_number & 31)) ){
+			/* Disable interrupt - The guest must reenable the interrupt on its handler.  */
+			IECCLR(interrupt_mapping_list[i].irq_number >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
+			
+			/* Clear the hardware interrupt */
+			IFSCLR(interrupt_mapping_list[i].irq_number  >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
+			
+			/* If the target VCPU is in execution, inject the virtual interrupt immediately. Otherwise,
+			   the virtual interrupt will be injected on next execution.*/
+			if(interrupt_mapping_list[i].vcpu == vcpu_executing){
+				setGuestCTL2(getGuestCTL2() | (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT));
+			}else{
+				interrupt_mapping_list[i].vcpu->guestclt2 |= interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT;
+			}
+		}
+		
+	}
+
+}
+
+/**
+ * @brief Hypercall to re-enable interrupts. This hypercall must be called 
+ * by the guests to re-enable a certain interrupt if desired. 
+ */
+void reenable_interrupt(){
+	uint32_t i;
+	uint32_t interrupt = (uint32_t)MoveFromPreviousGuestGPR(REG_A0);
+	
+	for(i=0; i<interrupt_mapping_sz; i++){
+		if(vcpu_executing == interrupt_mapping_list[i].vcpu){
+			if (interrupt == interrupt_mapping_list[i].irq_guest){
+				IECSET(interrupt_mapping_list[i].irq_number >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
+				MoveToPreviousGuestGPR(REG_V0, 0);
+				return;
+			}
+		}
+	}
+	
+	MoveToPreviousGuestGPR(REG_V0, 1);
+	WARNING("VM %s trying to reenable an non-configured IRQ.", vcpu_executing->vm->vm_name);
 }
 
 
@@ -59,42 +121,66 @@ void interrupt_redirect(){
  *  Configure required interrupts. 
  */
 void interrupt_redirect_init(){
-	uint32_t i, j, sz, *int_redirect, offset;
+	uint32_t i, j, sz;
+	uint32_t *int_redirect, offset;
+	uint32_t irq_count = 0;
 	vcpu_t *vcpu;
-	
-
-	offset = register_interrupt(interrupt_redirect);
-    
-	/* Create a local list of pointers to the vmconf data structure to avoid
-	   excessive number of pointer redirections during the hypercall execution. */
+		
+	/* Determines the total number of interrupt redirections configured in all guests.*/
 	for(i=0;i<NVMACHINES;i++){
 		vcpu = get_vcpu_from_id(i+1);
-		//vmconf_p[i] = vcpu->vm->vmconf;
-		sz = vcpu->vm->vmconf->interrupt_redirect_sz;
-		if(sz > 0){
-			int_redirect = vcpu->vm->vmconf->interrupt_redirect;
-			for(j=0; j<sz; j++){
-				/* Clear the priority and sub-priority */
-				IPCCLR(int_redirect[j] >> 2) = 0x1f << (8 * (int_redirect[j] & 0x03));
+		interrupt_mapping_sz += vcpu->vm->vmconf->interrupt_redirect_sz;
+	}
+	
+	if (interrupt_mapping_sz > 0){
+		offset = register_interrupt(interrupt_injection);
+			
+		if (register_hypercall(reenable_interrupt, HCALL_REENABLE_INTERRUPT) < 0){
+			ERROR("Error registering the HCALL_IPC_SEND_MSG hypercall");
+			return;
+		}
+		
+		
+		interrupt_mapping_list = (struct interrupt_mapping*)malloc(interrupt_mapping_sz*sizeof(struct interrupt_mapping));
+		if (interrupt_mapping_list == NULL){
+			WARNING("Interrupt redirect driver fails on allocate data.");
+		}
+    
+		for(i=0;i<NVMACHINES;i++){
+			vcpu = get_vcpu_from_id(i+1);
+			sz = vcpu->vm->vmconf->interrupt_redirect_sz;
+			if(sz > 0){
+				int_redirect = vcpu->vm->vmconf->interrupt_redirect;
+				for(j=0; j<sz; j++){
+					/* configure the interrupt redirection data.*/
+					interrupt_mapping_list[irq_count].irq_number = int_redirect[j];
+					interrupt_mapping_list[irq_count].irq_guest = GUEST_USER_DEFINED_INT_1 << j;
+					interrupt_mapping_list[irq_count].vcpu = vcpu;
+					irq_count++;
 				
-				/* Set the priority and sub-priority */
-				IPCSET(int_redirect[j] >> 2) = 0x1f << (8 * (int_redirect[j] & 0x03));
+					/* Clear the priority and sub-priority */
+					IPCCLR(int_redirect[j] >> 2) = 0x1f << (8 * (int_redirect[j] & 0x03));
+					
+					/* Set the priority and sub-priority */
+					IPCSET(int_redirect[j] >> 2) = 0x1f << (8 * (int_redirect[j] & 0x03));
 				
-				/* Clear the requested interrupt bit */
-				IFSCLR(int_redirect[j] >> 5) = 1 << (int_redirect[j] & 31);
+					/* Clear the requested interrupt bit */
+					IFSCLR(int_redirect[j] >> 5) = 1 << (int_redirect[j] & 31);
 				
-				/* Set interrupt handler */
-				OFF(int_redirect[j]) = offset;
+					/* Set interrupt handler */
+					OFF(int_redirect[j]) = offset;
 				
-				/* Enable the requested interrupt */
-				IECSET(int_redirect[j] >> 5) = 1 << (int_redirect[0] & 31);
+					/* Enable the requested interrupt */
+					IECSET(int_redirect[j] >> 5) = 1 << (int_redirect[j] & 31);
 				
-				INFO("Interrupt %d redirected to VM %s", int_redirect[j], vcpu->vm->vm_name);
+					INFO("Interrupt %d redirected to VM %s.", int_redirect[j], vcpu->vm->vm_name);
+				}
 			}
 		}
+		INFO("Interrupt redirect handler at 0x%x.", offset);
 	}
     
-	INFO("Interrupt redirect handler registered at 0x%x", offset);
+	INFO("Interrupt redirect driver registered.");
 }
 
 driver_init(interrupt_redirect_init);

@@ -129,6 +129,16 @@ asm volatile (                    \
  move %0, $v0" \
  : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (USB_SEND_DATA) : "a0", "a1", "v0"); \
  __ret; })
+
+/* Re-enable an interrupt */
+#define reenable_interrupt(irq) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ hypcall %2 \n \
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (irq)), "I" (HCALL_REENABLE_INTERRUPT) : "a0", "v0"); \
+ __ret; })
+ 
  
 #endif
 

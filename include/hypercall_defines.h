@@ -113,6 +113,11 @@ typedef void hypercall_t();
  */ 
 #define HCALL_READ_ADDRESS	12
 
+/* Re-enable interrupt for the interrupt redirection feature. 
+ * A0 = Interrupt to enabe.
+ * V0 = 0 for success. Otherwise 1.
+ */ 
+#define HCALL_REENABLE_INTERRUPT	13
 
 #if 0
 /* PUF hypercalls */

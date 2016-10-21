@@ -1,4 +1,3 @@
-#
 #Copyright (c) 2016, prpl Foundation
 #
 #Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
@@ -13,24 +12,21 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-DRIVER_INCLUDE=-I$(TOPDIR)drivers/include/
 
-ifeq ($(CONFIG_INTERVMCOMM),yes)
-	DRIVERS_LIST += $(TOPDIR)drivers/inter-vm-comm.c
-endif 
+# Define your additional include paths
+#INC_DIRS += 
 
-ifeq ($(CONFIG_PIC32MZ_USB),yes)
-	DRIVERS_LIST += $(TOPDIR)drivers/usb.c
-endif 
+#Aditional C flags
+CFLAGS += -DVIRTUALIZED_IO
 
-ifeq ($(CONFIG_VIRTUAL_IO),yes)
-	DRIVERS_LIST += $(TOPDIR)drivers/virtual-io.c
-endif 
+#Aditional Libraries
+#LIBS +=
 
-ifeq ($(CONFIG_INTERRUPT_REDIRECT_DRV),yes)
-	DRIVERS_LIST += $(TOPDIR)drivers/interrupt_redirect.c
-endif 
+#default stack size 512 bytes
+STACK_SIZE = 512
 
-drivers:
-	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
-	     
+#Include your additional mk files here. 
+
+app:
+	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/redirection.c -o $(TOPDIR)apps/$(APP)/redirection.o
+
