@@ -138,6 +138,7 @@ void contextRestore(){
 	mtgc0(30, 0, vcpu->cp0_registers[30][0]);
 	
 	setGuestCTL2(vcpu->guestclt2);
+	vcpu->guestclt2 = 0;
 	
 	setEPC(vcpu->pc);
 }
