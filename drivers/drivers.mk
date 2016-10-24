@@ -15,15 +15,15 @@
 
 DRIVER_INCLUDE=-I$(TOPDIR)drivers/include/
 
-ifeq ($(CONFIG_INTERVMCOMM),yes)
+ifeq ($(CONFIG_INTERVMCOMM_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/inter-vm-comm.c
 endif 
 
-ifeq ($(CONFIG_PIC32MZ_USB),yes)
+ifeq ($(CONFIG_PIC32MZ_USB_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/usb.c
 endif 
 
-ifeq ($(CONFIG_VIRTUAL_IO),yes)
+ifeq ($(CONFIG_VIRTUAL_IO_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/virtual-io.c
 endif 
 

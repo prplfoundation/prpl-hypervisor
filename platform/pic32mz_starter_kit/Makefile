@@ -20,10 +20,10 @@ CFG_FILE = ../cfg/sample-2VMs.cfg
 CROSS_COMPILER = mips-mti-elf-
 
 # Optional Device Drivers
-CONFIG_INTERVMCOMM = yes
-CONFIG_PIC32MZ_USB = yes
-CONFIG_PIC32MZ_ETHERNET = yes
-CONFIG_VIRTUAL_IO = yes
+CONFIG_INTERVMCOMM_DRV = yes
+CONFIG_PIC32MZ_USB_DRV = yes
+CONFIG_PIC32MZ_ETHERNET_DRV = yes
+CONFIG_VIRTUAL_IO_DRV = yes
 CONFIG_INTERRUPT_REDIRECT_DRV = yes
 
 ########################################################################################################
@@ -90,7 +90,7 @@ include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
 include board/board.mk
 include $(TOPDIR)/drivers/drivers.mk
 
-ifeq ($(CONFIG_PIC32MZ_ETHERNET),yes)
+ifeq ($(CONFIG_PIC32MZ_ETHERNET_DRV),yes)
     OBJ = ../../bin/pic32mz-ethernet.o
 endif
     
