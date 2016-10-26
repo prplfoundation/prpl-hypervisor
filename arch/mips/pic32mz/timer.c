@@ -71,7 +71,7 @@ static void timer_interrupt_handler(){
 		setGuestCTL2(getGuestCTL2() | (GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT));
 	}
     
-	calc_next_timer_interrupt(QUANTUM);
+	calc_next_timer_interrupt(GUEST_QUANTUM);
 	
 	
 }
@@ -96,6 +96,8 @@ void start_timer(){
 	temp_CP0 = mfc0(CP0_COUNT, 0);
 	temp_CP0 += 10000;
 	mtc0(CP0_COMPARE, 0, temp_CP0);
+	
+	INFO("Starting hypervisor execution.\n");
 
 	asm volatile ("ei");    
     

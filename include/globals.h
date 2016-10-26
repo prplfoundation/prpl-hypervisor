@@ -48,9 +48,10 @@ extern struct scheduler_info_t scheduler_info;
 #define vcpu_executing ((vcpu_t*)scheduler_info.vcpu_executing_nd->elem)
 #define vm_executing   ((vm_t*)vcpu_executing->vm)
 
-/* Interval of interrupt injection on guests */
 #define MICROSECOND (MILISECOND/1000)
-#define QUANTUM (500 * MICROSECOND)
+
+/* Interval for interrupt injection on guests */
+#define GUEST_QUANTUM (SYSTEM_TICK_US * MICROSECOND)
 
 
 

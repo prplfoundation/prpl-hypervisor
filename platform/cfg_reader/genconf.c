@@ -41,7 +41,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define OUTFILE "include/config.h"
 #define INCLUDE_DIR "include"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
-#define SYSTEM_COMMENT "/* Hypervisor kernel configuration and board info */\n"
+#define SYSTEM_COMMENT "/* Hypervisor kernel configuration */\n"
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
 
 /* Intermediate Physical address of the first VM on the RAM */
@@ -270,6 +270,16 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
 			return ret;
 		}
 	}
+	
+	/* system_tick_us  */
+	if (config_lookup_int(&cfg, "system.system_tick_us", &value)){
+		snprintf(auxstr, STRSZ, "%d", value);
+		strings_cat(str, STRSZ, "#define SYSTEM_TICK_US ", auxstr, " \n", NULL);
+		if ( (ret = write_to_conf_file(outfile, str)) ) {
+			return ret;
+		}
+	}
+	
        
 	if ( (ret = insert_blank_line(outfile)) ){
 		return ret;

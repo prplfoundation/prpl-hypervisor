@@ -31,7 +31,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <linkedlist.h>
 
-#define TICKS_BEFORE_SCHEDULING ((QUANTUM_SCHEDULER*1000*MICROSECOND)/QUANTUM)
+#define TICKS_BEFORE_SCHEDULING ((QUANTUM_SCHEDULER*1000*MICROSECOND)/GUEST_QUANTUM)
 
 struct scheduler_info_t scheduler_info = {NULL, NULL, NULL, NULL};
 
