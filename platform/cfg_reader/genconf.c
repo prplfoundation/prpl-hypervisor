@@ -246,55 +246,13 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
 	if ( (ret = write_to_conf_file(outfile, SYSTEM_COMMENT)) ) {
 		return ret;
 	}
-    
-	/* get platform info*/
-	setting = config_lookup(&cfg, "system.platform");
-	if(setting){
-		/* CPU_ID */
-		if (config_setting_lookup_string(setting, "cpu", &auxstrp)){
-			strings_cat(str, STRSZ, "#define CPU_ID ", "\"", auxstrp, "\"\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
-				return ret;
-			}
-		}else{
-			fprintf(stderr, "Missing cpu configuration on system.platform group.\n");
-			return EXIT_FAILURE;
-		}
-
-		/*CPU_ARCH */
-		if (config_setting_lookup_string(setting, "platform_str", &auxstrp)){
-			strings_cat(str, STRSZ, "#define CPU_ARCH ", "\"", auxstrp, "\"\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
-				return ret;
-			}
-		}else{
-			fprintf(stderr, "Missing platform_str configuration on system.platform group.\n");
-			return EXIT_FAILURE;
-		}
-
-		/*CPU_FREQ */
-		if (config_setting_lookup_int(setting, "system_clock", &value)){
-			snprintf(auxstr, STRSZ, "%d", value);
-			strings_cat(str, STRSZ, "#define CPU_FREQ ", auxstr, "\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
-				return ret;
-			}	
-            
-			/* MILISECOND */
-			snprintf(auxstr, STRSZ, "%d", value/2);
-			strings_cat(str, STRSZ, "#define MILISECOND ", "(", auxstr, "/ 1000)", "\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
-				return ret;
-			}
-		}else{
-			fprintf(stderr, "Missing system_clock configuration on system.platform group.\n");
-			return EXIT_FAILURE;		
-		}
-	}else{
-		fprintf(stderr, "Missing platform configuration on system group.\n");
-		return EXIT_FAILURE;
-	} /*end platform configuration  */
-    
+	
+	/* MILISECOND */
+	strings_cat(str, STRSZ, "#define MILISECOND ", "(", "(CPU_FREQ/2)", "/ 1000)", "\n", NULL);
+	if ( (ret = write_to_conf_file(outfile, str)) ) {
+		return ret;
+	}
+	
 	/* UART speed */
 	if (config_lookup_int(&cfg, "system.uart_speed", &value)){
 		snprintf(auxstr, STRSZ, "%d", value);

@@ -14,14 +14,22 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = ../cfg/sample-1VM.cfg
+CFG_FILE = ../cfg/sample-ping-pong.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
 
 # Optional Device Drivers
-CONFIG_INTERVMCOMM = yes
-CONFIG_VIRTUAL_IO = yes
+CONFIG_INTERVMCOMM_DRV = yes
+CONFIG_PIC32MZ_USB_DRV = no
+CONFIG_VIRTUAL_IO_DRV = yes
+CONFIG_INTERRUPT_REDIRECT_DRV = yes
+
+# Platform info
+CFLAGS = -DCPU_ID="M5150"
+CFLAGS += -DCPU_ARCH="Microchip Curiosity Board"
+CFLAGS += -DCPU_FREQ=200000000
+
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -45,7 +53,7 @@ VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 LINKER_SCRIPT = ../../arch/mips/pic32mz/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS = -EL -O2 -mips32r5 -mmicromips -Wall
+CFLAGS += -EL -O2 -mips32r5 -mmicromips -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt 
 #flointing pointing options

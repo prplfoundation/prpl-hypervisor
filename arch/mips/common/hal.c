@@ -54,8 +54,8 @@ static void print_config(void)
 	INFO("prplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
 	INFO("Copyright (c) 2016, prpl Foundation");
 	INFO("===========================================================");
-	INFO("CPU ID:        %s", CPU_ID);
-	INFO("ARCH:          %s", CPU_ARCH);
+	INFO("CPU CORE:      %s", STR_VALUE(CPU_ID));
+	INFO("BOARD:         %s", STR_VALUE(CPU_ARCH));
 	INFO("SYSCLK:        %dMHz", CPU_SPEED/1000000);
 	INFO("Heap Size:     %dKbytes", (int)(&_heap_size)/1024);
 	INFO("Scheduler      %dms", QUANTUM_SCHEDULER);
