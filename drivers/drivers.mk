@@ -20,7 +20,7 @@ ifeq ($(CONFIG_INTERVMCOMM_DRV),yes)
 endif 
 
 ifeq ($(CONFIG_PIC32MZ_USB_DRV),yes)
-	DRIVERS_LIST += $(TOPDIR)drivers/usb.c
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-usb.c
 endif 
 
 ifeq ($(CONFIG_VIRTUAL_IO_DRV),yes)
@@ -28,7 +28,7 @@ ifeq ($(CONFIG_VIRTUAL_IO_DRV),yes)
 endif 
 
 ifeq ($(CONFIG_INTERRUPT_REDIRECT_DRV),yes)
-	DRIVERS_LIST += $(TOPDIR)drivers/interrupt_redirect.c
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-interrupt-redirect.c
 endif 
 
 drivers:
