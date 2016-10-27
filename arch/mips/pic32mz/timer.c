@@ -36,11 +36,9 @@ This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/B
 #include <interrupts.h>
 #include <libc.h>
 
-/**
- * @brief Number of timer ticks. 
- * 
- */
-static uint32_t timer_count = 0;
+#define SYSTEM_TICK_INTERVAL (SYSTEM_TICK_US * MICROSECOND)
+#define QUEST_TICK_INTERVAL (GUEST_QUANTUM_MS * MILISECOND)
+
 
 /**
  * @brief Configures the COMPARE register to the next interrupt. 
@@ -63,16 +61,24 @@ inline void calc_next_timer_interrupt(uint32_t interval){
  * Perfoms VCPUs scheduling and virtual timer interrupt injection on guests. 
  */
 static void timer_interrupt_handler(){
-    
+	static uint32_t past = 0;
+	uint32_t now, diff_time;
+	
 	run_scheduler();
 	
+	now = mfc0(CP0_COUNT, 0);
+	if (now >= past)
+		diff_time = now - past;
+	else
+		diff_time = 0xffffffff - (past - now);
+
 	/* Insert a virtual timer interrupt to the guest each other timer tick. */
-	if(timer_count++ % 2){
+	if(diff_time >= QUEST_TICK_INTERVAL){
 		setGuestCTL2(getGuestCTL2() | (GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT));
+		past = mfc0(CP0_COUNT, 0);
 	}
     
-	calc_next_timer_interrupt(GUEST_QUANTUM);
-	
+	calc_next_timer_interrupt(SYSTEM_TICK_INTERVAL);
 	
 }
 

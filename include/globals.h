@@ -50,8 +50,8 @@ extern struct scheduler_info_t scheduler_info;
 
 #define MICROSECOND (MILISECOND/1000)
 
-/* Interval for interrupt injection on guests */
-#define GUEST_QUANTUM (SYSTEM_TICK_US * MICROSECOND)
+/* Hypervisor tick interval in microseconds */
+#define SYSTEM_TICK_US 1000
 
 
 

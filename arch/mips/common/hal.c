@@ -58,8 +58,8 @@ static void print_config(void)
 	INFO("Board:         %s", STR_VALUE(CPU_ARCH));
 	INFO("System Clock:  %dMHz", CPU_SPEED/1000000);
 	INFO("Heap Size:     %dKbytes", (int)(&_heap_size)/1024);
-	INFO("Scheduler:     %dms", QUANTUM_SCHEDULER);
-	INFO("System Tick:   %dus", SYSTEM_TICK_US);
+	INFO("Scheduler:     %dms", QUANTUM_SCHEDULER_MS);
+	INFO("Guest Tick:    %dms", SYSTEM_TICK_US/1000);
 	INFO("VMs:           %d\n", NVMACHINES);
 }
 
