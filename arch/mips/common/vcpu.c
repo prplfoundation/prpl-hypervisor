@@ -59,22 +59,22 @@ void contextSave(){
 		 /* Save only necessary guest.cp0 registers. All CP0 registers
 		  * write by the guests must be saved. 
 		  */
-		 vcputosave->cp0_registers[4][0] = mfgc0(4,0);	
-		 vcputosave->cp0_registers[6][0] = mfgc0(6,0);
-		 vcputosave->cp0_registers[8][0] = mfgc0(8,0);
-		 vcputosave->cp0_registers[11][0] = mfgc0(11,0);
-		 vcputosave->cp0_registers[12][0] = mfgc0(12,0);
-		 vcputosave->cp0_registers[12][1] = mfgc0(12,1);	
-		 vcputosave->cp0_registers[12][2] = mfgc0(12,2);
-		 vcputosave->cp0_registers[12][3] = mfgc0(12,3);
-		 vcputosave->cp0_registers[13][0] = mfgc0(13,0);
-		 vcputosave->cp0_registers[14][0] = mfgc0(14,0);
-		 vcputosave->cp0_registers[14][2] = mfgc0(14,2);
-		 vcputosave->cp0_registers[15][0] = mfgc0(15,1);
-		 vcputosave->cp0_registers[16][0] = mfgc0(16,0);
-		 vcputosave->cp0_registers[17][0] = mfgc0(17,0);
-		 vcputosave->cp0_registers[16][3] = mfgc0(16,3);
-		 vcputosave->cp0_registers[30][0] = mfgc0(30,0);
+		 vcputosave->cp0_registers[0] = mfgc0(4,0);	
+		 vcputosave->cp0_registers[1] = mfgc0(6,0);
+		 vcputosave->cp0_registers[2] = mfgc0(8,0);
+		 vcputosave->cp0_registers[3] = mfgc0(11,0);
+		 vcputosave->cp0_registers[4] = mfgc0(12,0);
+		 vcputosave->cp0_registers[5] = mfgc0(12,1);	
+		 vcputosave->cp0_registers[6] = mfgc0(12,2);
+		 vcputosave->cp0_registers[7] = mfgc0(12,3);
+		 vcputosave->cp0_registers[8] = mfgc0(13,0);
+		 vcputosave->cp0_registers[9] = mfgc0(14,0);
+		 vcputosave->cp0_registers[10] = mfgc0(14,2);
+		 vcputosave->cp0_registers[11] = mfgc0(15,1);
+		 vcputosave->cp0_registers[12] = mfgc0(16,0);
+		 vcputosave->cp0_registers[13] = mfgc0(17,0);
+		 vcputosave->cp0_registers[14] = mfgc0(16,3);
+		 vcputosave->cp0_registers[15] = mfgc0(30,0);
 
 		 vcputosave->guestclt2 |= getGuestCTL2();
 
@@ -120,22 +120,21 @@ void contextRestore(){
 		vcpu_executing->init = 0;
 	}
 	
-	mtgc0(12, 0, vcpu->cp0_registers[12][0]);
-	mtgc0(4, 0, vcpu->cp0_registers[4][0]);
-	mtgc0(6, 0, vcpu->cp0_registers[6][0]);
-	mtgc0(5, 0, vcpu->cp0_registers[5][0]);
-	mtgc0(8, 0, vcpu->cp0_registers[8][0]);
-	mtgc0(13, 0, vcpu->cp0_registers[13][0]);
-	mtgc0(12, 1, vcpu->cp0_registers[12][1]);
-	mtgc0(12, 2, vcpu->cp0_registers[12][2]);
-	mtgc0(12, 3, vcpu->cp0_registers[12][3]);
-	mtgc0(14, 0, vcpu->cp0_registers[14][0]);
-	mtgc0(14, 2, vcpu->cp0_registers[14][2]);	
-	mtgc0(15, 1, vcpu->cp0_registers[15][0]);	
-	mtgc0(16, 0, vcpu->cp0_registers[16][0]);
-	mtgc0(17, 0, vcpu->cp0_registers[17][0]);
-	mtgc0(16, 3, vcpu->cp0_registers[16][3]);
-	mtgc0(30, 0, vcpu->cp0_registers[30][0]);
+	mtgc0(4, 0, vcpu->cp0_registers[0]);
+	mtgc0(6, 0, vcpu->cp0_registers[1]);
+	mtgc0(8, 0, vcpu->cp0_registers[2]);
+	mtgc0(12, 0, vcpu->cp0_registers[4]);
+	mtgc0(12, 1, vcpu->cp0_registers[5]);
+	mtgc0(12, 2, vcpu->cp0_registers[6]);
+	mtgc0(12, 3, vcpu->cp0_registers[7]);
+	mtgc0(13, 0, vcpu->cp0_registers[8]);
+	mtgc0(14, 0, vcpu->cp0_registers[9]);
+	mtgc0(14, 2, vcpu->cp0_registers[10]);	
+	mtgc0(15, 1, vcpu->cp0_registers[11]);	
+	mtgc0(16, 0, vcpu->cp0_registers[12]);
+	mtgc0(17, 0, vcpu->cp0_registers[13]);
+	mtgc0(16, 3, vcpu->cp0_registers[14]);
+	mtgc0(30, 0, vcpu->cp0_registers[15]);
 	
 	setGuestCTL2(vcpu->guestclt2);
 	vcpu->guestclt2 = 0;

@@ -113,16 +113,12 @@ typedef struct {
 
 typedef struct vcpu_t {  
 	uint32_t id;
-	uint32_t rootcount;
-	uint32_t offseTelapsedTime;
 	uint32_t gprshadowset;
-	uint32_t cp0_registers[32][4];
-	uint32_t gp_registers[34];	
+	uint32_t cp0_registers[16];
 	uint32_t guestclt2;
 	vm_t *vm;
 	uint32_t pc;
 	uint32_t init;	
-        uint32_t timer_interval;
 	message_buffer_t messages;
 }vcpu_t;
 
