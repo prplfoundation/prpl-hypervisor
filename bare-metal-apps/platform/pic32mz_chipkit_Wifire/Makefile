@@ -53,6 +53,7 @@ READELF = $(CROSS_COMPILER)readelf
 OBJCOPY = $(CROSS_COMPILER)objcopy
 SIZE = $(CROSS_COMPILER)size
 CC= $(CROSS_COMPILER)gcc
+STRIP = $(CROSS_COMPILER)strip
 
 LINKER_SCRIPT = ../../apps/$(APP)/pic32mz.ld
 
@@ -73,6 +74,7 @@ LDFLAGS += -EL
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map ../../apps/$(APP)/$(APP).map -o ../../apps/$(APP)/$(APP).elf ../../apps/$(APP)/*.o -N $(LIBS)
+	$(STRIP) ../../apps/$(APP)/$(APP).elf
 	$(OBJDUMP) --disassemble --reloc ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).lst
 	$(OBJDUMP) -h ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).sec
 	$(OBJDUMP) -s ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).cnt

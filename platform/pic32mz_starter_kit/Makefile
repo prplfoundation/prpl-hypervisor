@@ -85,6 +85,7 @@ READELF = $(CROSS_COMPILER)readelf
 OBJCOPY = $(CROSS_COMPILER)objcopy
 SIZE = $(CROSS_COMPILER)size
 CC= $(CROSS_COMPILER)gcc
+STRIP = $(CROSS_COMPILER)strip
 
 APP = prplHypervisor
 
@@ -103,6 +104,7 @@ endif
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o $(OBJ)
+	$(STRIP) $(APP).elf
 	$(OBJDUMP) --disassemble --reloc $(APP).elf > $(APP).lst
 	$(OBJDUMP) -h $(APP).elf > $(APP).sec
 	$(OBJDUMP) -s $(APP).elf > $(APP).cnt
