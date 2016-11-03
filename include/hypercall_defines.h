@@ -120,27 +120,20 @@ typedef void hypercall_t();
  */ 
 #define HCALL_REENABLE_INTERRUPT	13
 
-#if 0
-/* PUF hypercalls */
-#define HCALL_PUF_SHARED_MEMORY 0x150
+/* PUF FLASH hypercalls */
 
+/* Read 1K buffer from flash. 
+ *  A0 = destination buffer.
+ *  V0 = greater or iqual to 0 sucess, less than zero error.
+ */
+#define HCALL_FLASH_READ  14 
 
-/** FLASH hypercalls **/
-#define HCALL_FLASH_READ  0x151  /* a0 = destination buffer */
-#define HCALL_FLASH_WRITE 0x152  /* a0 = source buffer */
+/* Write 1K buffer to flash.
+ *  A0 = Source buffer.
+ *  V0 = greater or iqual to 0 sucess, less than zero error.
+ */
+#define HCALL_FLASH_WRITE 15  
 
-
-#define ETH_GET_MAC    0x153  /* a0 = destination buffer */
-#define ETH_LINK_STATE 0x12
-#define ETH_RECV_FRAME 0x11
-#define ETH_SEND_FRAME 0x10
-
-#define USB_VM_REGISTER 0x20
-#define USB_VM_GET_DESCRIPTOR 0x21
-#define USB_VM_SEND_DATA 0x23
-
-#define HCALL_READ_DEVCFG3 0x170
-#endif 
 
 #endif
 

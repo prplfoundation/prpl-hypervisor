@@ -139,6 +139,26 @@ asm volatile (                    \
  : "=r" (__ret) : "r" ((uint32_t) (irq)), "I" (HCALL_REENABLE_INTERRUPT) : "a0", "v0"); \
  __ret; })
  
+/* Read 1K byte from flash - PUF specific function.  */
+#define read_1k_data_flash(buf) ({ int32_t __ret; \
+ asm volatile (                    \
+ "move $a0, %z1 \n \
+ hypcall %2 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_FLASH_READ) : "a0", "v0"); \
+ __ret; })
+ 
+/* Write 1K byte to flash - PUF specific function.  */
+#define write_1k_data_flash(buf) ({ int32_t __ret; \
+ asm volatile (                    \
+ "move $a0, %z1 \n \
+ hypcall %2 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_FLASH_WRITE) : "a0", "v0"); \
+ __ret; })
+ 
+ 
+ 
  
 #endif
 

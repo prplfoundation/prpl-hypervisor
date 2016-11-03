@@ -31,6 +31,11 @@ ifeq ($(CONFIG_INTERRUPT_REDIRECT_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-interrupt-redirect.c
 endif 
 
+ifeq ($(CONFIG_PUF_FLASH_DRV),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-puf-flash.c
+endif 
+
+
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
 	     

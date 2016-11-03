@@ -141,40 +141,6 @@ $L1:
 	nop
 
 
-        .text
-        .global hyp_puf_shared_memory
-        .ent hyp_puf_shared_memory        
-hyp_puf_shared_memory:
-        .set noreorder 
-        hypcall 0x150
-        jr $ra
-        nop
-        .set reorder
-.end hyp_puf_shared_memory
-
-        .global hyp_flash_read
-        .ent hyp_flash_read
-hyp_flash_read:
-        .set noreorder
-        hypcall 0x151
-        jr $ra
-        nop
-        .set reorder
-.end hyp_flash_read
-
-        .global hyp_flash_write
-        .ent hyp_flash_write
-hyp_flash_write:
-        .set noreorder
-        hypcall 0x152
-        jr $ra
-        nop
-        .set reorder
-.end hyp_flash_write
-        
-      
-
-
         .global spinlock
         .ent spinlock
 spinlock:
