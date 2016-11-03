@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = ../cfg/sample-ping-pong.cfg
+CFG_FILE = ../cfg/demo-november-2016.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -25,6 +25,7 @@ CONFIG_PIC32MZ_USB_DRV = yes
 CONFIG_PIC32MZ_ETHERNET_DRV = yes
 CONFIG_VIRTUAL_IO_DRV = yes
 CONFIG_INTERRUPT_REDIRECT_DRV = yes
+CONFIG_PUF_FLASH_DRV = yes
 
 # Platform info
 CFLAGS = -DCPU_ID="M5150"
