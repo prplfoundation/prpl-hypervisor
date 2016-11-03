@@ -21,10 +21,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 typedef void hypercall_t();
 
 #define HCALL_TABLE_SIZE 30
-#define HCALL_CODE_INVALID       -1
-#define HCALL_CODE_USED          -2
-#define HCALL_NOT_IMPLEMENTED    -3
-#define HCALL_ADDRESS_NOT_ALLOWED -4
+#define HCALL_CODE_INVALID       	-1
+#define HCALL_CODE_USED          	-2
+#define HCALL_NOT_IMPLEMENTED    	-3
+#define HCALL_ADDRESS_NOT_ALLOWED 	-4
+#define HCALL_USB_BUSY 			-5
 
 
 /*************************/
@@ -84,20 +85,20 @@ typedef void hypercall_t();
 /* Keep the USB state machines updated. 
  * V0 = 1 or 0 for device descriptor available/unavailable.
  */
-#define USB_POLLING              8
+#define HCALL_USB_POLLING              8
 
 /* Returns the device's descritpor 
  * A0 = buffer pointer
  * A1 = buffer size.
  * V0 = descriptor size
  */
-#define USB_GET_DESCRIPTOR       9
+#define HCALL_USB_GET_DESCRIPTOR       9
 
 /* USB send data
  * A0 = buffer pointer
  * A1 = buffer size.
  */
-#define USB_SEND_DATA            10
+#define HCALL_USB_SEND_DATA            10
 
 
 /* Virtual IO Write Address .

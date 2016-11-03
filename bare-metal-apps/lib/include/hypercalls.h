@@ -103,13 +103,13 @@ asm volatile (                    \
  __ret; })
  
 /* USB get device descriptor   */
-#define usb_device_descriptor(descriptor, size) ({ int32_t __ret; \
+#define usb_get_device_descriptor(descriptor, size) ({ int32_t __ret; \
 asm volatile (                    \
 "move $a0, %z1 \n \
  move $a1, %z2 \n \
  hypcall %3 \n\
  move %0, $v0" \
- : "=r" (__ret) : "r" ((uint32_t) (descriptor)), "r" ((uint32_t) (size)), "I" (USB_GET_DESCRIPTOR) : "a0", "a1", "v0"); \
+ : "=r" (__ret) : "r" ((uint32_t) (descriptor)), "r" ((uint32_t) (size)), "I" (HCALL_USB_GET_DESCRIPTOR) : "a0", "a1", "v0"); \
  __ret; })
  
 /* USB polling. Updates the USB state machines.   */
@@ -117,17 +117,17 @@ asm volatile (                    \
 asm volatile (                    \
 "hypcall %1 \n\
  move %0, $v0 " \
- : "=r" (__ret) : "I" (USB_POLLING) : "v0"); \
+ : "=r" (__ret) : "I" (HCALL_USB_POLLING) : "v0"); \
  __ret; })
  
 /* USB send data  */
-#define usb_send(msg, size) ({ int32_t __ret; \
+#define usb_control_send(msg, size) ({ int32_t __ret; \
 asm volatile (                    \
 "move $a0, %z1 \n \
  move $a1, %z2 \n \
  hypcall %3 \n\
  move %0, $v0" \
- : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (USB_SEND_DATA) : "a0", "a1", "v0"); \
+ : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (HCALL_USB_SEND_DATA) : "a0", "a1", "v0"); \
  __ret; })
 
 /* Re-enable an interrupt */

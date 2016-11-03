@@ -49,9 +49,30 @@ static struct usb_transfer_status_t usb_transfer_status;
 static uint32_t sent_sz = 0;
 static uint8_t buffer_tx[64];
 
-void usb_send_data(uint8_t* buf, uint32_t size){
-	memcpy(buffer_tx, buf, size);
+
+/**
+ * @brief Get descriptor hypercall. 
+ * Calling convention (guest registers): 
+ *   	Input: 	a0 = Source buffer.
+ *   	 	a1 = Message size. 
+ * 	Output:	v0 = 0 for success or -1 for busy. 
+ */
+void usb_send_data(){
+	uint8_t *buf  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
+	
+	uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
+	
+	if (usb_transfer_status.state != TRANSFER_IDLE){
+		MoveToPreviousGuestGPR(REG_V0, HCALL_USB_BUSY);
+	}
+		
+	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, vm_executing->base_addr, size, 0xf, CACHEABLE);
+	
+	memcpy(buffer_tx, frame_ptr_mapped, size);
+	
 	usb_transfer_status.state = TRANSFER_START;   
+	
+	MoveToPreviousGuestGPR(REG_V0, size);
 }
 
 /**
@@ -334,7 +355,7 @@ void update_transfer_state_machine(){
 			}
 			break;
 			/* Wait for TX interrupt meaning that the data transfer is finished. */
-			case TRANSFER_WAIT_TX_INT:
+		case TRANSFER_WAIT_TX_INT:
 				/* updated by the interrupt handler */
 				break;
 		/* Transfer done */
@@ -442,12 +463,17 @@ void usb_start(){
     
 	INFO("USB interrupt vector at 0x%x", offset);
     
-	if (register_hypercall(usb_polling, USB_POLLING) < 0){
+	if (register_hypercall(usb_polling, HCALL_USB_POLLING) < 0){
 		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
 		return;
 	}
     
-	if (register_hypercall(get_descriptor, USB_GET_DESCRIPTOR) < 0){
+	if (register_hypercall(get_descriptor, HCALL_USB_GET_DESCRIPTOR) < 0){
+		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
+		return;
+	}
+	
+	if (register_hypercall(usb_send_data, HCALL_USB_SEND_DATA) < 0){
 		ERROR("Error registering the HCALL_GET_VM_ID hypercall");
 		return;
 	}
