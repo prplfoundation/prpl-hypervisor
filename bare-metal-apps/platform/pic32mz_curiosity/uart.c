@@ -35,8 +35,8 @@ int32_t serial_select(uint32_t serial_number){
 void putchar(int32_t value){
 #ifdef VIRTUALIZED_IO
 	if (serial_port == UART1){
-		while(read(U1STA) & USTA_UTXBF);
-		write(U1TXREG, value);    
+		while(readio(U1STA) & USTA_UTXBF);
+		writeio(U1TXREG, value);    
 	}
 #else
 	if (serial_port == UART1){
@@ -49,7 +49,7 @@ void putchar(int32_t value){
 int32_t kbhit(void){
 #ifdef VIRTUALIZED_IO	
 	if (serial_port == UART1){
-		return (read(U1STA) & USTA_URXDA);
+		return (readio(U1STA) & USTA_URXDA);
 	}
 #else
 	if (serial_port == UART1){
@@ -63,7 +63,7 @@ uint32_t getchar(void){
 	while(!kbhit());
 #ifdef VIRTUALIZED_IO		
 	if (serial_port == UART1){
-		return (uint32_t)read(U1RXREG);
+		return (uint32_t)readio(U1RXREG);
 	}
 #else
 	if (serial_port == UART1){

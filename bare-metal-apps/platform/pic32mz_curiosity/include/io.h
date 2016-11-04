@@ -20,19 +20,19 @@
 
 #include <arch.h>
 
-#define ENABLE_LED1 write(TRISECLR, 8) 
-#define ENABLE_LED2 write(TRISECLR, 0x10); 
-#define ENABLE_LED3 write(TRISECLR, 0x20)
-#define ENABLE_LED4_BLUE write(TRISBCLR, 0x1)
-#define ENABLE_LED4_GREEN write(TRISBCLR, 0x2)
-#define ENABLE_LED4_YELLOW write(TRISBCLR, 0x10)
+#define ENABLE_LED1 writeio(TRISECLR, 8) 
+#define ENABLE_LED2 writeio(TRISECLR, 0x10); 
+#define ENABLE_LED3 writeio(TRISECLR, 0x20)
+#define ENABLE_LED4_BLUE writeio(TRISBCLR, 0x1)
+#define ENABLE_LED4_GREEN writeio(TRISBCLR, 0x2)
+#define ENABLE_LED4_YELLOW writeio(TRISBCLR, 0x10)
 
-#define TOGGLE_LED1 write(LATEINV, 8)
-#define TOGGLE_LED2 write(LATEINV, 0x10) 
-#define TOGGLE_LED3 write(LATEINV, 0x20) 
-#define TOGGLE_LED4_BLUE write(LATBINV, 0x1)
-#define TOGGLE_LED4_GREEN write(LATBINV, 0x2)
-#define TOGGLE_LED4_YELLOW write(LATBINV, 0x10)
+#define TOGGLE_LED1 writeio(LATEINV, 8)
+#define TOGGLE_LED2 writeio(LATEINV, 0x10) 
+#define TOGGLE_LED3 writeio(LATEINV, 0x20) 
+#define TOGGLE_LED4_BLUE writeio(LATBINV, 0x1)
+#define TOGGLE_LED4_GREEN writeio(LATBINV, 0x2)
+#define TOGGLE_LED4_YELLOW writeio(LATBINV, 0x10)
 
 
 

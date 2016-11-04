@@ -20,15 +20,15 @@
 
 #include <arch.h>
 
-#define ENABLE_LED1 write(TRISGCLR, 1 << 6)
-#define ENABLE_LED2 write(TRISDCLR, 1 << 4)
-#define ENABLE_LED3 write(TRISBCLR, 1 << 11)
+#define ENABLE_LED1 writeio(TRISGCLR, 1 << 6)
+#define ENABLE_LED2 writeio(TRISDCLR, 1 << 4)
+#define ENABLE_LED3 writeio(TRISBCLR, 1 << 11)
 #define ENABLE_LED4 write(TRISGCLR, 1 << 15)
 
-#define TOGGLE_LED1 write(LATGINV, 1 << 6)
-#define TOGGLE_LED2 write(LATDINV, 1 << 4) 
-#define TOGGLE_LED2 write(LATBINV, 1 << 11) 
-#define TOGGLE_LED2 write(LATGINV, 1 << 15) 
+#define TOGGLE_LED1 writeio(LATGINV, 1 << 6)
+#define TOGGLE_LED2 writeio(LATDINV, 1 << 4) 
+#define TOGGLE_LED2 writeio(LATBINV, 1 << 11) 
+#define TOGGLE_LED2 writeio(LATGINV, 1 << 15) 
 
 
 #endif

@@ -34,8 +34,8 @@ int32_t serial_select(uint32_t serial_number){
 
 void putchar(int32_t value){
 #ifdef VIRTUALIZED_IO
-	while(read(U4STA) & USTA_UTXBF);
-	write(U4TXREG, value);    
+	while(readio(U4STA) & USTA_UTXBF);
+	writeio(U4TXREG, value);    
 #else
 	while(U4STA & USTA_UTXBF);
 	U4TXREG = value;    
@@ -44,7 +44,7 @@ void putchar(int32_t value){
 
 int32_t kbhit(void){
 #ifdef VIRTUALIZED_IO
-	return (read(U4STA) & USTA_URXDA);
+	return (readio(U4STA) & USTA_URXDA);
 #else
 	return (U4STA & USTA_URXDA);
 #endif		
@@ -53,7 +53,7 @@ int32_t kbhit(void){
 uint32_t getchar(void){
 	while(!kbhit());
 #ifdef VIRTUALIZED_IO	
-	return (uint32_t)read(U2RXREG);
+	return (uint32_t)readio(U2RXREG);
 #else
 	return (uint32_t)U2RXREG;
 #endif 

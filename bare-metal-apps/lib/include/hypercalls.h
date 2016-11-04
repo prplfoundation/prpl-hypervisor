@@ -21,7 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercall_defines.h>
 
 /* Read from privileged address  */
-#define read(addr) ({ int32_t __value; \
+#define readio(addr) ({ int32_t __value; \
 asm volatile (                                          \
 "move	$a0, %z1 \n\
 hypcall   %2 \n\
@@ -30,7 +30,7 @@ move	%0, $v0" \
 __value; })
 
 /* Write to privileged address */
-#define write(reg, value) ({ int32_t __ret; \
+#define writeio(reg, value) ({ int32_t __ret; \
 asm volatile (                 \
 "move $a0, %z1 \n \
  move $a1, %z2 \n \
