@@ -37,11 +37,11 @@ int32_t serial_select(uint32_t serial_number){
 void putchar(int32_t value){
 	#ifdef VIRTUALIZED_IO
 	if (serial_port == UART2){
-		while(read(U2STA) & USTA_UTXBF);
-		write(U2TXREG, value);    
+		while(readio(U2STA) & USTA_UTXBF);
+		writeio(U2TXREG, value);    
 	}else if (serial_port == UART6){
-		while(read(U6STA) & USTA_UTXBF);
-		write(U6TXREG, value);    
+		while(readio(U6STA) & USTA_UTXBF);
+		writeio(U6TXREG, value);    
 	}
 	#else
 	if (serial_port == UART2){
@@ -57,9 +57,9 @@ void putchar(int32_t value){
 int32_t kbhit(void){
 #ifdef VIRTUALIZED_IO	
 	if (serial_port == UART2){
-		return (read(U2STA) & USTA_URXDA);
+		return (readio(U2STA) & USTA_URXDA);
 	}else if (serial_port == UART6){
-		return (read(U6STA) & USTA_URXDA);
+		return (readio(U6STA) & USTA_URXDA);
 	}
 	return 0;
 #else	
@@ -76,9 +76,9 @@ uint32_t getchar(void){
 	while(!kbhit());
 #ifdef VIRTUALIZED_IO		
 	if (serial_port == UART2){
-		return (uint32_t)read(U2RXREG);
+		return (uint32_t)readio(U2RXREG);
 	}else if (serial_port == UART6){
-		return (uint32_t)read(U6RXREG);
+		return (uint32_t)readio(U6RXREG);
 	}
 #else
 	if (serial_port == UART2){
