@@ -12,10 +12,29 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OT
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
 */
 
-/* Simple UART Bare-metal application sample */
+/* TCP listener server using picoTCP stack. 
+ * 
+ * To compile this application, first download the picoTCP sources from:
+ * https://github.com/tass-belgium/picotcp/releases/tag/prpl-v0.1. Then, compile with:
+ *
+ * make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -Os -c -Wa,-mvirt -mips32r5 -mtune=m14k \
+ * -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer \
+ * -G 0" DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=1 ICMP4=1 DNS_CLIENT=0 MDNS=0 DNS_SD=0 \
+ * SNTP_CLIENT=0 PPP=0 MCAST=1 MLD=0 IPFILTER=0 ARCH=pic32
+ *
+ * The compiled picoTCP directory tree must be at the same directory level of the prpl-hypervisor, 
+ * example:
+ *
+ * ~/hyper
+ *	/prp-hypervisor
+ *	/picotcp
+ *
+ * Once the application is compiled and uploaded to the board, you can use telnet or nc (netcat)
+ * to interact with this demo connecting to the 192.168.0.2 port 80. 
+ */
+
 #include <arch.h>
 #include <libc.h>
 #include <usb.h>
@@ -35,9 +54,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define LISTENING_PORT 80
 #define MAX_CONNECTIONS 1
 #define ETH_RX_BUF_SIZE 1536
-
 #define KEYSIZE 16
-
 #define LABEL_SIZE  6
 
 static char msg3[] = "\nInvalid Key ";
@@ -45,22 +62,21 @@ static char msg4[] = "\nValid key! Command relayed to robotic arm controller.";
 static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 static struct pico_socket *s = NULL;
 static struct pico_ip4 my_eth_addr, netmask;
-
 uint16_t keySize = KEYSIZE;
-uint8_t key[KEYSIZE] = { // This is the key that has to be wrapped using PUF
-							 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-							 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-						};
 
-uint8_t key_unwrapped[KEYSIZE]; // This will contain the unwrapped key
+/* This is the key that has to be wrapped using PUF */
+uint8_t key[KEYSIZE] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+			 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+
+/* This will contain the unwrapped key */
+uint8_t key_unwrapped[KEYSIZE]; 
+
 uint8_t label[LABEL_SIZE] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
 uint8_t context[CONTEXT_SIZE] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 };
 uint16_t keyProperties = KEY_PROP_NONE;
 uint8_t keyIndex = 0;
 uint8_t keyCode[KEYSIZE + KEYCODE_OVERHEAD]; // This will contain the wrapped key
 uint8_t key_wrapped = 0;
-return_t retVal;
-
 
 volatile unsigned int pico_ms_tick = 0;
 static uint32_t cp0_ms_ticks = CPU_SPEED/2/1000;
@@ -106,6 +122,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock){
 	static int send_key_once = 0;
 	static struct pico_socket *s_client = NULL;
 	char str_ip_peer[200];
+	return_t retVal;
 
 	if (ev & PICO_SOCK_EV_RD) {
 		printf("\nVM#1: Receiving client data.");
@@ -210,6 +227,10 @@ int main(){
 	const char *ipaddr="192.168.0.2";
 	uint16_t port_be = 0;
 	int i = 0;
+	uint32_t timer;
+	return_t retVal;
+	
+	interrupt_register(irq_timer, GUEST_TIMER_INT);
 	
 	/* Get the Ethernet MAC address. */
 	eth_mac(mac);
@@ -260,6 +281,8 @@ int main(){
 	printf("\nVM#1: TCP server waiting for incoming connections on %s:%d\n", ipaddr, LISTENING_PORT);
 
 	while (1){
+		
+		eth_watchdog(&timer, 500);
         
 		pico_stack_tick();
 
