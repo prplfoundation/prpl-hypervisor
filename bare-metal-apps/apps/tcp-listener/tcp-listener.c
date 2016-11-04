@@ -25,7 +25,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <platform.h>
 #include <eth.h>
 
-
 #include <pico_defines.h>
 #include <pico_stack.h>
 #include <pico_ipv4.h>
@@ -46,7 +45,6 @@ static char msg4[] = "\nValid key! Command relayed to robotic arm controller.";
 static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 static struct pico_socket *s = NULL;
 static struct pico_ip4 my_eth_addr, netmask;
-static struct pico_device *pico_dev_eth;
 
 uint16_t keySize = KEYSIZE;
 uint8_t key[KEYSIZE] = { // This is the key that has to be wrapped using PUF
