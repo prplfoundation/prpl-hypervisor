@@ -17,10 +17,10 @@
 INC_DIRS += -I ../../../../picotcp/build/include/
 
 #Aditional C flags
-CFLAGS += -DPICOTCP 
+CFLAGS += -DPICOTCP  -DVIRTUALIZED_IO 
 
 #Aditional Libraries
-LIBS += ../../../../picotcp/build/lib/libpicotcp.a
+LIBS += ../../../../picotcp/build/lib/libpicotcp.a -L../../../bare-metal-apps/apps/iidprpl/ -liidprplpuf
 
 #default stack size 512 bytes
 STACK_SIZE = 4096
