@@ -22,9 +22,9 @@
 #include <network.h>
 #include <hypercalls.h>
 
-#include "puf.h"
-#include "iid_errors.h"
-#include "iidprplpuf.h"
+#include "include/puf.h"
+#include "include/iid_errors.h"
+#include "include/iidprplpuf.h"
 
 #define IID_CHECK_AC_CONSTANT	0xA5FECD39
 
