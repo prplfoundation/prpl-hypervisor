@@ -59,7 +59,6 @@ int main() {
 	/* Last KB of SRAM.
 	 * NOTE: remember to reserve it by changing the linker script!
 	 */
-	printf("\n0x%x", pufSram);
 	PRE_HIS_ALIGN uint8_t activationCode_buffer[1024] POST_HIS_ALIGN = { 0 }; /* This has to be 32-bits aligned! */
 	
 	retVal = IID_PRPL_Init(pufSram, 1024);
