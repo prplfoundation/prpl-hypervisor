@@ -35,8 +35,8 @@ endif
 
 TOPDIR=../../
 
-INC_DIRS += -I$(TOPDIR)/lib/include \
-            -I$(TOPDIR)../include \
+INC_DIRS += -I$(TOPDIR)lib/include \
+            -I$(TOPDIR)../../include \
             -Iinclude \
            -I$(TOPDIR)arch/mips/pic32mz/include/
 

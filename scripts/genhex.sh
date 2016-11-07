@@ -49,7 +49,7 @@ for i in $*; do
     fi
     
     #padding the VM's bin to its maximum size
-    dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
+    dd if=../../guests/bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
     
     ((COUNT++))
     BASE_ADDR=$(expr $BASE_ADDR + $PADDING)

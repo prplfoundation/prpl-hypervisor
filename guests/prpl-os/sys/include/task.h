@@ -1,0 +1,12 @@
+int32_t os_id(int8_t *name);
+int8_t *os_name(uint16_t id);
+uint16_t os_selfid(void);
+int8_t *os_selfname(void);
+int32_t os_state(uint16_t id);
+int32_t os_jobs(uint16_t id);
+int32_t os_spawn(void (*task)(), int8_t *name, uint32_t stack_size);
+void os_yield(void);
+int32_t os_block(uint16_t id);
+int32_t os_resume(uint16_t id);
+int32_t os_kill(uint16_t id);
+int32_t os_delay(uint16_t id, uint32_t delay);
