@@ -49,6 +49,7 @@ static hypercall_t* hypercall_table[HCALL_TABLE_SIZE];
  * @return Greater than zero on success, otherwise error code. 
  */
 int32_t register_hypercall(hypercall_t* hyper, uint32_t code){
+
     if (code > HCALL_TABLE_SIZE-1 || code < 0){
         return HCALL_CODE_INVALID;
     }
@@ -70,6 +71,14 @@ int32_t register_hypercall(hypercall_t* hyper, uint32_t code){
 void hypercall_execution(){
     /* Get the hypervall code */
     uint32_t code = getHypercallCode(); 
+
+    /* FIXME: This hack was needded because the libiidprplpuf uses 
+       the old hypercall 0x153 to get the MAC address. Currently the 
+       hypercall has code 7. It is necessary to recompile the libiidprplpuf to 
+       use the correct hypercall code number. */    
+    if (code == 0x153){
+	    code = 7;
+    }
     
     /* Hypercall not implemented */
     if ( (code > HCALL_TABLE_SIZE-1) || (code < 0) || (!hypercall_table[code])){
