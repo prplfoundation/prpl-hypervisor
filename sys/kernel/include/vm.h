@@ -30,7 +30,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <tlb.h>
 #include <vcpu.h>
 
-#define VM_NAME_SZ 16
+#define VM_NAME_SZ 32
 
 /* Identification for different operating system types */
 #define BARE_METAL	1
