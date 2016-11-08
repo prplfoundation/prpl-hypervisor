@@ -29,7 +29,7 @@ LDFLAGS_STRIP = --gc-sections
 ASFLAGS = -EL -mips32r2 -mvirt 
 CFLAGS = -Wall -EL -O2 -c -mips32r2 -mno-check-zero-division -ffreestanding -nostdlib -fomit-frame-pointer -G 0 $(INC_DIRS) -DCPU_SPEED=${F_CLK} -DTIME_SLICE=${TIME_SLICE} -DLITTLE_ENDIAN $(CFLAGS_STRIP) -DKERN_VER=\"$(KERNEL_VER)\"
 LDFLAGS = #$(LDFLAGS_STRIP)
-LINKER_SCRIPT = $(ARCH_DIR)/pic32mz.ld
+LINKER_SCRIPT =pic32mz.ld
 
 CC = mips-mti-elf-gcc
 AS = mips-mti-elf-as

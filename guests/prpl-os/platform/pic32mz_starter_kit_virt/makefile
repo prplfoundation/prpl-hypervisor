@@ -18,7 +18,13 @@ include $(SRC_DIR)/$(APP)/app.mak
 INC_DIRS += -I $(SRC_DIR)/lib/include -I $(SRC_DIR)/sys/include
 CFLAGS += -DCPU_ID=0 -DCPU_CORES=1 -DCPU_ARCH=$(CPU_ARCH) -DMAX_TASKS=$(MAX_TASKS) -DHEAP_SIZE=$(HEAP_SIZE) -DTERM_BAUD=$(SERIAL_BAUD)
 
-image: hal libc kernel app
+conf_liker: 
+	cp $(SRC_DIR)/arch/mips/pic32mz_starter-kit-virt/pic32mz.ld .
+	sed -i -e 's/FLASH_SIZE/$(FLASH_SIZE)/' pic32mz.ld
+	sed -i -e 's/RAM_SIZE/$(RAM_SIZE)/' pic32mz.ld
+
+
+image: hal libc kernel app conf_liker
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(SRC_DIR)/$(APP)/$(APPLICATION).elf *.o
 	$(DUMP) --disassemble --reloc $(SRC_DIR)/$(APP)/$(APPLICATION).elf > $(SRC_DIR)/$(APP)/$(APPLICATION).lst
 	$(DUMP) -h $(SRC_DIR)/$(APP)/$(APPLICATION).elf > $(SRC_DIR)/$(APP)/$(APPLICATION).sec
@@ -29,7 +35,7 @@ image: hal libc kernel app
 	hexdump -v -e '4/1 "%02x" "\n"' $(SRC_DIR)/$(APP)/$(APPLICATION).bin > $(SRC_DIR)/$(APP)/$(APPLICATION).txt
 
 clean:
-	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.hex
+	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.hex *.ld
 	rm -rf $(SRC_DIR)/$(APP)/*.elf
 	rm -rf $(SRC_DIR)/$(APP)/*.bin
 	rm -rf $(SRC_DIR)/$(APP)/*.cnt

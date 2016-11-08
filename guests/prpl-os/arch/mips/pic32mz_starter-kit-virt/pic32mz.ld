@@ -3,8 +3,8 @@ ENTRY(_entry)
 
 MEMORY 
 {
-flash		(rx)   : ORIGIN = 0x9d000000, LENGTH = 64K	/* Flash area*/
-ram		(rw!x) : ORIGIN = 0x80000000, LENGTH = 64K	/* RAM area. */
+flash	(rx)   : ORIGIN = 0x9d000000, LENGTH = FLASH_SIZE	/* Flash area*/
+ram	(rw!x) : ORIGIN = 0x80000000, LENGTH = RAM_SIZE		/* RAM area. */
 }
 
 /* define a global symbol _stack  */
