@@ -122,8 +122,8 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 		tlbEntryWrite(&vm->tlbentries[i]);
 	}
 
-	if(vm->os_type == BARE_METAL){
-		entry_point = BARE_METAL_ENTRY_POINT;
+	if(vm->os_type == BARE_METAL || vm->os_type == PRPL_OS){
+		entry_point = GENERAL_ENTRY_POINT;
 	}else{
 		WARNING("OS type not defined.");
 	}

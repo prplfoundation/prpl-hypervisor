@@ -34,8 +34,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Identification for different operating system types */
 #define BARE_METAL	1
+#define PRPL_OS		2
 
-#define BARE_METAL_ENTRY_POINT 0x9d001000
+#define GENERAL_ENTRY_POINT 0x9d001000
 
 struct vcpu_t;
 typedef struct vcpu_t vcpu_t;

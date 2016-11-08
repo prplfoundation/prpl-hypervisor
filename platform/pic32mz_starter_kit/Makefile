@@ -14,7 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-CFG_FILE = cfg/sample-ping-pong.cfg
+CFG_FILE = cfg/sample-blink.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -36,7 +36,9 @@ CFLAGS += -DCPU_FREQ=200000000
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
 # OR PORTING TO A NEW PLATFORM.
 ########################################################################################################
-APP_LIST = ""
+BARE_METAL_LIST = ""
+PRPL_OS_LIST = ""
+ALL_LIST = ""
 
 SHELL := /bin/bash
 
@@ -89,7 +91,7 @@ STRIP = $(CROSS_COMPILER)strip
 
 APP = prplHypervisor
 
-all: config_vms lib kernel common pic32mz platform drivers $(APP) bare_apps generate_firmware
+all: config_vms lib kernel common pic32mz platform drivers $(APP) bare_apps prpl_apps generate_firmware
 
 include $(TOPDIR)sys/sys.mk
 include $(TOPDIR)arch/mips/common/common.mk
@@ -119,22 +121,27 @@ load: serial
 	../../bin/pic32prog -S -d ${SERIAL_DEV} firmware.hex
 
 bare_apps:
+	$(eval APP_LIST:=$(shell ../../scripts/get_vm_list.sh include/vms.info BARE_METAL))
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../guests/bare-metal-apps/platform/pic32mz_starter_kit APP=$$i CLEAN=1 clean; \
 		$(MAKE) -C ../../guests/bare-metal-apps/platform/pic32mz_starter_kit APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
 	;done
-
+	
+prpl_apps:
+	$(eval APP_LIST:=$(shell ../../scripts/get_vm_list.sh include/vms.info PRPL_OS))
+	for i in $(APP_LIST) ; do \
+		$(MAKE) -C ../../guests/prpl-os/platform/pic32mz_starter_kit_virt APP=$$i CLEAN=1 clean; \
+		$(MAKE) -C ../../guests/prpl-os/platform/pic32mz_starter_kit_virt image APPLICATION=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
+	;done
+	
 generate_firmware:
-	../../scripts/genhex.sh $(APP_LIST)
+	../../scripts/genhex.sh
 
 make_genconf:
 	gcc -o genconf ../cfg_reader/genconf.c -lconfig
 	
 config_vms: make_genconf
-	#execute first and exit in case of errors
 	./genconf $(CFG_FILE) || (exit 1)
-	#execute and export to a makefile variable the ouput of the script
-	$(eval APP_LIST:=$(shell ./genconf $(CFG_FILE) || (exit 1)))
 
 	
 clean: config_vms
@@ -144,7 +151,13 @@ clean: config_vms
 	rm -rf include
 	rm -f genconf
 	
+	$(eval APP_LIST:=$(shell ../../scripts/get_vm_list.sh include/vms.info BARE_METAL))
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../guests/bare-metal-apps/platform/pic32mz_starter_kit APP=$$i CLEAN=1 clean \
+	;done
+	
+	$(eval APP_LIST:=$(shell ../../scripts/get_vm_list.sh include/vms.info PRPL_OS))
+	for i in $(APP_LIST) ; do \
+		$(MAKE) -C ../../guests/prpl-os/platform/pic32mz_starter_kit_virt APPLICATION=$$i clean \
 	;done
 

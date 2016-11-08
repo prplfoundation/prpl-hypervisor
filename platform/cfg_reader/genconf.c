@@ -444,6 +444,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 	int i, num_el, ret, aux, ram_size, flash_size, j, num_mm;
 	unsigned int value;
 	char auxstr[STRSZ], str[STRSZ], app_name[STRSZ];
+	char os_type[32];
 	const char *auxstrp;
 	config_setting_t *setting;
 	int total_tlb_entries = 0;
@@ -452,7 +453,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 	strcpy(app_list, "");
     
 	/* Generates a list of VM's flash and RAM sizes */
-	strcpy(vms_info, "VM name \tflash_size \tram_size \t address_start\n");
+	strcpy(vms_info, "vm_name \tflash_size \tram_size \t address_start \t os_type\n");
     
 	/* Write comment */
 	if ( (ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) ) {
@@ -503,6 +504,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
 		}
+		strcpy(os_type, auxstrp);
         
 		/* Device Mapping array  */
 		config_setting_t * device_mapping_setting = config_setting_lookup(vm_conf, "device_mapping");
@@ -710,7 +712,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
 		
         
-		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_flash_inter_addr);
+		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x \t%s\n", flash_size, ram_size, vm_flash_inter_addr, os_type);
 		strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
 		strcat(vms_info, str);
 		

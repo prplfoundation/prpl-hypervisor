@@ -3,7 +3,7 @@ ENTRY(_entry)
 
 MEMORY 
 {
-flash		(rx)   : ORIGIN = 0x9d000000, LENGTH = 32K	/* Flash area*/
+flash		(rx)   : ORIGIN = 0x9d000000, LENGTH = 64K	/* Flash area*/
 ram		(rw!x) : ORIGIN = 0x80000000, LENGTH = 64K	/* RAM area. */
 }
 
