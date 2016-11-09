@@ -22,22 +22,22 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <vcpu.h>
 #include <config.h>
 
-#define CRITICAL(X,...) printf("\nCRITICAL: "X, ##__VA_ARGS__); wait_for_reset();
+#define CRITICAL(X,...) printf("\nHYPER: CRITICAL: "X, ##__VA_ARGS__); wait_for_reset();
 
 #ifdef WARNINGS
-#define WARNING(X,...) printf("\nWARNING: "X, ##__VA_ARGS__);
+#define WARNING(X,...) printf("\nHYPER: WARNING: "X, ##__VA_ARGS__);
 #else
 #define WARNING(A,...) do{}while(0);
 #endif
 
 #ifdef ERRORS
-#define ERROR(X,...) printf("\nERROR: "X, ##__VA_ARGS__);
+#define ERROR(X,...) printf("\nHYPER: ERROR: "X, ##__VA_ARGS__);
 #else
 #define ERROR(X,...) do{}while(0);
 #endif
 
 #ifdef INFOS
-#define INFO(X,...) printf("\n"X, ##__VA_ARGS__);
+#define INFO(X,...) printf("\nHYPER: "X, ##__VA_ARGS__);
 #else
 #define INFO(X,...) do{}while(0);
 #endif
