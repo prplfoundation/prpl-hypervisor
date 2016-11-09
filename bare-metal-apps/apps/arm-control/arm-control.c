@@ -50,8 +50,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define CMD_SEQUENCE_SIZE(x) ((sizeof(x)/sizeof(struct owi_command)))
 
+/** @brief USB descriptor 
+ *  Keep the device descriptor data of the USB device. 
+ */
 struct descriptor_decoded descriptor;
 
+/* Application states */
 enum arm_control_state{
 	WAITING_CONNECT_ARM,
 	ACK_DEVICE_BLINK_LED,
@@ -59,26 +63,28 @@ enum arm_control_state{
 	RUNNING
 };
 
-
 /*
  * OWI arm definitions
  */
-static unsigned char owi_pincher_close[] = { 0x01, 0x00, 0x00 };
-static unsigned char owi_pincher_open[]  = { 0x02, 0x00, 0x00 };
-static unsigned char owi_wrist_up[]      = { 0x04, 0x00, 0x00 };
-static unsigned char owi_wrist_down[]    = { 0x08, 0x00, 0x00 };
+
+/* Arm moviments not used */
 /*static unsigned char owi_elbow_up[]      = { 0x10, 0x00, 0x00 };
-static unsigned char owi_elbow_down[]    = { 0x20, 0x00, 0x00 };
-static unsigned char owi_shoulder_up[]   = { 0x40, 0x00, 0x00 }; 
-static unsigned char owi_shoulder_down[] = { 0x80, 0x00, 0x00 };*/
-static unsigned char owi_base_clockwise[]         = { 0x00, 0x01, 0x00 };
-static unsigned char owi_base_counter_clockwise[] = { 0x00, 0x02, 0x00 };
-/*static unsigned char owi_wrist_down_shoulder_up[] = { 0x08 | 0x40, 0x00, 0x00 };
-static unsigned char owi_wrist_up_shoulder_down[] = { 0x04 | 0x80, 0x00, 0x00 };
-static unsigned char owi_elbow_up_shoulder_up[]     = { 0x10 | 0x40, 0x00, 0x00 };
-static unsigned char owi_elbow_down_shoulder_down[] = { 0x20 | 0x80, 0x00, 0x00 };*/
-static unsigned char owi_arm_up[]   = { 0x08 | 0x10 | 0x40, 0x00, 0x00 }; // wrist down + elbow up + shoulder up
-static unsigned char owi_arm_down[] = { 0x04 | 0x20 | 0x80, 0x01, 0x00 }; // wrist up + elbow down + shoulder down + base clockwise
+ * static unsigned char owi_elbow_down[]    = { 0x20, 0x00, 0x00 };
+ * static unsigned char owi_shoulder_up[]   = { 0x40, 0x00, 0x00 }; 
+ * static unsigned char owi_shoulder_down[] = { 0x80, 0x00, 0x00 };
+ * static unsigned char owi_wrist_down_shoulder_up[] = { 0x08 | 0x40, 0x00, 0x00 };
+ * static unsigned char owi_wrist_up_shoulder_down[] = { 0x04 | 0x80, 0x00, 0x00 };
+ * static unsigned char owi_elbow_up_shoulder_up[]     = { 0x10 | 0x40, 0x00, 0x00 };
+ * static unsigned char owi_elbow_down_shoulder_down[] = { 0x20 | 0x80, 0x00, 0x00 };
+ */
+static unsigned char owi_pincher_close[] = { 0x01, 0x00, 0x01 };
+static unsigned char owi_pincher_open[]  = { 0x02, 0x00, 0x01 };
+static unsigned char owi_wrist_up[]      = { 0x04, 0x00, 0x01 };
+static unsigned char owi_wrist_down[]    = { 0x08, 0x00, 0x01 };
+static unsigned char owi_base_clockwise[]         = { 0x00, 0x01, 0x01 };
+static unsigned char owi_base_counter_clockwise[] = { 0x00, 0x02, 0x01 };
+static unsigned char owi_arm_up[]   = { 0x08 | 0x10 | 0x40, 0x00, 0x01 }; // wrist down + elbow up + shoulder up
+static unsigned char owi_arm_down[] = { 0x04 | 0x20 | 0x80, 0x01, 0x01 }; // wrist up + elbow down + shoulder down + base clockwise
 static unsigned char owi_light_on[] = { 0x00, 0x00, 0x01 };
 static unsigned char owi_light_off[] = { 0x00, 0x00, 0x00 };
 static unsigned char owi_stop[] = { 0x00, 0x00, 0x00 };
@@ -88,22 +94,20 @@ struct owi_command{
 	uint32_t duration_ms;
 };
 
-
 struct owi_command move_sequence [] = {
 	{ .command = owi_pincher_close, .duration_ms = 1550 },
 	{ .command = owi_wrist_up, .duration_ms = 1900 },
 	{ .command = owi_arm_down, .duration_ms = (1800+300) },
 	{ .command = owi_base_clockwise, .duration_ms = (4000-1800) },
 	{ .command = owi_pincher_open, .duration_ms = 1500 },
-	{ .command = owi_stop, .duration_ms = 500 },
+	{ .command = owi_light_on, .duration_ms = 500 },
 	{ .command = owi_pincher_close, .duration_ms = 1500 },
 	{ .command = owi_base_counter_clockwise, .duration_ms = (4000-300) },
 	{ .command = owi_arm_up, .duration_ms = (1800+600) },
 	{ .command = owi_wrist_down, .duration_ms = (1900-225) },
 	{ .command = owi_pincher_open, .duration_ms = 1550 },
-	{ .command = owi_stop, .duration_ms = 4000 }
+	{ .command = owi_stop, .duration_ms = 500 }
 };
-
 
 struct owi_command ack_sequence [] = {
 	{ .command = owi_light_on, .duration_ms = 500 },
@@ -114,24 +118,24 @@ struct owi_command ack_sequence [] = {
 	{ .command = owi_light_off, .duration_ms = 500 },
 };
 
-
 /**
  * return:
  *   0:   no message received
  *   >= 1:   message received
  *   < 0: error
  */
-int get_message(unsigned char *message)
-{
+int get_message(unsigned char *message){
 	uint32_t source;
 	
 	return ReceiveMessage(&source, message, 1, 0);
 }
 
-uint32_t process_message()
-{
+/**
+ * Checking for a new message from VM#1.
+ */
+uint32_t process_message(){
 	unsigned char message;
-	uint32_t run_sequence_flag = 0;
+	static uint32_t run_sequence_flag = 0;
 	
 	if (get_message(&message))
 	{
@@ -157,7 +161,10 @@ uint32_t process_message()
 	return run_sequence_flag;
 }
 
-void process_owi_command(unsigned char byte1, unsigned char byte2)
+/**
+ * Send a command to the arm .
+ */
+void process_owi_command(unsigned char byte1, unsigned char byte2, unsigned char byte3)
 {
 	/* Make sure that the local buffer will be located on stack using volatile. 
 	   The compiler may keep small data structures in registers. The usb_control_send() hypercall
@@ -166,11 +173,14 @@ void process_owi_command(unsigned char byte1, unsigned char byte2)
 	
 	tx[0] = byte1;
 	tx[1] = byte2;
-	tx[2] = 1; /* LED on */
+	tx[2] = byte3; 
 	
 	usb_control_send(tx, 3);
 }
 
+/**
+ * Shows that the arm is connected blinking the arm's led three times. 
+ */
 uint32_t owi_arm_blink_led(){
 	static uint32_t tm_cmd = 1;
 	static uint32_t tm_next_cmd = 0;
@@ -196,15 +206,18 @@ uint32_t owi_arm_blink_led(){
 	return ACK_DEVICE_BLINK_LED;
 }
 
+/**
+ * Checks if a USB device is connected or disconneted. 
+ */
 uint32_t waiting_for_arm(uint32_t dev_connected){
 	static uint32_t old = 0;
 	
 	if (dev_connected != old){
 		if (dev_connected){
 			usb_get_device_descriptor((char*)&descriptor, sizeof(struct descriptor_decoded));
-			printf("\nDevice connected: idVendor 0x%x idProduct 0x%x", descriptor.idVendor, descriptor.idProduct);
+			printf("\nVM#3: Device connected: idVendor 0x%x idProduct 0x%x", descriptor.idVendor, descriptor.idProduct);
 		}else{
-			printf("\nDevice Disconnected");
+			printf("\nVM#3: Device Disconnected");
 		}
 		old = dev_connected;
 	}
@@ -216,13 +229,16 @@ uint32_t waiting_for_arm(uint32_t dev_connected){
 	}
 }
 
+/**
+ * Performs a movement sequence with the arm. 
+ */
 void perform_arm_moviment(uint32_t stop){
 	static uint32_t tm_cmd = 1;
 	static uint32_t tm_next_cmd = 0;
 	static uint32_t index = 0;
 	static uint32_t running = 0;
 	
-	if(stop == 2 && !running){
+	if(stop == 0 && !running){
 		return;
 	}
 	
@@ -231,7 +247,8 @@ void perform_arm_moviment(uint32_t stop){
 	if(wait_time(tm_cmd, tm_next_cmd)){
 		
 		process_owi_command(move_sequence[index].command[0],
-				    move_sequence[index].command[1]);
+				    move_sequence[index].command[1],
+				    move_sequence[index].command[2]);
 		
 		tm_next_cmd = move_sequence[index].duration_ms;
 		
@@ -254,8 +271,6 @@ void perform_arm_moviment(uint32_t stop){
 	
 
 int main() {
-	/* int32_t ret; */
-	/* uint32_t guest_id = get_guestid(); */
 	uint32_t dev_connected = 0;
 	uint32_t tm_poll = 0, tm_tst = 0;
 	uint32_t stop;
@@ -292,13 +307,13 @@ int main() {
 			case READ_TO_USE:
 				if(wait_time(tm_tst, 1000)){
 					state = RUNNING;
-					printf("\nArm read to use!");
+					printf("\nVM#3: Arm read to use!");
 				}
 				break;
 				
 			case RUNNING:
 				stop = process_message();
-				perform_arm_moviment(1);
+				perform_arm_moviment(stop);
 				break;
 		}
 	}
