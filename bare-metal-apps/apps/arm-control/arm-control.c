@@ -60,7 +60,8 @@ enum arm_control_state{
 	WAITING_CONNECT_ARM,
 	ACK_DEVICE_BLINK_LED,
 	READ_TO_USE,
-	RUNNING
+	RUNNING,
+	WAIT_USER_STOP
 };
 
 /*
@@ -77,14 +78,14 @@ enum arm_control_state{
  * static unsigned char owi_elbow_up_shoulder_up[]     = { 0x10 | 0x40, 0x00, 0x00 };
  * static unsigned char owi_elbow_down_shoulder_down[] = { 0x20 | 0x80, 0x00, 0x00 };
  */
-static unsigned char owi_pincher_close[] = { 0x01, 0x00, 0x01 };
-static unsigned char owi_pincher_open[]  = { 0x02, 0x00, 0x01 };
-static unsigned char owi_wrist_up[]      = { 0x04, 0x00, 0x01 };
-static unsigned char owi_wrist_down[]    = { 0x08, 0x00, 0x01 };
-static unsigned char owi_base_clockwise[]         = { 0x00, 0x01, 0x01 };
-static unsigned char owi_base_counter_clockwise[] = { 0x00, 0x02, 0x01 };
-static unsigned char owi_arm_up[]   = { 0x08 | 0x10 | 0x40, 0x00, 0x01 }; // wrist down + elbow up + shoulder up
-static unsigned char owi_arm_down[] = { 0x04 | 0x20 | 0x80, 0x01, 0x01 }; // wrist up + elbow down + shoulder down + base clockwise
+static unsigned char owi_pincher_close[] = { 0x01, 0x00, 0x00 };
+static unsigned char owi_pincher_open[]  = { 0x02, 0x00, 0x00 };
+static unsigned char owi_wrist_up[]      = { 0x04, 0x00, 0x00 };
+static unsigned char owi_wrist_down[]    = { 0x08, 0x00, 0x00 };
+static unsigned char owi_base_clockwise[]         = { 0x00, 0x01, 0x00 };
+static unsigned char owi_base_counter_clockwise[] = { 0x00, 0x02, 0x00 };
+static unsigned char owi_arm_up[]   = { 0x08 | 0x10 | 0x40, 0x00, 0x00 }; // wrist down + elbow up + shoulder up
+static unsigned char owi_arm_down[] = { 0x04 | 0x20 | 0x80, 0x01, 0x00 }; // wrist up + elbow down + shoulder down + base clockwise
 static unsigned char owi_light_on[] = { 0x00, 0x00, 0x01 };
 static unsigned char owi_light_off[] = { 0x00, 0x00, 0x00 };
 static unsigned char owi_stop[] = { 0x00, 0x00, 0x00 };
@@ -232,14 +233,14 @@ uint32_t waiting_for_arm(uint32_t dev_connected){
 /**
  * Performs a movement sequence with the arm. 
  */
-void perform_arm_moviment(uint32_t stop){
+uint32_t perform_arm_moviment(uint32_t stop){
 	static uint32_t tm_cmd = 1;
 	static uint32_t tm_next_cmd = 0;
 	static uint32_t index = 0;
 	static uint32_t running = 0;
 	
 	if(stop == 0 && !running){
-		return;
+		return WAIT_USER_STOP;
 	}
 	
 	running = 1;
@@ -248,7 +249,7 @@ void perform_arm_moviment(uint32_t stop){
 		
 		process_owi_command(move_sequence[index].command[0],
 				    move_sequence[index].command[1],
-				    move_sequence[index].command[2]);
+				    stop);
 		
 		tm_next_cmd = move_sequence[index].duration_ms;
 		
@@ -257,7 +258,7 @@ void perform_arm_moviment(uint32_t stop){
 			index = 0;
 			tm_cmd = 1;
 			running = 0;
-			return;
+			return WAIT_USER_STOP;
 		}
 		
 		
@@ -266,10 +267,27 @@ void perform_arm_moviment(uint32_t stop){
 		
 		tm_cmd = mfc0(CP0_COUNT, 0);	
 	}
-	
+	return RUNNING;
 }
 	
-
+/**
+ * Wait 1 second before the next arm movement sequence.
+ */
+uint32_t waiting_for_next_seq(){
+	static uint32_t tm_cmd = 0;
+	
+	if(tm_cmd == 0){
+		tm_cmd = mfc0(CP0_COUNT, 0);
+	}
+	
+	if(wait_time(tm_cmd, 1000)){
+		return RUNNING;
+	}
+	
+	return WAIT_USER_STOP;
+}
+	
+	
 int main() {
 	uint32_t dev_connected = 0;
 	uint32_t tm_poll = 0, tm_tst = 0;
@@ -313,7 +331,11 @@ int main() {
 				
 			case RUNNING:
 				stop = process_message();
-				perform_arm_moviment(stop);
+				state = perform_arm_moviment(stop);
+				break;
+				
+			case WAIT_USER_STOP:
+				state = waiting_for_next_seq();
 				break;
 		}
 	}
