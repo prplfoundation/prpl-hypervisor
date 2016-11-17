@@ -14,6 +14,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 */
+#ifndef _LIBC_H
+#define _LIBC_H
 
 #include <types.h>
 /*
@@ -60,7 +62,7 @@ extern int32_t memcmp(const void *cs, const void *ct, uint32_t n);
 extern void *memset(void *s, int32_t c, uint32_t n);
 extern int32_t strtol(const char *s, char **end, int32_t base);
 extern int32_t atoi(const char *s);
-extern float atof(const char *p);
+extern float atof(const int8_t *p);
 extern char *itoa(int32_t i, char *s, int32_t base);
 extern int32_t puts(const char *str);
 extern char *gets(char *s);
@@ -81,3 +83,23 @@ void unlock(mutex_t *mutex);
 #define UART2   2
 #define UART6   6
 
+
+/* IEEE single-precision definitions */
+#define SNG_EXPBITS	8
+#define SNG_FRACBITS	23
+#define SNG_EXP_BIAS	127
+#define SNG_EXP_INFNAN	255
+#define EXCESS		126
+#define SIGNBIT		0x80000000
+#define HIDDEN		(1 << 23)
+#define SIGN(fp)	((fp) & SIGNBIT)
+#define EXP(fp)		(((fp) >> 23) & 0xFF)
+#define MANT(fp)	(((fp) & 0x7FFFFF) | HIDDEN)
+#define PACK(s,e,m)	((s) | ((e) << 23) | (m))
+
+union float_long{
+	float f;
+	int32_t l;
+};
+
+#endif
