@@ -15,7 +15,11 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple UART and Blink Bare-metal application sample using virtualized IO. */
+/**  
+ * This is the dhrystone benchmark. 
+ * 
+ * 
+ */
 
 #include <arch.h>
 #include <libc.h>
@@ -24,30 +28,55 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <platform.h>
 #include <io.h>
 
-#define RUNS 2000000
+#define RUNS 4000000
 
-volatile uint32_t milisecond_passed = 0;
+#define CPU_TICK_TO_MS(ticks) ((ticks)/((CPU_SPEED/2)/1000))
 
+volatile uint64_t tick_passed = 0;
 
 void irq_timer(){
-	milisecond_passed++;
+	static uint32_t tick_old = 0;
+	uint32_t tick_now = mfc0 (CP0_COUNT, 0);
+	uint32_t diff_time;
+	
+	if (tick_old == 0){
+		tick_old = tick_now;
+		return;
+	}
+	
+	if (tick_now >= tick_old){
+		diff_time = tick_now - tick_old;
+	}else{
+		diff_time = 0xffffffff - (tick_old - tick_now);
+	}
+	
+	tick_old = tick_now;
+	
+	tick_passed += diff_time;
 }
 
 long time(long *tm){
-	
+	uint32_t seconds = CPU_TICK_TO_MS(tick_passed)/1000;
 	if (tm){
-		*tm=milisecond_passed/1000;
+		*tm=seconds;
 	}
 	
-	return milisecond_passed/1000;
+	return seconds;
 }
 
 
 int main() {
-    
+	uint64_t start, end;
+	
 	interrupt_register(irq_timer, GUEST_TIMER_INT);
-   
+	
+	start = tick_passed;
+	
 	main_dhry(RUNS);    
+
+	end = tick_passed;
+	
+	printf("\nPassed time: %d", (uint32_t)CPU_TICK_TO_MS(end - start)); 
 	
 	return 0;
 }
