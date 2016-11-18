@@ -64,6 +64,8 @@ static void timer_interrupt_handler(){
 	static uint32_t past = 0;
 	uint32_t now, diff_time;
 	
+	calc_next_timer_interrupt(SYSTEM_TICK_INTERVAL);
+	
 	run_scheduler();
 	
 	now = mfc0(CP0_COUNT, 0);
@@ -75,11 +77,9 @@ static void timer_interrupt_handler(){
 	/* Insert a virtual timer interrupt to the guest each other timer tick. */
 	if(diff_time >= QUEST_TICK_INTERVAL){
 		setGuestCTL2(getGuestCTL2() | (GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT));
-		past = mfc0(CP0_COUNT, 0);
+		past = now;
 	}
     
-	calc_next_timer_interrupt(SYSTEM_TICK_INTERVAL);
-	
 }
 
 /**
