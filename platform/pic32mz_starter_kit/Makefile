@@ -27,7 +27,7 @@ CONFIG_VIRTUAL_IO_DRV = yes
 CONFIG_INTERRUPT_REDIRECT_DRV = yes
 
 # The following driver is only for tests purpose. 
-#CONFIG_TIMER_TEST = yes 
+#CONFIG_TIMER_TEST_DRV = yes
 
 # Platform info
 CFLAGS = -DCPU_ID="M5150"

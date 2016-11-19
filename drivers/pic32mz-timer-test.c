@@ -36,6 +36,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 #include <scheduler.h>
 #include <libc.h>
+#include <uart.h>
+#include <interrupts.h>
 
 /* Time interval in microseconds. */
 #define QUANTUM_US 10
