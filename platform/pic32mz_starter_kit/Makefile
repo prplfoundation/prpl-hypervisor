@@ -26,6 +26,9 @@ CONFIG_PIC32MZ_ETHERNET_DRV = yes
 CONFIG_VIRTUAL_IO_DRV = yes
 CONFIG_INTERRUPT_REDIRECT_DRV = yes
 
+# The following driver is only for tests purpose. 
+#CONFIG_TIMER_TEST = yes 
+
 # Platform info
 CFLAGS = -DCPU_ID="M5150"
 CFLAGS += -DCPU_ARCH="Microchip Starter Kit"

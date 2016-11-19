@@ -35,6 +35,9 @@ ifeq ($(CONFIG_PUF_FLASH_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-puf-flash.c
 endif 
 
+ifeq ($(CONFIG_TIMER_TEST),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-timer-test.c
+endif 
 
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
