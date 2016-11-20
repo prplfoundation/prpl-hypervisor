@@ -17,7 +17,7 @@
 CFG_FILE = cfg/sample-ping-pong.cfg
 
 # CROSS Compiler 
-CROSS_COMPILER = mips-mti-elf-
+#CROSS_COMPILER = mips-mti-elf-
 
 # Optional Device Drivers
 CONFIG_INTERVMCOMM_DRV = yes
@@ -26,8 +26,9 @@ CONFIG_PIC32MZ_ETHERNET_DRV = yes
 CONFIG_VIRTUAL_IO_DRV = yes
 CONFIG_INTERRUPT_REDIRECT_DRV = yes
 
-# The following driver is only for tests purpose. 
+# The following drivers is only for tests/performance purpose. 
 #CONFIG_TIMER_TEST_DRV = yes
+CONFIG_PERFORMANCE_COUNTER_DRV = yes
 
 # Platform info
 CFLAGS = -DCPU_ID="M5150"

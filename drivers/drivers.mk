@@ -39,6 +39,11 @@ ifeq ($(CONFIG_TIMER_TEST_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-timer-test.c
 endif 
 
+ifeq ($(CONFIG_PERFORMANCE_COUNTER_DRV),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/performance-counter.c
+endif 
+
+
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
 	     

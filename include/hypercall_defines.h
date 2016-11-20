@@ -134,6 +134,18 @@ typedef void hypercall_t();
  */
 #define HCALL_FLASH_WRITE 15  
 
+/* Start the performance counters.
+ *  A0 = Peformance counter control register 0.
+ *  A1 = Peformance counter control register 1.
+ *  V0 = Returns always 0.
+ */
+#define HCALL_PERFORMANCE_COUNTER_START 16  
+
+/* Stop the performance counters.
+ *  A0 = Pointer to buffer to write performance count 0/1
+ *  V0 = Returns always 0.
+ */
+#define HCALL_PERFORMANCE_COUNTER_STOP 17
 
 #endif
 

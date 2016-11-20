@@ -67,16 +67,39 @@ long time(long *tm){
 
 int main() {
 	uint64_t start, end;
+	perf_control_t perf0, perf1;
+	uint32_t perfcount[2];
 	
 	interrupt_register(irq_timer, GUEST_TIMER_INT);
 	
 	start = tick_passed;
 	
+	perf0.w = 0;
+	perf0.m = 1;
+	perf0.ec = 2;
+	perf0.event = 11;
+	perf0.ie = 0;
+	perf0.u = 0;
+	perf0.k = 1;
+	perf0.exl = 1;
+
+	perf1.w = 0;
+	perf1.m = 1;
+	perf1.ec = 2;
+	perf1.event = 9;
+	perf1.ie = 0;
+	perf1.u = 0;
+	perf1.k = 1;
+	perf1.exl = 1;
+	
+	performance_counter_start(perf0.w, perf1.w);
+	
 	main_dhry(RUNS);    
 
+	performance_counter_stop(perfcount);
 	end = tick_passed;
 	
-	printf("\nPassed time: %d", (uint32_t)CPU_TICK_TO_MS(end - start)); 
+	printf("\nPassed time: %d %d %d", (uint32_t)CPU_TICK_TO_MS(end - start), perfcount[0], perfcount[1]); 
 	
 	return 0;
 }

@@ -2794,4 +2794,23 @@ typedef struct {
 } USBEOFRSTbits_t;
 #define USBEOFRSTbits (*((volatile USBEOFRSTbits_t *) 0xbf8e307c))
 
+typedef union {
+    struct{
+	    unsigned exl:1;
+	    unsigned k:1;
+	    unsigned :1;
+	    unsigned u:1;
+	    unsigned ie:1;
+	    unsigned event:10;
+	    unsigned :8;
+	    unsigned ec:2;
+	    unsigned :6;
+	    unsigned m:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} perf_control_t;
+
+
 #endif 

@@ -157,8 +157,24 @@ asm volatile (                    \
  : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_FLASH_WRITE) : "a0", "v0"); \
  __ret; })
  
+/* Peformance counter start.  */
+#define performance_counter_start(perf0, perf1) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (perf0)), "r" ((uint32_t) (perf1)), "I" (HCALL_PERFORMANCE_COUNTER_START) : "a0", "a1", "v0"); \
+ __ret; })
  
- 
+/* Performance counter stop.  */
+#define performance_counter_stop(buf) ({ int32_t __ret; \
+ asm volatile (                    \
+ "move $a0, %z1 \n \
+ hypcall %2 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_PERFORMANCE_COUNTER_STOP) : "a0", "v0"); \
+ __ret; })
  
 #endif
 
