@@ -17,7 +17,7 @@
 #INC_DIRS += $(TOPDIR)../../benchmark/dhrystone/
 
 #Aditional C flags
-CFLAGS += -DVIRTUALIZED_IO -DPIC32MZ -DTIME
+CFLAGS += -DVIRTUALIZED_IO -DPIC32MZ -DTIME -DREG=register
 
 #Aditional Libraries
 #LIBS +=
@@ -26,8 +26,12 @@ CFLAGS += -DVIRTUALIZED_IO -DPIC32MZ -DTIME
 STACK_SIZE = 2048
 
 #Include your additional mk files here. 
+repo-conf:
+	if [ not -d "$(TOPDIR)../../benchmark" ]; then \
+	    git clone https://github.com/crmoratelli/prplHypervisor-benckmarks.git $(TOPDIR)../../benchmark; \
+	fi
 
-app:
+app: repo-conf
 	$(CC) $(CFLAGS) $(INC_DIRS) -fno-inline $(TOPDIR)../../benchmark/dhrystone/dhry_1.c -o $(TOPDIR)apps/$(APP)/dhry_1.o
 	$(CC) $(CFLAGS) $(INC_DIRS) -fno-inline $(TOPDIR)../../benchmark/dhrystone/dhry_2.c -o $(TOPDIR)apps/$(APP)/dhry_2.o
 	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/dhrystone.c -o $(TOPDIR)apps/$(APP)/dhrystone.o

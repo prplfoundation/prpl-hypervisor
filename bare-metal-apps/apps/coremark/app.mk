@@ -35,8 +35,12 @@ CFLAGS += $(XCFLAGS)
 STACK_SIZE = 2048
 
 #Include your additional mk files here. 
+repo-conf:
+	if [ not -d "$(TOPDIR)../../benchmark" ]; then \
+	    git clone https://github.com/crmoratelli/prplHypervisor-benckmarks.git $(TOPDIR)../../benchmark; \
+	fi
 
-app:
+app: repo-conf
 	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)../../benchmark/coremark/core_list_join.c -o $(TOPDIR)apps/$(APP)/core_list_join.o
 	$(CC) $(CFLAGS) -DFLAGS_STR=\"$(CFLAGS)\" $(INC_DIRS) $(TOPDIR)../../benchmark/coremark/core_main.c -o $(TOPDIR)apps/$(APP)/core_main.o
 	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)../../benchmark/coremark/core_matrix.c -o $(TOPDIR)apps/$(APP)/core_matrix.o

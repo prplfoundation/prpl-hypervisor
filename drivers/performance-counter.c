@@ -48,8 +48,6 @@ void performance_counter_start(){
 	uint32_t control0 = MoveFromPreviousGuestGPR(REG_A0);
 	uint32_t control1 = MoveFromPreviousGuestGPR(REG_A1);
 	
-	printf("\n0x%x 0x%x", control0, control1);
-	
 	mtc0(CP0_PERFCTL0, 1, 0);
 	mtc0(CP0_PERFCTL1, 3, 0);
 	
