@@ -36,7 +36,7 @@ STACK_SIZE = 2048
 
 #Include your additional mk files here. 
 repo-conf:
-	if [ not -d "$(TOPDIR)../../benchmark" ]; then \
+	if [ ! -d "$(TOPDIR)../../benchmark" ]; then \
 	    git clone https://github.com/crmoratelli/prplHypervisor-benckmarks.git $(TOPDIR)../../benchmark; \
 	fi
 
