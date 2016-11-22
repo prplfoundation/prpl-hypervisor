@@ -18,7 +18,21 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /**  
  * This is the coremark benchmark. 
  * 
+ * The benchmark sources will be automatically cloned from :
+ *  - https://github.com/crmoratelli/prplHypervisor-benckmarks.git 
  * 
+ * A benchmark folder will be created in the same level of the hypervisor's folder. You should see:
+ * ~/
+ * 	prpl-hypervisor/
+ * 	benchmark/
+ * 
+ * For generante a system configuration with different number of VMs:
+ * - Go to the prpl-hypervisor/bare-metal-apps/apps folder and copy the original dhyrstone app. Example:
+ * 	cp -R coremark/ coremark2
+ * 	cp -R coremark/ coremark3
+ * 	cp -R coremark/ coremark4
+ * 
+ *  See the coremark.cfg file for more details.
  */
 
 #include <arch.h>

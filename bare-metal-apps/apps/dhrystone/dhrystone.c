@@ -18,6 +18,21 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /**  
  * This is the dhrystone benchmark. 
  * 
+ * The benchmark sources will be automatically cloned from :
+ *  - https://github.com/crmoratelli/prplHypervisor-benckmarks.git 
+ * 
+ * A benchmark folder will be created in the same level of the hypervisor's folder. You should see:
+ * ~/
+ * 	prpl-hypervisor/
+ * 	benchmark/
+ *
+ *  For generante a system configuration with different number of VMs:
+ * 	- Go to the prpl-hypervisor/bare-metal-apps/apps folder and copy the original dhyrstone app. Example:
+ * 		cp -R dhrystone/ dhrystone2
+ * 		cp -R dhrystone/ dhrystone3
+ * 		cp -R dhrystone/ dhrystone4
+ * 
+ *  See the dhrystone.cfg file for more details.
  * 
  */
 
