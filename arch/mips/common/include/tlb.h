@@ -49,6 +49,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CACHEABLE       1
 #define NONCACHEABLE    0
 
+/* cache coherency attributes */
+#define WRITE_BACK	4
+#define UNCACHED	2
+
 
 typedef struct tlbentry{
 	uint32_t guestid;

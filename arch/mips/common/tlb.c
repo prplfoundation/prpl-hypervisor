@@ -94,8 +94,7 @@ uint32_t tlbCreateEntry(uint32_t address, uint32_t baseaddr, uint32_t size, uint
     
     entry.entryhi = (baseaddr - KSEG) >> 12;
     
-    /*FIXME: using no cached memory to direct access to guest data */
-    entry.coherency = 2;
+    entry.coherency = 4;
     
     tlbEntryWrite(&entry);
     

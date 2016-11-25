@@ -359,6 +359,7 @@ int process_tlb_entry(int vm_number,
                       unsigned int mem_size, 
                       unsigned int *mem_base, 
                       unsigned int va, 
+		      unsigned char *coherency,
                       FILE* outfile){
     
 	char str[STRSZ];
@@ -416,8 +417,8 @@ int process_tlb_entry(int vm_number,
 		return ret;
 	}
 
-	/* FIXME: the cache coherency should be configurable. */
-	if ( (ret = write_to_conf_file(outfile, "\t\t\t\tcoherency: 2\n"))) {
+	strings_cat(str, STRSZ, "\t\t\t\tcoherency: ", coherency, "\n", NULL);
+	if ( (ret = write_to_conf_file(outfile, str))) {
 		return ret;
 	}
     
@@ -648,14 +649,14 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
         
 		/* Create a TLB entry to the RAM memory */
-		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, outfile))){
+		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
 			return ret;
 		}
 		
 		/* get FLASH size */
 		if( !config_setting_lookup_string(vm_conf, "flash_size_bytes", &auxstrp)){
 			fprintf(stderr, "Missing flash_size_bytes proprierty on virtual_machines group.\n");
-		return EXIT_FAILURE;
+			return EXIT_FAILURE;
 		}
 		if ( (flash_size = get_value_from_str((struct mem_sizes_def*)MemSizes, sizeof(MemSizes)/sizeof(struct mem_sizes_def), (char*)auxstrp)) == 0){
 			fprintf(stderr, "Invalide value for flash_size_bytes: %s.\n", auxstrp);
@@ -663,7 +664,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
         
 		/* Create a TLB entry to the FLASH memory */
-		if ((ret = process_tlb_entry(vm_number, flash_size, &vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, outfile))){
+		if ((ret = process_tlb_entry(vm_number, flash_size, &vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
 			return ret;
 		}
 		
@@ -690,9 +691,17 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 				fprintf(stderr, "Invalide value for flash_size_bytes: %s.\n", auxstrp);
 				return EXIT_FAILURE;
 			}
+			
+			/* get cache coherency */
+			if( !config_setting_lookup_string(vm_conf, "coherency", &auxstrp)){
+				fprintf(stderr, "Missing cache coherency property. Setting default to uncached.\n");
+				strcpy(auxstr, "UNCACHED");
+			}else{
+				strcpy(auxstr, auxstrp);
+			}
             
 			/* Create a TLB entry to this mapping */
-			if ((ret = process_tlb_entry(vm_number, page_size, &base_addr, base_addr, outfile))){
+			if ((ret = process_tlb_entry(vm_number, page_size, &base_addr, base_addr, auxstr, outfile))){
 				return ret;
 			}
             
