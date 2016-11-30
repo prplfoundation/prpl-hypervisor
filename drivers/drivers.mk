@@ -43,6 +43,10 @@ ifeq ($(CONFIG_PERFORMANCE_COUNTER_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/performance-counter.c
 endif 
 
+ifeq ($(CONFIG_INTERRUPT_LATENCY_TEST_DRV),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-interrupt-latency-test.c
+endif 
+
 
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)
