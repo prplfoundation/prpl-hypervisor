@@ -52,6 +52,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <malloc.h>
 #include <interrupts.h>
 
+struct list_t* vcpu_node = NULL;
+
 /**
  * @struct
  * @brief Makes the association between interrupts and guests. 
@@ -60,6 +62,7 @@ struct interrupt_mapping{
 	uint32_t irq_number; /**< IRQ number on the system. */
 	uint32_t irq_guest; /**< IRQ number on guest. */
 	vcpu_t *vcpu;	/**< Target VCPU. */
+	struct list* vcpu_node; /**< VCPU node */
 };
 
 static uint32_t interrupt_mapping_sz = 0;
@@ -86,6 +89,7 @@ void interrupt_injection(){
 				setGuestCTL2(getGuestCTL2() | (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT));
 			}else{
 				interrupt_mapping_list[i].vcpu->guestclt2 |= interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT;
+				fast_interrupt_delivery(vcpu_node);
 			}
 		}
 		
@@ -125,10 +129,11 @@ void interrupt_redirect_init(){
 	uint32_t *int_redirect, offset;
 	uint32_t irq_count = 0;
 	vcpu_t *vcpu;
+	struct list_t* vcpu_node = NULL;
 		
 	/* Determines the total number of interrupt redirections configured in all guests.*/
 	for(i=0;i<NVMACHINES;i++){
-		vcpu = get_vcpu_from_id(i+1);
+		vcpu = get_vcpu_from_id(i+1, NULL);
 		interrupt_mapping_sz += vcpu->vm->vmconf->interrupt_redirect_sz;
 	}
 	
@@ -147,7 +152,7 @@ void interrupt_redirect_init(){
 		}
     
 		for(i=0;i<NVMACHINES;i++){
-			vcpu = get_vcpu_from_id(i+1);
+			vcpu = get_vcpu_from_id(i+1, &vcpu_node);
 			sz = vcpu->vm->vmconf->interrupt_redirect_sz;
 			if(sz > 0){
 				int_redirect = vcpu->vm->vmconf->interrupt_redirect;
@@ -156,6 +161,8 @@ void interrupt_redirect_init(){
 					interrupt_mapping_list[irq_count].irq_number = int_redirect[j];
 					interrupt_mapping_list[irq_count].irq_guest = GUEST_USER_DEFINED_INT_1 << j;
 					interrupt_mapping_list[irq_count].vcpu = vcpu;
+					interrupt_mapping_list[irq_count].vcpu_node = vcpu_node;
+
 					irq_count++;
 				
 					/* Clear the priority and sub-priority */

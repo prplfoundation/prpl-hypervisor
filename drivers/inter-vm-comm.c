@@ -52,7 +52,7 @@ void get_vm_id(){
 void guest_is_up(){
 	vcpu_t* vcpu;
 	uint32_t target_id  = MoveFromPreviousGuestGPR(REG_A0);
-	vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
+	vcpu = (vcpu_t*)get_vcpu_from_id(target_id, NULL);
 	if(!vcpu){
 		MoveToPreviousGuestGPR(REG_V0, MESSAGE_VCPU_NOT_FOUND);
 	}else{
@@ -83,7 +83,7 @@ void intervm_send_msg(){
 	}
                         
 	/* Try to locate the destiny VCPU */
-	vcpu = (vcpu_t*)get_vcpu_from_id(target_id);
+	vcpu = (vcpu_t*)get_vcpu_from_id(target_id, NULL);
 
 	/* destination vcpu not found */
 	if(vcpu == NULL){

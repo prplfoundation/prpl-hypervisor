@@ -104,7 +104,7 @@ void write_address(){
 	}
 	
 	MoveToPreviousGuestGPR(REG_V0, HCALL_ADDRESS_NOT_ALLOWED);
-	WARNING("VM %s trying to write a non-allowed memory address.", vm_executing->vm_name);
+	WARNING("VM %s trying to write a non-allowed memory address: 0x%x.", vm_executing->vm_name, memory_addr);
 }
 
 
@@ -128,7 +128,7 @@ void virtual_io_init(){
 	/* Create a local list of pointers to the vmconf data structure to avoid
 	   excessive number of pointer redirections during the hypercall execution. */
 	for(i=0;i<NVMACHINES;i++){
-		vcpu = get_vcpu_from_id(i+1);
+		vcpu = get_vcpu_from_id(i+1, NULL);
 		vmconf_p[i] = vcpu->vm->vmconf;
 	}
     

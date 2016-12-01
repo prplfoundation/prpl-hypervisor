@@ -80,7 +80,6 @@ void fast_interrupt_delivery(struct list_t *target){
 	scheduler_info.next_vcpu = target;
 }
 
-
 /**
  * @brief Scheduler routine. Must be invoked in the timer interrupt routine. 
  * 
@@ -103,19 +102,21 @@ void run_scheduler(){
 	tick_count++;	
 }
 
-
 /**
  * @brief Returns a VCPU corresponding to the id.
  * 
  * @return Pointer to the VCPU. 
  */
-vcpu_t* get_vcpu_from_id(uint32_t id){
+vcpu_t* get_vcpu_from_id(uint32_t id, struct list_t** vcpu_node){
 	struct list_t* vm_list;
 	vm_list = scheduler_info.virtual_machines_list;
 	
 	while(vm_list){
 		if(id == ((vm_t*)vm_list->elem)->id){
 			struct list_t *vcpu_l = ((vm_t*)vm_list->elem)->vcpus;
+			if(vcpu_node){
+				*vcpu_node = vcpu_l;
+			}
 			return (vcpu_t*)vcpu_l->elem;
 		}
 		vm_list = vm_list->next;

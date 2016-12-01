@@ -35,8 +35,7 @@ struct scheduler_info_t{
 
 void fast_interrupt_delivery(struct list_t *target);
 void run_scheduler();
-vcpu_t* get_vcpu_from_id(uint32_t id);
 struct list_t* get_fast_int_vcpu_node(uint32_t fast_int);
-
+vcpu_t* get_vcpu_from_id(uint32_t id, struct list_t** vcpu_node);
 
 #endif /* __SCHEDULER_H */
