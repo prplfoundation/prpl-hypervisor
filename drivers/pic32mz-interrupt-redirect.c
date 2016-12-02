@@ -73,23 +73,31 @@ static struct interrupt_mapping * interrupt_mapping_list = NULL;
 */
 void interrupt_injection(){
 	uint32_t i;
+	uint32_t guestctl;
 
 	/* Find which interrupt is active. */
 	for(i=0;i<interrupt_mapping_sz;i++){
 		if( IFS(interrupt_mapping_list[i].irq_number >> 5) & (1 << (interrupt_mapping_list[i].irq_number & 31)) ){
-			/* Disable interrupt - The guest must reenable the interrupt on its handler.  */
-			IECCLR(interrupt_mapping_list[i].irq_number >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
 			
 			/* Clear the hardware interrupt */
 			IFSCLR(interrupt_mapping_list[i].irq_number  >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
 			
-			/* If the target VCPU is in execution, inject the virtual interrupt immediately. Otherwise,
-			   the virtual interrupt will be injected on next execution.*/
-			if(interrupt_mapping_list[i].vcpu == vcpu_executing){
-				setGuestCTL2(getGuestCTL2() | (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT));
-			}else{
-				interrupt_mapping_list[i].vcpu->guestclt2 |= interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT;
-				fast_interrupt_delivery(vcpu_node);
+			guestctl = getGuestCTL2();
+			
+			/* Avoid inject the same interrupt twoice. */
+			if (!(guestctl && (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT))){
+				/* Disable interrupt - The guest must reenable the interrupt on its handler.  */
+				IECCLR(interrupt_mapping_list[i].irq_number >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
+			
+				/* If the target VCPU is in execution, inject the virtual interrupt immediately. Otherwise,
+				 * the virtual interrupt will be injected on next execution. */
+				if(interrupt_mapping_list[i].vcpu == vcpu_executing){
+					setGuestCTL2(guestctl | (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT));
+				}else{
+					interrupt_mapping_list[i].vcpu->guestclt2 |= interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT;
+					fast_interrupt_delivery(vcpu_node);
+				}
+				
 			}
 		}
 		
@@ -109,6 +117,7 @@ void reenable_interrupt(){
 		if(vcpu_executing == interrupt_mapping_list[i].vcpu){
 			if (interrupt == interrupt_mapping_list[i].irq_guest){
 				IECSET(interrupt_mapping_list[i].irq_number >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
+				interrupt_mapping_list[i].vcpu->guestclt2 &= ~(interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT);
 				MoveToPreviousGuestGPR(REG_V0, 0);
 				return;
 			}

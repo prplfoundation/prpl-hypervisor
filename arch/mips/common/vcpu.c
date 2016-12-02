@@ -30,6 +30,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 #include <mips_cp0.h>
 #include <scheduler.h>
+#include <guest_interrupts.h>
 
 /**
  * @brief Save the VCPU context. Saving only the necessary registers for 
@@ -137,7 +138,8 @@ void contextRestore(){
 	mtgc0(30, 0, vcpu->cp0_registers[15]);
 	
 	setGuestCTL2(vcpu->guestclt2);
-	vcpu->guestclt2 = 0;
+	/* clear timer int. */
+	vcpu->guestclt2 &= ~(GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT);
 	
 	setEPC(vcpu->pc);
 }

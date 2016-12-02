@@ -152,6 +152,10 @@ void intervm_recv_msg(){
 	/* free the message allocation in the message list */
 	vcpu->messages.num_messages--;
 	vcpu->messages.out = (vcpu->messages.out + 1) % MESSAGELIST_SZ;
+	
+	/* clean interrupt */
+	setGuestCTL2(getGuestCTL2() & ~(GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT));
+	vcpu->guestclt2 &= ~(GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT);
                        
 }
 
