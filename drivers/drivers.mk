@@ -47,6 +47,11 @@ ifeq ($(CONFIG_INTERRUPT_LATENCY_TEST_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-interrupt-latency-test.c
 endif 
 
+ifeq ($(CONFIG_PIC32MZ_ETHERNET_DRV),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-ethernet.c
+endif 
+
+
 
 drivers:
 	$(CC) $(CFLAGS) $(INC_DIRS) $(DRIVER_INCLUDE) $(DRIVERS_LIST)

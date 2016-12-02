@@ -10,7 +10,5 @@
 **/*.sec
 **/*.hex
 
-!pic32mz-ethernet.o
-
 include/config.h
 
