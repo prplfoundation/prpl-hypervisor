@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2016, prpl Foundation
+ * 
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with or without 
+ * fee is hereby granted, provided that the above copyright notice and this permission notice appear 
+ * in all copies.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+ * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE 
+ * FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM 
+ * LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, 
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * 
+ * This code was written by Sergio Johann at Embedded System Group (GSE) at PUCRS/Brazil.
+ * 
+ */
+
+/**
+ * This program decodes the csv file output from OLS LogicSniffer 
+ * to determine the interrupt average latency. 
+ * 
+ * 
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +35,8 @@ struct element {
 
 #define ARRAYSIZE 3
 #define STRSZ 512
+
+unsigned int rate = 0;
 
 static struct element * insert_element(struct element **header, int* array, int size){
 	struct element *e;
@@ -48,6 +74,8 @@ int getlinearray3(FILE* arq, int* array, int size){
 	for(i=0; i<10 && pt!=NULL; i++){
 		if(i==0){
 			array[0] = atoi(pt); 
+		}else if(i==1){
+			rate = atoi(pt); 
 		}else if(i==7){
 			array[1] = atoi(pt); 
 		}else if(i==9){
@@ -73,8 +101,7 @@ int main(int argc, char**argv){
 	struct element *header = NULL;
 	struct element *p = NULL;
 	struct element *aux = NULL;
-	unsigned int rate = 0;
-	
+	unsigned int work_case = 0, best_case = 999999999;
 	
 	if (argc < 2){
 		fprintf(stderr, "Usage: %s <input file>", argv[0]);
@@ -126,7 +153,6 @@ int main(int argc, char**argv){
 	
 	p = header;
 	while(p){
-		printf("%d %d %d\n", p->array[0], p->array[1], p->array[2]);
 		if(p->array[1] == p->array[2]){
 			num_interrupts++;
 		}else{
@@ -134,14 +160,33 @@ int main(int argc, char**argv){
 			aux = p;
 			p = p->forward;
 			if(!p) break;
-			printf("%d %d %d\n", p->array[0], p->array[1], p->array[2]);
 			total_delay += p->array[0] - aux->array[0];
+			if(work_case < p->array[0] - aux->array[0]){
+				work_case = p->array[0] - aux->array[0];
+			}
+			if(best_case > p->array[0] - aux->array[0]){
+				best_case = p->array[0] - aux->array[0];
+			}
+			
 		}
 		p = p->forward;
 		
 	}
 	
-	printf("total interrupts %d, total delay %d, average %fus, rate %d\n", num_interrupts, total_delay, ((float)total_delay/num_interrupts)*(1.0/rate), rate);
+	printf("Total of Interrupts %d\n \
+Total delay %d\n \
+Worst Case %0.2fus\n \
+Best Case %0.2fus\n \
+Average %0.2fus\n \
+Sample Rate %d\n \
+Measurement Error %0.2fus\n", 
+num_interrupts, 
+total_delay, 
+work_case*(1000000.0/rate), 
+best_case*(1000000.0/rate), 
+((total_delay*(1000000.0/rate))/num_interrupts), 
+rate, 
+1000000.0/rate);
 	
 	
 	

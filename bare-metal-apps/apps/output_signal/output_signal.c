@@ -45,7 +45,7 @@ int main() {
 		if(wait_time(time, interval)){
 			time = mfc0(CP0_COUNT, 0);
 			writeio(LATDINV, 8);			
-			interval = random()%100 + 10;
+			interval = random()%50 + 1;
 		}
 		
 	}    

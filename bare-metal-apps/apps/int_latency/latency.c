@@ -38,8 +38,10 @@ void irq_pin(){
 	}else{
 		writeio(LATFCLR, 1 << 4);
 	}
-	
+	//writeio(LATFINV, 1 << 4);
 	t2++;
+	
+	//putchar('!');
 	
 	reenable_interrupt(GUEST_USER_DEFINED_INT_1);
 }
@@ -65,10 +67,13 @@ int main() {
    
 	while (1){
 		if(wait_time(timer, 1000)) {
+			printf("t2 %d\n", t2);
+			
 			/* Blink Led */
 			TOGGLE_LED1;
 			
 			timer = mfc0(CP0_COUNT, 0);
+			
 			
 		}
 	}
