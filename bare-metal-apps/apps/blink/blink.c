@@ -42,7 +42,7 @@ int main() {
 		printf("\nBlink red LED! Total of %d timer ticks.", t2);
         
 		/* Blink Led */
-		//TOGGLE_LED1;
+		TOGGLE_LED1;
 	
 		/* 1 second delay */
 		udelay(1000000);
