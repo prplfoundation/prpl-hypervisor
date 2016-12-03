@@ -62,7 +62,7 @@ struct interrupt_mapping{
 	uint32_t irq_number; /**< IRQ number on the system. */
 	uint32_t irq_guest; /**< IRQ number on guest. */
 	vcpu_t *vcpu;	/**< Target VCPU. */
-	struct list* vcpu_node; /**< VCPU node */
+	struct list_t* vcpu_node; /**< VCPU node */
 };
 
 static uint32_t interrupt_mapping_sz = 0;
