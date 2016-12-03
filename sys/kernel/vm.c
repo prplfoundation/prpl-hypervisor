@@ -37,6 +37,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <globals.h>
 #include <mips_cp0.h>
+#include <queue.h>
 
 /**
  * @brief Responsable by the VM's data initialization.
@@ -47,9 +48,10 @@ void initializeMachines(void) {
 
 	INFO("Initializing Virtual Machines.");
 
-	scheduler_info.vcpu_ready_list = NULL;
+	scheduler_info.vcpu_ready_list = queue_create(NVMACHINES);
 	
 	scheduler_info.virtual_machines_list = NULL;
+	
 	
 	if(NVMACHINES > 0){
 		for(i=0; i<NVMACHINES; i++){
@@ -85,8 +87,6 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	uint32_t ntlbent = vm_conf->num_tlb_entries;
 	
 	vm = (vm_t*)malloc(sizeof(vm_t));
-	
-	vm->vcpus = NULL;
 	
 	vm->vmconf = vm_conf;
 	
@@ -131,9 +131,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	/* Set the VM entry Point and scheduler*/
 	vcpu = create_vcpu(vm, entry_point);	
 	
-	list_append(&scheduler_info.vcpu_ready_list, vcpu);
-	list_append(&scheduler_info.virtual_machines_list, vm);
-	list_append(&vm->vcpus, vcpu);
+	queue_addtail(scheduler_info.vcpu_ready_list, vcpu);
 	
 	return vm;
 }

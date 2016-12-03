@@ -21,6 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <vm.h>
 #include <vcpu.h>
 #include <config.h>
+#include <scheduler.h>
 
 #define CRITICAL(X,...) printf("\nCRITICAL: "X, ##__VA_ARGS__); wait_for_reset();
 
@@ -44,9 +45,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 extern struct scheduler_info_t scheduler_info;
 
-#define is_vcpu_executing (((vcpu_t*)scheduler_info.vcpu_executing_nd) ? ((vcpu_t*)scheduler_info.vcpu_executing_nd->elem) : NULL)
-#define vcpu_executing ((vcpu_t*)scheduler_info.vcpu_executing_nd->elem)
-#define vm_executing   ((vm_t*)vcpu_executing->vm)
+#define is_vcpu_executing (((vcpu_t*)scheduler_info.vcpu_executing) ? ((vcpu_t*)scheduler_info.vcpu_executing) : NULL)
+#define vcpu_in_execution ((vcpu_t*)scheduler_info.vcpu_executing)
+#define vm_in_execution   ((vm_t*)vcpu_in_execution->vm)
 
 #define MICROSECOND (MILISECOND/1000)
 

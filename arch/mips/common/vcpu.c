@@ -43,7 +43,7 @@ void contextSave(){
 		return;
 	}
 	
-	vcputosave = vcpu_executing;
+	vcputosave = vcpu_in_execution;
 	
 	if (vcputosave->init == 0){
 		/* already Initialized VCPU - save the context */
@@ -107,7 +107,7 @@ uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount){
  */
 void contextRestore(){
 	
-	vcpu_t *vcpu = vcpu_executing;
+	vcpu_t *vcpu = vcpu_in_execution;
 	
 	setPreviousShadowSet(vcpu->gprshadowset);
 	
@@ -117,8 +117,8 @@ void contextRestore(){
 	setGuestMode();
 	
 	/* Mark the VCPU as initialized. */
-	if(vcpu_executing->init){
-		vcpu_executing->init = 0;
+	if(vcpu_in_execution->init){
+		vcpu_in_execution->init = 0;
 	}
 	
 	mtgc0(4, 0, vcpu->cp0_registers[0]);

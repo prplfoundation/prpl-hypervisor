@@ -56,8 +56,8 @@ static uint32_t guest_exit_exception(){
 			break;
 	}
 	
-	vcpu_executing->pc = epc+4;
-	setEPC(vcpu_executing->pc);
+	vcpu_in_execution->pc = epc+4;
+	setEPC(vcpu_in_execution->pc);
 	
 	return 0;
 }
@@ -77,7 +77,7 @@ void general_exception_handler(){
 		case    TLB_LOAD_FETCH_EXCEPTION:                                            
 		case    TLB_STORE_EXCEPTION:
 		default:
-			CRITICAL("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), vcpu_executing->id);
+			CRITICAL("VM will be stopped due to error Cause Code 0x%x, EPC 0x%x, VCPU ID 0x%x", CauseCode, getEPC(), vcpu_in_execution->id);
 			break;
 	}
 }

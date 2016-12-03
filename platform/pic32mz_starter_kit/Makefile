@@ -101,11 +101,6 @@ include $(TOPDIR)arch/mips/pic32mz/pic32mz.mk
 include board/board.mk
 include $(TOPDIR)/drivers/drivers.mk
 
-ifeq ($(CONFIG_PIC32MZ_ETHERNET_DRV),yes)
-    OBJ = ../../bin/pic32mz-ethernet.o
-endif
-    
-
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map $(APP).map -N -o $(APP).elf *.o $(OBJ)
 	$(STRIP) $(APP).elf

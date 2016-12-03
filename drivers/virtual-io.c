@@ -62,7 +62,7 @@ static const struct vmconf_t *vmconf_p[NVMACHINES];
 void read_address(){
 	uint32_t i;
 	uint32_t memory_addr = MoveFromPreviousGuestGPR(REG_A0);
-	int32_t vcpu_index = vcpu_executing->id-1;
+	int32_t vcpu_index = vcpu_in_execution->id-1;
 	
 	/* Check if the address to be read is in the allowed memory space address. */
 	for(i = 0; i < vmconf_p[vcpu_index]->devices_mapping_sz; i++){
@@ -72,7 +72,7 @@ void read_address(){
 			return;
 		}
 	}
-	WARNING("VM %s trying to read a non-allowed memory address.", vm_executing->vm_name);
+	WARNING("VM %s trying to read a non-allowed memory address.", vm_in_execution->vm_name);
 }
 
 /**
@@ -91,7 +91,7 @@ void write_address(){
 	uint32_t i;
 	uint32_t memory_addr = MoveFromPreviousGuestGPR(REG_A0);
 	uint32_t value = MoveFromPreviousGuestGPR(REG_A1);
-	int32_t vcpu_index = vcpu_executing->id-1;
+	int32_t vcpu_index = vcpu_in_execution->id-1;
 	
 	/* Check if the address to be write is in the allowed memory space address. */
 	for(i = 0; i < vmconf_p[vcpu_index]->devices_mapping_sz; i++){
@@ -104,7 +104,7 @@ void write_address(){
 	}
 	
 	MoveToPreviousGuestGPR(REG_V0, HCALL_ADDRESS_NOT_ALLOWED);
-	WARNING("VM %s trying to write a non-allowed memory address: 0x%x.", vm_executing->vm_name, memory_addr);
+	WARNING("VM %s trying to write a non-allowed memory address: 0x%x.", vm_in_execution->vm_name, memory_addr);
 }
 
 
@@ -128,7 +128,7 @@ void virtual_io_init(){
 	/* Create a local list of pointers to the vmconf data structure to avoid
 	   excessive number of pointer redirections during the hypercall execution. */
 	for(i=0;i<NVMACHINES;i++){
-		vcpu = get_vcpu_from_id(i+1, NULL);
+		vcpu = get_vcpu_from_id(i+1);
 		vmconf_p[i] = vcpu->vm->vmconf;
 	}
     

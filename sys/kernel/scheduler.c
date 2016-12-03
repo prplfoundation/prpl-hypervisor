@@ -33,7 +33,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define TICKS_BEFORE_SCHEDULING ( QUANTUM_SCHEDULER_MS / (SYSTEM_TICK_US/1000))
 
-struct scheduler_info_t scheduler_info = {NULL, NULL, NULL, NULL};
+struct scheduler_info_t scheduler_info = {NULL, NULL, NULL};
 
 /** 
  * @brief Tick counter. Used for VM's scheduling. 
@@ -43,20 +43,19 @@ static uint32_t tick_count = 0;
 /** 
  * Keeps a pointer to the last scheduled VCPU. 
  */
-static struct list_t *last_scheduled = NULL;
+static uint32_t next_rr = 0;
 
 /**
  * @brief round-robin scheduler implementation. 
  * 
  * @return Pointer to the node in the list of VCPUs of the scheduled VCPU. 
  */
-static struct list_t* round_robin_scheduler(){
-	if(!last_scheduled || !last_scheduled->next){
-		last_scheduled = scheduler_info.vcpu_ready_list;
-	}else{
-		last_scheduled = last_scheduled->next;
-	}
-	return last_scheduled;
+static vcpu_t* round_robin_scheduler(){
+	uint32_t current = next_rr;
+	
+	next_rr = (next_rr + 1) % queue_count(scheduler_info.vcpu_ready_list);
+	
+	return (vcpu_t*)queue_get(scheduler_info.vcpu_ready_list, current);
 }
 
 
@@ -70,14 +69,8 @@ static struct list_t* round_robin_scheduler(){
  * @param target Target VCPU. 
  * 
  */
-void fast_interrupt_delivery(struct list_t *target){
-
-	/* Do not reschedule if the VCPU is already in execution. */
-	if (target == scheduler_info.vcpu_executing_nd){
-		return;
-	}
-	
-	scheduler_info.next_vcpu = target;
+void fast_interrupt_delivery(vcpu_t *target){
+	/* Needs implementation */
 }
 
 /**
@@ -85,44 +78,31 @@ void fast_interrupt_delivery(struct list_t *target){
  * 
  */
 void run_scheduler(){
-	if (scheduler_info.next_vcpu){
-		contextSave();           	
-		scheduler_info.vcpu_executing_nd = scheduler_info.next_vcpu;
+	if ( tick_count % TICKS_BEFORE_SCHEDULING == 0){
+		contextSave();   
+		scheduler_info.vcpu_executing = round_robin_scheduler();
 		contextRestore();
-		scheduler_info.next_vcpu = NULL;
-		/* Gives an extra execution time to the target VM if the current period is finishing. */
-		tick_count = (tick_count % TICKS_BEFORE_SCHEDULING >= TICKS_BEFORE_SCHEDULING)? (tick_count-2) : tick_count;
-	}else{
-		if ( tick_count % TICKS_BEFORE_SCHEDULING == 0){
-			contextSave();   
-			scheduler_info.vcpu_executing_nd = round_robin_scheduler();
-			contextRestore();
-		}
 	}
 	tick_count++;	
 }
 
 /**
  * @brief Returns a VCPU corresponding to the id.
- * 
+ * @param id VCPU id number.
  * @return Pointer to the VCPU. 
  */
-vcpu_t* get_vcpu_from_id(uint32_t id, struct list_t** vcpu_node){
-	struct list_t* vm_list;
-	vm_list = scheduler_info.virtual_machines_list;
+vcpu_t* get_vcpu_from_id(uint32_t id){
+	uint32_t i;
+	struct vcpu_t* vcpu;
 	
-	while(vm_list){
-		if(id == ((vm_t*)vm_list->elem)->id){
-			struct list_t *vcpu_l = ((vm_t*)vm_list->elem)->vcpus;
-			if(vcpu_node){
-				*vcpu_node = vcpu_l;
-			}
-			return (vcpu_t*)vcpu_l->elem;
+	for(i=0; i < queue_count(scheduler_info.vcpu_ready_list); i++){
+		vcpu = queue_get(scheduler_info.vcpu_ready_list, i);
+		if (vcpu->id == id){
+			return vcpu;
 		}
-		vm_list = vm_list->next;
 	}
 	
-	return NULL;	
+	return NULL;
 } 
 
 
@@ -139,22 +119,27 @@ vcpu_t* get_vcpu_from_id(uint32_t id, struct list_t** vcpu_node){
  * to use with the fast_interrupt_delivery() call. 
  *
  */
-struct list_t* get_fast_int_vcpu_node(uint32_t fast_int){
-	uint32_t i;
+vcpu_t* get_fast_int_vcpu_node(uint32_t fast_int){
+	uint32_t i, j;
 	vm_t* vm;
-	struct list_t* vm_list;
-	vm_list = scheduler_info.virtual_machines_list;
+	vcpu_t* v;
 	
-	
-	while(vm_list){
-		vm = (vm_t*)vm_list->elem;
+	for(j=0; j < queue_count(scheduler_info.vcpu_ready_list); j++){
+		
+		v = (vcpu_t*)queue_get(scheduler_info.vcpu_ready_list, j);
+		
+		if (!v){
+			continue;
+		}
+		
+		vm = (vm_t*)v->vm;
+		
 		for(i=0;i<vm->vmconf->fast_int_sz;i++){
 			if(fast_int == vm->vmconf->fast_interrupts[i]){
-				return ((vm_t*)vm_list->elem)->vcpus;
+				return v;
 				
 			}
 		}
-		vm_list = vm_list->next;
 	}
 	return NULL;	
 } 

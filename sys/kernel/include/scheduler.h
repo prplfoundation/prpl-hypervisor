@@ -18,24 +18,21 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __SCHEDULER_H
 #define __SCHEDULER_H
 
-#include <linkedlist.h>
+#include <queue.h>
 #include <vcpu.h>
 
 /**
- * Keeps the virtual machine and VCPU lists. Additionally, it 
- * keeps a pointer to the VCPU in execution and to the next VCPU
- * (in case of fast interrupt delivery policy).
+ * Keeps the virtual machine and VCPU queues. Additionally, it 
+ * keeps a pointer to the VCPU in execution.
  */
 struct scheduler_info_t{
-	struct list_t *vcpu_ready_list;
-	struct list_t *virtual_machines_list;
-	struct list_t *vcpu_executing_nd;
-	struct list_t *next_vcpu;
+	struct queue_t *vcpu_ready_list;
+	struct queue_t *virtual_machines_list;
+	struct vcpu_t *vcpu_executing;
 };
 
-void fast_interrupt_delivery(struct list_t *target);
+void fast_interrupt_delivery(struct vcpu_t *target);
 void run_scheduler();
-struct list_t* get_fast_int_vcpu_node(uint32_t fast_int);
-vcpu_t* get_vcpu_from_id(uint32_t id, struct list_t** vcpu_node);
-
+vcpu_t* get_fast_int_vcpu_node(uint32_t fast_int);
+vcpu_t* get_vcpu_from_id(uint32_t id);
 #endif /* __SCHEDULER_H */

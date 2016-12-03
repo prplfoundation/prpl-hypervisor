@@ -75,7 +75,6 @@ typedef struct vm_t {
 	const char *vm_name;
 	unsigned int id;
 	unsigned int base_addr;
-	struct list_t *vcpus;
 	uint32_t os_type;
 	uint32_t init;	
 	const struct vmconf_t * vmconf;

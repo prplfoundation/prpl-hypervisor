@@ -66,7 +66,7 @@ void usb_send_data(){
 		MoveToPreviousGuestGPR(REG_V0, HCALL_USB_BUSY);
 	}
 		
-	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, vm_executing->base_addr, size, 0xf, CACHEABLE);
+	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, vm_in_execution->base_addr, size, 0xf, CACHEABLE);
 	
 	memcpy(buffer_tx, frame_ptr_mapped, size);
 	
@@ -86,7 +86,7 @@ void get_descriptor(){
 
 	uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
     
-	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, vm_executing->base_addr, size, 0xf, CACHEABLE);
+	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)buf, vm_in_execution->base_addr, size, 0xf, CACHEABLE);
     
 	memcpy(frame_ptr_mapped, &descriptor_data, sizeof(struct descriptor_receive));
     

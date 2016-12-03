@@ -65,7 +65,7 @@ void performance_counter_start(){
 void performance_counter_stop(){
 	uint32_t memory_addr = MoveFromPreviousGuestGPR(REG_A0);
 
-	uint32_t* ptr_mapped = (uint32_t*)tlbCreateEntry(memory_addr, vm_executing->base_addr, 2*sizeof(uint32_t), 0xf, CACHEABLE);
+	uint32_t* ptr_mapped = (uint32_t*)tlbCreateEntry(memory_addr, vm_in_execution->base_addr, 2*sizeof(uint32_t), 0xf, CACHEABLE);
 
 	ptr_mapped[0] = mfc0(CP0_PERFCTL0, 1);
 	ptr_mapped[1] = mfc0(CP0_PERFCTL1, 3);

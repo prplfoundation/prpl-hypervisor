@@ -15,6 +15,10 @@ This code was written by Sergio Johann Filho at Embedded System Group (GSE) at P
 
 */
 
+#ifndef _QUEUE_H
+#define _QUEUE_H
+
+#include <types.h>
 /**
  * @brief Queue data structure.
  */
@@ -35,3 +39,5 @@ void *queue_remtail(struct queue_t *q);
 void *queue_get(struct queue_t *q, int32_t elem);
 int32_t queue_set(struct queue_t *q, int32_t elem, void *ptr);
 int32_t queue_swap(struct queue_t *q, int32_t elem1, int32_t elem2);
+
+#endif

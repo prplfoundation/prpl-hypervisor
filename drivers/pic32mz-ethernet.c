@@ -39,6 +39,7 @@
 #include <board.h>
 #include <hypercall.h>
 #include <interrupts.h>
+#include <vcpu.h>
 
 static uint32_t receive_index = 0;
 static uint32_t read_index = 0;
@@ -46,11 +47,11 @@ static uint32_t desc_offset = 0;
 static uint32_t frame_size = 0;
 static uint32_t read_nbytes = 0;
 
-static struct list_t* vcpu_node = NULL;
+static vcpu_t* vcpu = NULL;
 
 void ethernet_interrupt_handler(){
 
-	fast_interrupt_delivery(vcpu_node);
+	fast_interrupt_delivery(vcpu);
 
 	IFSCLR(IRQ_ETH >> 5) = (1<<25);
 	
@@ -59,7 +60,7 @@ void ethernet_interrupt_handler(){
 }
 
 void en_get_mac(){
-    uint8_t * mac = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), vm_executing->base_addr, sizeof(uint8_t) * 6, 0xf, CACHEABLE);
+    uint8_t * mac = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), vm_in_execution->base_addr, sizeof(uint8_t) * 6, 0xf, CACHEABLE);
     memcpy(mac, eth_port.macaddr, sizeof(uint8_t) * 6);
 }    
 
@@ -71,7 +72,7 @@ void receive_frame(){
     char* frame_ptr = (char*)MoveFromPreviousGuestGPR(REG_A0);
     
     /* Copy the message to the receiver */
-    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame_ptr, vm_executing->base_addr, MTU, 0xf, NONCACHEABLE);
+    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame_ptr, vm_in_execution->base_addr, MTU, 0xf, NONCACHEABLE);
     
     framesz = en_ll_input((uint8_t*)frame_ptr_mapped);
     
@@ -85,7 +86,7 @@ void send_frame(){
     uint8_t *frame  = (uint8_t *)MoveFromPreviousGuestGPR(REG_A0);
     uint32_t size = MoveFromPreviousGuestGPR(REG_A1);
     
-    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame, vm_executing->base_addr, size, 0xf, CACHEABLE);
+    char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame, vm_in_execution->base_addr, size, 0xf, CACHEABLE);
     uint8_t* buf = MACH_PHYS_TO_VIRT(MACH_VIRT_TO_PHYS(tx_buf));
     
     memcpy(buf,frame_ptr_mapped,size);
@@ -823,8 +824,8 @@ static void en_init(){
     }
     
     /* check if there is a VCPU associated to ethernet interrutps. */
-    vcpu_node = get_fast_int_vcpu_node(IRQ_ETH);
-    if (vcpu_node){
+    vcpu = get_fast_int_vcpu_node(IRQ_ETH);
+    if (vcpu){
 	en_enable_interrupts();
     }
 
