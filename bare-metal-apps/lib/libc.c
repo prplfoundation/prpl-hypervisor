@@ -500,14 +500,14 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 			if(*format == 'c'){
 				scr[0] = (int8_t)va_arg(args, size_t);
 				scr[1] = '\0';
-				pc += prints((char**)out, scr, width, pad);
+				pc += prints((char**)out, (char*)scr, width, pad);
 				continue;
 			}
 			switch(*format){
 				case '.':
 					// decimal point: 1 to 9 places max. single precision is only about 7 places anyway.
 					i = *++format - '0';
-					*format++;
+					format++;
 					precision_n = i;
 					precision_v = 1;
 				case 'e':
@@ -520,7 +520,7 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 						putchar('-');
 						f = -f;
 					}
-					itoa((int32_t)f,buf,10);
+					itoa((int32_t)f,(char*)buf,10);
 					j=0;
 					while(buf[j]) putchar(buf[j++]);
 					putchar('.');
@@ -532,7 +532,7 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 						printchar((char**)out, '0');
 						i /= 10;
 					}
-					itoa(f1,buf,10);
+					itoa(f1,(char*)buf,10);
 					j=0;
 					if (f1 != 0)
 						while(buf[j]) printchar((char**)out, buf[j++]);
@@ -556,14 +556,14 @@ int32_t printf(char *fmt, ...){
         va_list args;
         
         va_start(args, fmt);
-        return print(0, fmt, args);
+        return print(0, (int8_t*)fmt, args);
 }
 
 int32_t sprintf(char *out, const char *fmt, ...){
         va_list args;
         
         va_start(args, fmt);
-	return print((int8_t**)&out, fmt, args);
+	return print((int8_t**)&out, (int8_t*)fmt, args);
 }
 
 
@@ -1018,11 +1018,19 @@ int32_t __gesf2(float a, float b){
 }
 
 int32_t __eqsf2(float a, float b){
-	return !(*(int32_t *) & a == *(int32_t *) & b);
+	uint32_t c, d;
+	memcpy(&c, &a, sizeof(c));
+	memcpy(&d, &b, sizeof(d));
+	//return !(*(int32_t *) & a == *(int32_t *) & b);
+	return !(c == d);
 }
 
 int32_t __nesf2(float a, float b){
-	return *(int32_t *) & a != *(int32_t *) & b;
+	uint32_t c, d;
+	memcpy(&c, &a, sizeof(c));
+	memcpy(&d, &b, sizeof(d));
+//	return *(int32_t *) & a != *(int32_t *) & b;
+	return c != d;
 }
 
 /* multiply two floats */
@@ -1157,7 +1165,7 @@ int32_t __fixsfsi(float a_fp){
 	int32_t ae;
 	int32_t af, shift;
 	
-	a = FtoL(a_fp);
+	memcpy(&a, &a_fp, sizeof(a));
 	as = a >> 31;
 	ae = (a >> 23) & 0xff;
 	af = 0x00800000 | (a & 0x007fffff);
@@ -1180,7 +1188,7 @@ uint32_t __fixunssfsi(float a_fp){
 	int32_t ae;
 	int32_t af, shift;
 	
-	a = FtoL(a_fp);
+	memcpy(&a, &a_fp, sizeof(a));
 	as = a >> 31;
 	ae = (a >> 23) & 0xff;
 	af = 0x00800000 | (a & 0x007fffff);
@@ -1201,12 +1209,15 @@ uint32_t __fixunssfsi(float a_fp){
 float __floatsisf(int32_t af){
 	uint32_t a;
 	uint32_t as, ae;
+	float resp;
 	
 	as = af>=0 ? 0: 1;
 	af = af>=0 ? af: -af;
 	ae = 0x80 + 22;
-	if(af == 0) 
-		return LtoF(af);
+	if(af == 0){ 
+		memcpy(&resp, &af, sizeof(resp));
+		return resp;
+	}
 	while(af & 0xff000000){
 		++ae;
 		af >>= 1;
@@ -1217,18 +1228,22 @@ float __floatsisf(int32_t af){
 	}
 	a = (as << 31) | (ae << 23) | (af & 0x007fffff);
 	
-	return LtoF(a);
+	memcpy(&resp, &a, sizeof(resp));
+	return resp;
 }
 
 float __floatunsisf(uint32_t af){
 	uint32_t a;
 	uint32_t as, ae;
+	float resp;
 	
 	as = af>=0 ? 0: 1;
 	af = af>=0 ? af: -af;
 	ae = 0x80 + 22;
-	if(af == 0) 
-		return LtoF(af);
+	if(af == 0) {
+		memcpy(&resp, &af, sizeof(resp));
+		return resp;
+	}
 	while(af & 0xff000000){
 		++ae;
 		af >>= 1;
@@ -1239,6 +1254,7 @@ float __floatunsisf(uint32_t af){
 	}
 	a = (as << 31) | (ae << 23) | (af & 0x007fffff);
 	
-	return LtoF(a);
+	memcpy(&resp, &a, sizeof(resp));
+	return resp;
 }
 
