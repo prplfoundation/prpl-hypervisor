@@ -17,4 +17,5 @@ lib:
 	$(CC) $(CFLAGS) $(INC_DIRS) \
 	        $(TOPDIR)sys/lib/libc.c \
 	        $(TOPDIR)sys/lib/linkedlist.c \
-	        $(TOPDIR)sys/lib/malloc.c
+	        $(TOPDIR)sys/lib/malloc.c \
+	        $(TOPDIR)sys/lib/queue.c
