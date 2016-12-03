@@ -20,7 +20,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <types.h>
 
-static uint32_t guest_exit_exception();
 void general_exception_handler();
 
 #endif 
