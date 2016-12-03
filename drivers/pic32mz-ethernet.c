@@ -48,8 +48,6 @@ static uint32_t read_nbytes = 0;
 
 static struct list_t* vcpu_node = NULL;
 
-static uint32_t last_int = 0;
-
 void ethernet_interrupt_handler(){
 
 	fast_interrupt_delivery(vcpu_node);

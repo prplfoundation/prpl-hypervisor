@@ -154,7 +154,7 @@ struct eth_port {
     int8_t      *rx_buf;        /* pointer to the RX buffer */
     eth_desc_t  *rx_desc;       /* pointer to the RX DMA descriptors */
     eth_desc_t  *tx_desc;       /* pointer to the TX DMA descriptors */
-} eth_port = {0};
+} eth_port = {{0}};
 
 void en_watchdog(void);
 void en_ll_output(uint8_t *frame, uint16_t size);
