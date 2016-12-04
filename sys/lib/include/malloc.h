@@ -32,4 +32,11 @@ union header{	 /* block header */
 
 typedef union header mem_header;
 
+void HeapInit(void *heap, uint32_t len);
+void *malloc(uint32_t size);
+void free(void *ptr);
+void *calloc(uint32_t qty, uint32_t type_size);
+void *realloc(void *ptr, uint32_t size);
+uint32_t init_mem();
+
 #endif

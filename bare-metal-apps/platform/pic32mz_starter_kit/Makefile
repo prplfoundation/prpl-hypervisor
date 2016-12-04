@@ -13,9 +13,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 
-all: conf_liker lib hal app $(APP)
-
-include ../../apps/$(APP)/app.mk
+all: conf_liker lib hal platform app $(APP)
 
 ifndef CLEAN
     ifndef CROSS_COMPILER
@@ -39,11 +37,13 @@ TOPDIR=../../
 
 INC_DIRS += -I$(TOPDIR)/lib/include \
             -I$(TOPDIR)../include \
+            -Iinclude \
            -I$(TOPDIR)arch/mips/pic32mz/include/
 
 include $(TOPDIR)lib/lib.mk
 include $(TOPDIR)arch/mips/pic32mz/hal.mk
-
+include $(TOPDIR)apps/$(APP)/app.mk
+include $(TOPDIR)platform/pic32mz_starter_kit/platform.mk
            
 #Configure CROSS COMPILER
 AS = $(CROSS_COMPILER)as 
@@ -53,11 +53,12 @@ READELF = $(CROSS_COMPILER)readelf
 OBJCOPY = $(CROSS_COMPILER)objcopy
 SIZE = $(CROSS_COMPILER)size
 CC= $(CROSS_COMPILER)gcc
+STRIP = $(CROSS_COMPILER)strip
 
 LINKER_SCRIPT = ../../apps/$(APP)/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -O2 -mtune=m14k -mips32r2
+CFLAGS += -EL -O2 -mtune=m14k -mips32r2 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options
@@ -73,6 +74,7 @@ LDFLAGS += -EL
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map ../../apps/$(APP)/$(APP).map -o ../../apps/$(APP)/$(APP).elf ../../apps/$(APP)/*.o -N $(LIBS)
+	$(STRIP) ../../apps/$(APP)/$(APP).elf
 	$(OBJDUMP) --disassemble --reloc ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).lst
 	$(OBJDUMP) -h ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).sec
 	$(OBJDUMP) -s ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).cnt

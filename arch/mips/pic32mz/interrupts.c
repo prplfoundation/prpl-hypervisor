@@ -15,6 +15,20 @@
  * 
  */
 
+/**
+ * @file interrupts.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * PIC32mz interrupt subsystem. Initializes the pic32mz interrupts
+ * and allows for the registration of interrupt handlers. 
+ * 
+ * The hypervisor configures the pic32mz in vectored mode and uses 
+ * the OFF register to configure the vector address of the interrupt. 
+ * A device driver, after invoke register_interrupt() must configure
+ * the corresponding OFF register with the function return.
+ *
+ */
 
 #include<pic32mz.h>
 #include <driver.h>
@@ -23,14 +37,25 @@
 #include <config.h>
 #include <globals.h>
 #include <driver.h>
+#include <interrupts.h>
+#include <libc.h>
 
 #define MAX_NUM_INTERRUPTS 10
 #define VECTOR_1_OFFSET 0x220
 
-typedef void  handler_vector_t();
-
+/** 
+ * @brief Interrupt handlers is an array of pointers to 
+ * functions. Device drivers calls register_interrupt() to 
+ * register a new interrupt handler. 
+ */
 handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS] = {NULL};
 
+/** 
+ * @brief Register a new interrupt handler. 
+ * @param handler Function pointer. 
+ * @return Relative interrupt address or 0 if the handler
+ * could not be registered. 
+ */
 uint32_t register_interrupt(handler_vector_t * handler){
     uint32_t i;
     for(i=0; i<MAX_NUM_INTERRUPTS; i++){
@@ -42,8 +67,13 @@ uint32_t register_interrupt(handler_vector_t * handler){
     return 0;
 }
 
-void interrupt_init(){
-    uint32_t temp_CP0, offset;
+/** 
+ * @brief Configures the pic32mz in vectored interrupt mode. 
+ * Additionally, configure all interrupt levels to be handled
+ * at GPR shadow 0. 
+ */
+static void interrupt_init(){
+    uint32_t temp_CP0;
     
     /* All root interrupt levels are handled at GPR shadow 0 where the
      * hypervisor resides.  Other GPR shadows are used for VM's execution. 

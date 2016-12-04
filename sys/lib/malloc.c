@@ -20,8 +20,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include "malloc.h"
 #include "libc.h"
 
-extern _heap_start;
-extern _heap_size;
+extern uint32_t _heap_start;
+extern uint32_t _heap_size;
 
 
 /* new memory allocator implementation
@@ -119,7 +119,6 @@ void *calloc(uint32_t qty, uint32_t type_size){
 }
 
 void *realloc(void *ptr, uint32_t size){
-	mem_header *p;
 	void *buf;
 
 	if (ptr == NULL)
@@ -139,8 +138,7 @@ void *realloc(void *ptr, uint32_t size){
 }
 
 uint32_t init_mem() {
-  
-  //Initialize heap           
+          
     HeapInit((void*)(( (uint32_t)(&_heap_start) + 8) & 0xFFFFFFFC), ((uint32_t)(&_heap_size) -8) & 0xFFFFFFFC);  
 
     return 0;

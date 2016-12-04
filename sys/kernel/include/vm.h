@@ -59,16 +59,14 @@ struct device_mapping_t{
 struct vmconf_t{
     char vm_name[VM_NAME_SZ];
     uint32_t ram_base;
-    uint32_t num_tlb_entries;
-    uint32_t os_type;
-/*<<<<<<< HEAD
-    uint32_t vm_entry;
-    uint32_t flash_base;
     uint32_t flash_size;
-=======*/
+    uint32_t flash_base_add;
+    uint32_t os_type;
     uint32_t fast_int_sz;
     uint32_t *fast_interrupts;
-//>>>>>>> upstream/master
+    uint32_t interrupt_redirect_sz;
+    uint32_t *interrupt_redirect;
+    uint32_t num_tlb_entries;
     const struct tlb_entries const *tlb;
     uint32_t devices_mapping_sz;
     const struct device_mapping_t const *devices;
@@ -89,6 +87,7 @@ typedef struct vm_t {
 
 vm_t *create_vm(const struct vmconf_t const *vm);
 vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point);
+void initializeMachines(void);
 
 
 #endif

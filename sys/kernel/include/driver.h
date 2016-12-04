@@ -38,5 +38,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 typedef void initcall_t();
 
+void drivers_initialization();
+
 #endif
 

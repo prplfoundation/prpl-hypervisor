@@ -28,6 +28,9 @@
 #include<pic32mz.h>
 #include <driver.h>
 #include <globals.h>
+#include <libc.h>
+#include <hal.h>
+#include <interrupts.h>
 
 
 /**
@@ -48,7 +51,7 @@ void SoftReset(){
 	RSWRST |= 1;
     
 	/* read RSWRST register to trigger reset */
-	volatile int* p = &RSWRST;
+	volatile uint32_t* p = (uint32_t*)&RSWRST;
 	*p;
     
 	/* prevent any unwanted code execution until reset occurs*/
@@ -84,7 +87,7 @@ void sw1_button_interrupt_init(){
 	uint32_t offset;
 
 	TRISBSET =  (1 << 12);     /* SW1 - RB12 (active low) */
-	CNPUB =     (1 << 12);     /* enable pull-up */
+	CNPUBSET =     (1 << 12);     /* enable pull-up */
     
 	offset = register_interrupt(sw1_button_handler);
 	OFF(119) = offset;

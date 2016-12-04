@@ -30,6 +30,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GUEST_INTERVM_INT	2
 #define GUEST_USB_INT		4
 #define GUEST_ETH_INT		8
+#define GUEST_USER_DEFINED_INT_1	0x10
+#define GUEST_USER_DEFINED_INT_2	0x20
 
 #endif
 

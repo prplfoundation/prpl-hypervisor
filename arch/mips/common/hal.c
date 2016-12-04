@@ -29,9 +29,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hal.h>
 #include <globals.h>
 #include <mips_cp0.h>
+#include <board.h>
+#include <malloc.h>
+#include <vm.h>
+#include <driver.h>
+#include <timer.h>
+#include <libc.h>
+#include "security.h"
 
 /* HEAP size as calculated by the linker script. */
-extern _heap_size;
+extern uint32_t _heap_size;
 
 /* Stringfy compiler parameters. */
 #define STR(x) #x
@@ -48,11 +55,12 @@ static void print_config(void)
 	INFO("prplHypervsior %s [%s, %s]", STR_VALUE(HYPVERSION), __DATE__, __TIME__);
 	INFO("Copyright (c) 2016, prpl Foundation");
 	INFO("===========================================================");
-	INFO("CPU ID:        %s", CPU_ID);
-	INFO("ARCH:          %s", CPU_ARCH);
-	INFO("SYSCLK:        %dMHz", CPU_SPEED/1000000);
+	INFO("CPU Core:      %s", STR_VALUE(CPU_ID));
+	INFO("Board:         %s", STR_VALUE(CPU_ARCH));
+	INFO("System Clock:  %dMHz", CPU_SPEED/1000000);
 	INFO("Heap Size:     %dKbytes", (int)(&_heap_size)/1024);
-	INFO("Scheduler      %dms", QUANTUM_SCHEDULER);
+	INFO("Scheduler:     %dms", QUANTUM_SCHEDULER_MS);
+	INFO("Guest Tick:    %dms", SYSTEM_TICK_US/1000);
 	INFO("VMs:           %d\n", NVMACHINES);
 }
 
@@ -84,6 +92,8 @@ void hyper_init(){
 	/* Configure the HEAP space on the allocator */ 
 	init_mem();
 	
+        isVmTrust();
+        
 	/*Initialize VCPUs and virtual machines*/
 	initializeMachines();
 	
@@ -139,7 +149,6 @@ int32_t hasVZ(){
  */
 int32_t ConfigureGPRShadow(){
 	int32_t srsclt_reg;
-	int32_t guestsrsclt_reg;
 	int32_t num_shadow_gprs = 0;
 
 	/* Configure the GPR Shadow. The hypervisor will use the lowest shadow page. 
@@ -568,5 +577,19 @@ uint32_t getRandom(){
     return mfc0(CP0_RANDOM, 0);
 }
 
+
+/**
+ * @brief Wait for microseconds. 
+ * @param usec Wait time.
+ */
+void udelay (uint32_t usec){
+    uint32_t now = mfc0(CP0_COUNT, 0);
+    uint32_t final = now + usec * (CPU_FREQ / 1000000) / 2;
+
+    for (;;) {
+        now = mfc0(CP0_COUNT, 0);
+        if ((int32_t) (now - final) >= 0) break;
+    }
+}
 
 

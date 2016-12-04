@@ -19,6 +19,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <types.h>
 #include <guest_interrupts.h>
 #include <malloc.h>
+#include <libc.h>
 
 #define NUM_GUEST_INTERRUPTS 10
 
@@ -92,10 +93,34 @@ void init_proc(){
 	temp_CP0 |= 8<<INTCTL_VS_SHIFT;
 	mtc0(CP0_INTCTL, 1, temp_CP0);
     
-	memset(interrupt_handlers, NULL, sizeof(interrupt_handlers));
+	memset(interrupt_handlers, 0, sizeof(interrupt_handlers));
 
 	asm volatile ("ei");
     
 }
+
+
+/**
+ * @brief Determines if a time period was consumed.
+ * @param old_time Initial time.
+ * @param ms_delay Time period.
+ * @return 0 if the period was not consumed, 1 otherwise.
+ */
+uint32_t wait_time(uint32_t old_time, uint32_t ms_delay){
+	uint32_t diff_time;
+	uint32_t now = mfc0(CP0_COUNT, 0);
+    
+	if (now >= old_time)
+		diff_time = now - old_time;
+	else
+		diff_time = 0xffffffff - (old_time - now);
+
+	if(diff_time > (ms_delay * MILISECOND)){
+		return 1;
+	}
+	
+	return 0;
+}
+
 
 

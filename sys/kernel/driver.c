@@ -29,8 +29,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <driver.h>
 
 /* Symbols defined in the linker script indicating the start and the end of the driver's function table. */
-extern __drivers_table_init_start;
-extern __drivers_table_init_end;
+extern uint32_t __drivers_table_init_start;
+extern uint32_t __drivers_table_init_end;
 
 /**
  * @brief Walk in the driver's function table calling all initialization functions. 

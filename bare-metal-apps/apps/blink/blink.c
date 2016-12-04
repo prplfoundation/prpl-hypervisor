@@ -21,6 +21,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <hypercalls.h>
 #include <guest_interrupts.h>
+#include <platform.h>
+#include <io.h>
 
 
 volatile int32_t t2 = 0;
@@ -31,18 +33,16 @@ void irq_timer(){
 }
 
 int main() {
-    /* Pin RH0 as ouput (LED 1)*/
-    uint32_t a;
     
     interrupt_register(irq_timer, GUEST_TIMER_INT);
     
-    write(TRISHCLR, 1);
+	ENABLE_LED1;
     
     while (1){
         printf("\nBlink red LED! Total of %d timer ticks.", t2);
         
 	/* Blink Led */
-	write(LATHINV, 1);
+		TOGGLE_LED1;
 	
         /* 1 second delay */
         udelay(1000000);

@@ -18,20 +18,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <config.h>
 #include <stdarg.h>
+#include <uart.h>
 
 #define PAD_RIGHT 1
 #define PAD_ZERO 2
 
-void udelay (uint32_t usec){
-    uint32_t now = getCounter();
-    uint32_t final = now + usec * (CPU_FREQ / 1000000) / 2;
-
-    for (;;) {
-        now = getCounter();
-        if ((int32_t) (now - final) >= 0) break;
-    }
-}
-
+static void printchar(char **str, int c);
+static int32_t prints(char **out, const char *string, int width, int pad);
+static int32_t printi(char **out, int i, int b, int sg, int width, int pad, int letbase);
+static int32_t print(char **out, const char *format, va_list args );
 
 
 void *memset(void *dst, int c, unsigned long bytes){
@@ -39,6 +34,7 @@ void *memset(void *dst, int c, unsigned long bytes){
 
   while((int)bytes-- > 0)
     *Dst++ = (unsigned char)c;
+	
   return dst;
 }
 
@@ -48,6 +44,7 @@ void *memcpy(void *dst, const void *src, unsigned long bytes){
     while((int)bytes-- > 0)
       *Dst++ = *Src++;
   }else{
+	
     unsigned int *Dst32 = (unsigned int *)dst, *Src32 = (unsigned int *)src;
     bytes >>= 2;
     while((int)bytes-- > 0)
@@ -76,6 +73,7 @@ char *itoa(int i, char *s, int base){
     do{
       *q++ = '0' + (h % base);
     } while (h /= base);
+	
     for (*q = 0; p <= --q; p++){
       (*p > '9')?(c = *p + 39):(c = *p);
       (*q > '9')?(*p = *q + 39):(*p = *q);
@@ -102,8 +100,7 @@ char *itoa(int i, char *s, int base){
   return s;
 }
 
-static void printchar(char **str, int c)
-{		
+static void printchar(char **str, int c){		
 	if (str) {
 		**str = c;
 		++(*str);
@@ -111,8 +108,7 @@ static void printchar(char **str, int c)
 	else (void)putchar(c);
 }
 
-static int32_t prints(char **out, const char *string, int width, int pad)
-{
+static int32_t prints(char **out, const char *string, int width, int pad){
 	register int pc = 0, padchar = ' ';
 
 	if (width > 0) {
@@ -259,6 +255,7 @@ int32_t printf(const char *format, ...)
         va_list args;
         
         va_start( args, format );
+	
         return print( 0, format, args );
 }
 
@@ -267,11 +264,11 @@ int32_t sprintf(char *out, const char *format, ...)
         va_list args;
         
         va_start( args, format );
+	
         return print( &out, format, args );
 }
 
 //Some string manipulation functions
-
 int32_t strcmp(const char *s1, const char *s2)
 {
   int ret = 0;
@@ -286,7 +283,7 @@ int32_t strcmp(const char *s1, const char *s2)
 char *strcpy(char *dest, const char *src)
 {
    char *save = dest;
-   while(*dest++ = *src++);
+	while( (*dest++ = *src++) );
    return save;
 }
 
@@ -301,7 +298,7 @@ uint32_t hash(unsigned char *str) {
     uint32_t hash = 5381;
     int c;
 
-    while (c = *str++) {
+	while ( (c = *str++) ) {
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     }
 

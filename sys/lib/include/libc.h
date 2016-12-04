@@ -18,17 +18,18 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _LIBC_H_
 #define _LIBC_H_
 
-#include <config.h>
 #include <types.h>
+#include <stdarg.h>
 
 #define min(a,b)		((a)<(b)?(a):(b))
 #define max(a,b)        ((a)>(b)?(a):(b))
 
 void *memset(void *dst, int c, unsigned long bytes);
 void *memcpy(void *dst, const void *src, unsigned long bytes);
-char *itoa(int i, char *s, int base);
-
 int32_t puts(const char *str);
+char *itoa(int i, char *s, int base);
+int32_t printf(const char *format, ...);
+int32_t sprintf(char *out, const char *format, ...);
 int32_t strcmp(const char *s1, const char *s2);
 char *strcpy(char *dest, const char *src);
 uint32_t strlen(const char *str);

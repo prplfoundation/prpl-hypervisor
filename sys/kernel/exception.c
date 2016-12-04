@@ -26,11 +26,15 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 #include <types.h>
+#include <hal.h>
 #include <config.h>
 #include <exception.h>
 #include <libc.h>
 #include <globals.h>
 #include <mips_cp0.h>
+#include <hypercall.h>
+#include <board.h>
+#include <scheduler.h>
 
 /**
  * @brief Guest exit exception handler. 

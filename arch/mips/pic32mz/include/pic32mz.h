@@ -232,7 +232,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CNSTATESET      PIC32MZ_PBASE (0x60498)
 #define CNSTATEINV      PIC32MZ_PBASE (0x6049C)
 #define PORTE_BASE	0xbf860400
-#define PORTD_SIZE	0x9C
+#define PORTE_SIZE	0x9C
 
 #define ANSELF          PIC32MZ_PBASE (0x60500)
 #define ANSELFCLR       PIC32MZ_PBASE (0x60504)

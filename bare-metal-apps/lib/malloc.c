@@ -15,144 +15,27 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
+/**
+ * @file malloc.c
+ * 
+ * @section DESCRIPTION
+ * 
+ * Memory allocator using first-fit
+ * 
+ * Simple linked list of used/free areas. malloc() is slower, because free areas
+ * are searched from the beginning of the heap and are coalesced on demand. Yet,
+ * just one sweep through memory areas is performed, making it faster than other
+ * allocators on the average case. free() is very fast, as memory areas
+ * are just marked as unused.
+ * 
+ */
+
 #include <types.h>
 #include <malloc.h>
+#include <libc.h>
 
-/* new memory allocator implementation
-   based on K&R The C Programming Language book 2nd. ed., p.149
-*/
-
-extern _heap_start;
-extern _heap_size;
-
-#if 0
-static mem_header *freep = NULL;        /* start free list */
-static mem_header *sfreep, sfree;       /* saved values to restore */
-
-/**
- *  Initialize or reinitialize the heap 
- * 
- * @param heap heap pointer
- * @param len  heap size in bytes
- */
-void HeapInit(void *heap, uint32_t len){
-    mem_header *prevp, *p;
-    uint32_t nunits;
-    if ((prevp = freep) == NULL){
-        nunits = ((len+sizeof(mem_header)-1)/sizeof(mem_header))+1; 
-        p = heap;
-        p->s.size = nunits - 1;
-        p->s.ptr = p;
-        freep = p;
-        sfreep = p;
-        sfree.s.ptr = p->s.ptr;
-        sfree.s.size = p->s.size; 
-    }else{
-        freep = sfreep;
-        freep->s.ptr = sfree.s.ptr;
-        freep->s.size = sfree.s.size;           
-    }
-}
-
-void *malloc(uint32_t size){
-    mem_header *p, *prevp;
-        uint32_t nunits;
-
-    nunits = ((size+sizeof(mem_header)-1)/sizeof(mem_header))+1;
-    if ((prevp = freep) == NULL)
-        return NULL;
-
-    for(p = prevp->s.ptr; ; prevp = p, p = p->s.ptr){
-        if (p->s.size >= nunits){
-            if (p->s.size == nunits){
-                prevp->s.ptr = p->s.ptr;
-            }else{
-                p->s.size -= nunits;
-                p += p->s.size;
-                p->s.size = nunits;
-            }
-            freep = prevp;
-            return (void *)(p+1);
-        }
-        if (p == freep){
-            return NULL;
-        }
-    }
-}
-
-void free(void *ptr){
-        mem_header *bp, *p;
-
-    bp = (mem_header *) ptr - 1;
-    for (p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
-        if (p >= p->s.ptr && (bp > p || bp < p->s.ptr))
-            break;
-
-    if (bp + bp->s.size == p->s.ptr){
-        bp->s.size += p->s.ptr->s.size;
-        bp->s.ptr = p->s.ptr->s.ptr;
-    }else{
-        bp->s.ptr = p->s.ptr;
-    }
-
-    if (p + p->s.size == bp){
-        p->s.size += bp->s.size;
-        p->s.ptr = bp->s.ptr;
-    }else{
-        p->s.ptr = bp;
-    }
-
-    freep = p;
-}
-
-void *calloc(uint32_t qty, uint32_t type_size){
-void *buf;
-
-buf = (void *)malloc((qty * type_size));
-if (buf)
-	memset(buf, 0, (qty * type_size));
-
-return (void *)buf;
-}
-
-void *realloc(void *ptr, uint32_t size){
-mem_header *p;
-void *buf;
-
-if (ptr == NULL)
-	return (void *)malloc(size);
-if (size == 0){
-	free(ptr);
-	return NULL;
-	}
-	
-	buf = (void *)malloc(size);
-	if (buf){
-		memcpy(buf, ptr, size);
-		free(ptr);
-		}
-		
-		return (void *)buf;
-		}
-		
-		
-
-uint32_t init_mem() {
-    HeapInit((void*)(( (uint32_t)(&_heap_start) + 8) & 0xFFFFFFFC), ((uint32_t)(&_heap_size) -8) & 0xFFFFFFFC);  
-  
-    return 0;
-}
-#else 
-
-/*
- * new memory allocator using first-fit
- * 
- * simple linked list of used/free areas. malloc() is slower, because free areas
- * are searched from the beginning of the heap and are coalesced on demand. yet,
- * just one sweep through memory areas is performed, making it faster than the
- * previous allocator on the average case. hf_free() is very fast, as memory areas
- * are just marked as unused.
- */
+extern uint32_t _heap_start;
+extern uint32_t _heap_size;
 
 static uint32_t krnl_free = 0;
 static void* krnl_heap = NULL;
@@ -254,7 +137,7 @@ void init_mem()
 	krnl_free = p->size;
 }
 
-#endif
+
 
 
 

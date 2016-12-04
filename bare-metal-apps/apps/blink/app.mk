@@ -14,13 +14,13 @@
 
 
 # Define your additional include paths
-#INC_DIRS = 
+#INC_DIRS += 
 
 #Aditional C flags
-CFLAGS = -DVIRTUALIZED_IO
+CFLAGS += -DVIRTUALIZED_IO
 
 #Aditional Libraries
-#LIBS=
+#LIBS +=
 
 #default stack size 512 bytes
 STACK_SIZE = 512

@@ -19,25 +19,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <libc.h>
 #include <hypercalls.h>
 
-extern void putchar(int32_t value);
-extern uint32_t getchar(void);
-
-static uint32_t serial_port = UART2;
-
-int32_t serial_select(uint32_t serial_number){
-    /* select serial 2 or 4 as output */
-    switch (serial_number){
-        case UART2: serial_port = UART2;
-                return UART2;
-        case UART6: serial_port = UART6;
-                return UART6;
-        default:
-            return -1;
-    }
-}
-
-int8_t *strcpy(int8_t *dst, const int8_t *src){
-	int8_t *dstSave=dst;
+char *strcpy(char *dst, const char *src){
+	char *dstSave=dst;
 	int32_t c;
 
 	do{
@@ -46,9 +29,9 @@ int8_t *strcpy(int8_t *dst, const int8_t *src){
 	return dstSave;
 }
 
-int8_t *strncpy(int8_t *s1, int8_t *s2, int32_t n){
+char *strncpy(char *s1, char *s2, int32_t n){
 	int32_t i;
-	int8_t *os1;
+	char *os1;
 
 	os1 = s1;
 	for (i = 0; i < n; i++)
@@ -60,9 +43,9 @@ int8_t *strncpy(int8_t *s1, int8_t *s2, int32_t n){
 	return(os1);
 }
 
-int8_t *strcat(int8_t *dst, const int8_t *src){
+char *strcat(char *dst, const char *src){
 	int32_t c;
-	int8_t *dstSave=dst;
+	char *dstSave=dst;
 
 	while(*dst)
 		++dst;
@@ -73,8 +56,8 @@ int8_t *strcat(int8_t *dst, const int8_t *src){
 	return dstSave;
 }
 
-int8_t *strncat(int8_t *s1, int8_t *s2, int32_t n){
-	int8_t *os1;
+char *strncat(char *s1, char *s2, int32_t n){
+	char *os1;
 
 	os1 = s1;
 	while (*s1++);
@@ -87,7 +70,7 @@ int8_t *strncat(int8_t *s1, int8_t *s2, int32_t n){
 	return(os1);
 }
 
-int32_t strcmp(const int8_t *s1, const int8_t *s2){
+int32_t strcmp(const char *s1, const char *s2){
 	while (*s1 == *s2++)
 		if (*s1++ == '\0')
 			return(0);
@@ -95,7 +78,7 @@ int32_t strcmp(const int8_t *s1, const int8_t *s2){
 	return(*s1 - *--s2);
 }
 
-int32_t strncmp(int8_t *s1, int8_t *s2, int32_t n){
+int32_t strncmp(char *s1, char *s2, int32_t n){
 	while (--n >= 0 && *s1 == *s2++)
 		if (*s1++ == '\0')
 			return(0);
@@ -103,7 +86,7 @@ int32_t strncmp(int8_t *s1, int8_t *s2, int32_t n){
 	return(n<0 ? 0 : *s1 - *--s2);
 }
 
-int8_t *strstr(const int8_t *string, const int8_t *find){
+char *strstr(const char *string, const char *find){
 	int32_t i;
 	for(;;){
 		for(i = 0; string[i] == find[i] && find[i]; ++i);
@@ -114,7 +97,7 @@ int8_t *strstr(const int8_t *string, const int8_t *find){
 	}
 }
 
-int32_t strlen(const int8_t *s){
+int32_t strlen(const char *s){
 	int32_t n;
 
 	n = 0;
@@ -124,30 +107,30 @@ int32_t strlen(const int8_t *s){
 	return(n);
 }
 
-int8_t *strchr(const int8_t *s, int32_t c){
-	while (*s != (int8_t)c) 
+char *strchr(const char *s, int32_t c){
+	while (*s != (char)c) 
 		if (!*s++)
 			return 0; 
 
-	return (int8_t *)s; 
+	return (char *)s; 
 }
 
-int8_t *strpbrk(int8_t *str, int8_t *set){
+char *strpbrk(char *str, char *set){
 	while (*str != '\0'){
 		if (strchr(set, *str) == 0)
 			++str;
 		else
-			return (int8_t *) str;
-		return 0;
+			return (char *) str;
 	}
+		return 0;
 }
 
-int8_t *strsep(int8_t **pp, int8_t *delim){
-	int8_t *p, *q;
+char *strsep(char **pp, char *delim){
+	char *p, *q;
 
 	if (!(p = *pp))
 		return 0;
-	if (q = strpbrk (p, delim)){
+	if ( (q = strpbrk (p, delim)) ){
 		*pp = q + 1;
 		*q = '\0';
 	}else	*pp = 0;
@@ -155,11 +138,11 @@ int8_t *strsep(int8_t **pp, int8_t *delim){
 	return p;
 }
 
-int8_t *strtok(int8_t *s, const int8_t *delim){
-	const int8_t *spanp;
+char *strtok(char *s, const char *delim){
+	const char *spanp;
 	int32_t c, sc;
-	int8_t *tok;
-	static int8_t *last;
+	char *tok;
+	static char *last;
 
 	if (s == NULL && (s = last) == NULL)
 		return (NULL);
@@ -194,8 +177,8 @@ int8_t *strtok(int8_t *s, const int8_t *delim){
 }
 
 void *memcpy(void *dst, const void *src, uint32_t n){
-	int8_t *r1 = dst;
-	const int8_t *r2 = src;
+	char *r1 = dst;
+	const char *r2 = src;
 
 	while (n--)
 		*r1++ = *r2++;
@@ -204,8 +187,8 @@ void *memcpy(void *dst, const void *src, uint32_t n){
 }
 
 void *memmove(void *dst, const void *src, uint32_t n){
-	int8_t *s = (int8_t *)dst;
-	const int8_t *p = (const int8_t *)src;
+	char *s = (char *)dst;
+	const char *p = (const char *)src;
 
 	if (p >= s){
 		while (n--)
@@ -221,8 +204,8 @@ void *memmove(void *dst, const void *src, uint32_t n){
 }
 
 int32_t memcmp(const void *cs, const void *ct, uint32_t n){
-	const uint8_t *r1 = (const uint8_t *)cs;
-	const uint8_t *r2 = (const uint8_t *)ct;
+	const char *r1 = (const char *)cs;
+	const char *r2 = (const char *)ct;
 
 	while (n && (*r1 == *r2)) {
 		++r1;
@@ -234,15 +217,15 @@ int32_t memcmp(const void *cs, const void *ct, uint32_t n){
 }
 
 void *memset(void *s, int32_t c, uint32_t n){
-	uint8_t *p = (uint8_t *)s;
+	char *p = (char *)s;
 
 	while (n--)
-		*p++ = (uint8_t)c;
+		*p++ = (char)c;
 
 	return s;
 }
 
-int32_t strtol(const int8_t *s, int8_t **end, int32_t base){
+int32_t strtol(const char *s, char **end, int32_t base){
 	int32_t i;
 	uint32_t ch, value=0, neg=0;
 
@@ -273,7 +256,7 @@ int32_t strtol(const int8_t *s, int8_t **end, int32_t base){
 	return value;
 }
 
-int32_t atoi(const int8_t *s){
+int32_t atoi(const char *s){
 	int32_t n, f;
 
 	n = 0;
@@ -295,8 +278,8 @@ int32_t atoi(const int8_t *s){
 	return(f?-n:n);
 }
 
-int8_t *itoa(int32_t i, int8_t *s, int32_t base){
-	int8_t *ptr = s, *ptr1 = s, tmp_char;
+char *itoa(int32_t i, char *s, int32_t base){
+	char *ptr = s, *ptr1 = s, tmp_char;
 	int32_t tmp_value;
 
 	if (base < 2 || base > 36) {
@@ -319,7 +302,7 @@ int8_t *itoa(int32_t i, int8_t *s, int32_t base){
 	return s;
 }
 
-int32_t puts(const int8_t *str){
+int32_t puts(const char *str){
 	while(*str)
 		putchar(*str++);
 	putchar('\n');
@@ -327,9 +310,9 @@ int32_t puts(const int8_t *str){
 	return 0;
 }
 
-int8_t *gets(int8_t *s){
+char *gets(char *s){
 	int32_t c;
-	int8_t *cs;
+	char *cs;
 
 	cs = s;
 	while ((c = getchar()) != '\n' && c >= 0)
@@ -363,7 +346,7 @@ printf() and sprintf()
 #define PAD_ZERO 2
 #define PRINT_BUF_LEN 30
 
-static void printchar(int8_t **str, int32_t c){
+static void printchar(char **str, int32_t c){
 	if (str){
 		**str = c;
 		++(*str);
@@ -371,12 +354,12 @@ static void printchar(int8_t **str, int32_t c){
 		(void)putchar(c);
 }
 
-static int32_t prints(int8_t **out, const int8_t *string, int32_t width, int32_t pad){
+static int32_t prints(char **out, const char *string, int32_t width, int32_t pad){
 	int32_t pc = 0, padchar = ' ';
 
 	if (width > 0){
 		int32_t len = 0;
-		const int8_t *ptr;
+		const char *ptr;
 		for (ptr = string; *ptr; ++ptr) ++len;
 		if (len >= width) width = 0;
 		else width -= len;
@@ -400,9 +383,9 @@ static int32_t prints(int8_t **out, const int8_t *string, int32_t width, int32_t
 	return pc;
 }
 
-static int32_t printi(int8_t **out, int32_t i, int32_t b, int32_t sg, int32_t width, int32_t pad, int32_t letbase){
-	int8_t print_buf[PRINT_BUF_LEN];
-	int8_t *s;
+static int32_t printi(char **out, int32_t i, int32_t b, int32_t sg, int32_t width, int32_t pad, int32_t letbase){
+	char print_buf[PRINT_BUF_LEN];
+	char *s;
 	int32_t t, neg = 0, pc = 0;
 	uint32_t u = i;
 
@@ -442,10 +425,10 @@ static int32_t printi(int8_t **out, int32_t i, int32_t b, int32_t sg, int32_t wi
 	return pc + prints (out, s, width, pad);
 }
 
-static int32_t print(int8_t **out, const int8_t *format, va_list args){
+static int32_t print(char **out, const char *format, va_list args){
 	int32_t width, pad;
 	int32_t pc = 0;
-	int8_t scr[2];
+	char scr[2];
 
 	for (; *format != 0; ++format){
 		if (*format == '%'){
@@ -466,8 +449,8 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 				width += *format - '0';
 			}
 			if(*format == 's'){
-				int8_t *s = (int8_t *)va_arg(args, int32_t);
-                pc += prints(out, s?s:(int8_t *)"(null)", width, pad);
+				char *s = (char *)va_arg(args, int32_t);
+                pc += prints(out, s?s:(char *)"(null)", width, pad);
 				continue;
 			}
 			if(*format == 'd'){
@@ -487,7 +470,7 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 				continue;
 			}
 			if(*format == 'c'){
-				scr[0] = (int8_t)va_arg(args, int32_t);
+				scr[0] = (char)va_arg(args, int32_t);
 				scr[1] = '\0';
 				pc += prints(out, scr, width, pad);
 				continue;
@@ -504,14 +487,14 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 	return pc;
 }
 
-int32_t printf(const int8_t *fmt, ...){
+int32_t printf(char *fmt, ...){
         va_list args;
         
         va_start(args, fmt);
         return print(0, fmt, args);
 }
 
-int32_t sprintf(int8_t *out, const int8_t *fmt, ...){
+int32_t sprintf(char *out, const char *fmt, ...){
         va_list args;
         
         va_start(args, fmt);
@@ -529,42 +512,6 @@ void udelay(uint32_t usec){
     }
 }
 
-void putchar(int32_t value){
-#ifdef VIRTUALIZED_IO
-    if (serial_port == UART2){
-        while(read(U2STA) & USTA_UTXBF);
-        write(U2TXREG, value);    
-    }else if (serial_port == UART6){
-        while(read(U6STA) & USTA_UTXBF);
-        write(U6TXREG, value);    
-    }
-#else
-	if (serial_port == UART2){
-		while(U2STA & USTA_UTXBF);
-		U2TXREG = value;    
-	}else if (serial_port == UART6){
-		while(U6STA & USTA_UTXBF);
-		U6TXREG = value;    
-	}
-#endif	
-}
-
-int32_t kbhit(void){
-    if (serial_port == UART2){
-        return (U2STA & USTA_URXDA);
-    }else if (serial_port == UART6){
-        return (U6STA & USTA_URXDA);
-    }
-}
-
-uint32_t getchar(void){
-    while(!kbhit());
-    if (serial_port == UART2){
-        return (uint32_t)U2RXREG;
-    }else if (serial_port == UART6){
-        return (uint32_t)U6RXREG;
-    }
-}
 
 /*
 software implementation of multiply/divide and 64-bit routines

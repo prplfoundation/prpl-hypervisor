@@ -18,7 +18,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _HAL_H_
 #define _HAL_H_
 
-static void print_config(void);
 void hyper_init();
 int32_t isRootMode();
 int32_t hasVZ();
@@ -54,6 +53,8 @@ uint32_t getPreviousShadowSet();
 uint32_t getCounter(void);
 void setGTOffset(int32_t gtoffset);
 void setGuestCTL2(uint32_t guestclt2);
+uint32_t getGuestCTL2();
 uint32_t getRandom();
+void udelay (uint32_t usec);
 
 #endif /* _HAL_H_ */

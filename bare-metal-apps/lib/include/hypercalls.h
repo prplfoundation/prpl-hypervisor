@@ -21,7 +21,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercall_defines.h>
 
 /* Read from privileged address  */
-#define read(addr) ({ int32_t __value; \
+#define readio(addr) ({ int32_t __value; \
 asm volatile (                                          \
 "move	$a0, %z1 \n\
 hypcall   %2 \n\
@@ -30,11 +30,14 @@ move	%0, $v0" \
 __value; })
 
 /* Write to privileged address */
-#define write(reg, value) asm volatile (                    \
-"move $a0, %z0 \n \
- move $a1, %z1 \n \
- hypcall %2" \
- : : "r" ((uint32_t) (&reg)), "r" ((uint32_t) (value)), "I" (HCALL_WRITE_ADDRESS) : "a0", "a1")
+#define writeio(reg, value) ({ int32_t __ret; \
+asm volatile (                 \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n \
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (&reg)), "r" ((uint32_t) (value)), "I" (HCALL_WRITE_ADDRESS) : "a0", "a1", "v0"); \
+ __ret; })
 
 /* interVM send message  */
 #define ipc_send(targed_id, msg, size) ({ int32_t __ret; \
@@ -55,6 +58,14 @@ asm volatile (                    \
  sw $a0, 0(%z1)\n \
  move %0, $v0 " \
  : "=r" (__ret) : "r" ((uint32_t) (source_id)), "r" ((uint32_t) (msg)), "I" (HCALL_IPC_RECV_MSG) : "a0", "v0"); \
+ __ret; })
+ 
+/* Get own guest ID  */
+#define get_guestid() ({ int32_t __ret; \
+asm volatile (                    \
+"hypcall %1 \n\
+ move %0, $v0 " \
+ : "=r" (__ret) : "I" (HCALL_GET_VM_ID) : "a0", "v0"); \
  __ret; })
 
  /* Ethernert link checker */
@@ -90,6 +101,63 @@ asm volatile (                    \
  move %0, $v0 " \
  : "=r" (__ret) : "r" ((uint32_t) (msg)), "I" (HCALL_ETHERNET_RECV) : "a0", "v0"); \
  __ret; })
+ 
+/* USB get device descriptor   */
+#define usb_get_device_descriptor(descriptor, size) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (descriptor)), "r" ((uint32_t) (size)), "I" (HCALL_USB_GET_DESCRIPTOR) : "a0", "a1", "v0"); \
+ __ret; })
+ 
+/* USB polling. Updates the USB state machines.   */
+#define usb_polling() ({ int32_t __ret; \
+asm volatile (                    \
+"hypcall %1 \n\
+ move %0, $v0 " \
+ : "=r" (__ret) : "I" (HCALL_USB_POLLING) : "v0"); \
+ __ret; })
+ 
+/* USB send data  */
+#define usb_control_send(msg, size) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (HCALL_USB_SEND_DATA) : "a0", "a1", "v0"); \
+ __ret; })
+
+/* Re-enable an interrupt */
+#define reenable_interrupt(irq) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ hypcall %2 \n \
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (irq)), "I" (HCALL_REENABLE_INTERRUPT) : "a0", "v0"); \
+ __ret; })
+ 
+/* Read 1K byte from flash - PUF specific function.  */
+#define read_1k_data_flash(buf) ({ int32_t __ret; \
+ asm volatile (                    \
+ "move $a0, %z1 \n \
+ hypcall %2 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_FLASH_READ) : "a0", "v0"); \
+ __ret; })
+ 
+/* Write 1K byte to flash - PUF specific function.  */
+#define write_1k_data_flash(buf) ({ int32_t __ret; \
+ asm volatile (                    \
+ "move $a0, %z1 \n \
+ hypcall %2 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_FLASH_WRITE) : "a0", "v0"); \
+ __ret; })
+ 
+ 
  
  
 #endif

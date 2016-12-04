@@ -31,7 +31,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <linkedlist.h>
 
-#define TICKS_BEFORE_SCHEDULING ((QUANTUM_SCHEDULER*1000*MICROSECOND)/QUANTUM)
+#define TICKS_BEFORE_SCHEDULING ( QUANTUM_SCHEDULER_MS / (SYSTEM_TICK_US/1000))
 
 struct scheduler_info_t scheduler_info = {NULL, NULL, NULL, NULL};
 
@@ -50,7 +50,7 @@ static struct list_t *last_scheduled = NULL;
  * 
  * @return Pointer to the node in the list of VCPUs of the scheduled VCPU. 
  */
-struct list_t* round_robin_scheduler(){
+static struct list_t* round_robin_scheduler(){
 	if(!last_scheduled || !last_scheduled->next){
 		last_scheduled = scheduler_info.vcpu_ready_list;
 	}else{
@@ -139,7 +139,7 @@ vcpu_t* get_vcpu_from_id(uint32_t id){
  *
  */
 struct list_t* get_fast_int_vcpu_node(uint32_t fast_int){
-	uint32_t i, fint;
+	uint32_t i;
 	vm_t* vm;
 	struct list_t* vm_list;
 	vm_list = scheduler_info.virtual_machines_list;

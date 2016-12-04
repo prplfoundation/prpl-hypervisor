@@ -17,16 +17,18 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /*************************************************************
  * Ping-Pong application - Inter-VM communication.
- * To execute the Ping-Pong modify the APP_LIST variable in 
- * the main Makefile to compile the ping.c and pong.c files.
- * Example:
- *      APP_LIST=  ping pong
- * */
-
+ * 
+ * To execute the Ping-Pong set the CFG_FILE on the main 
+ * Makefile to the sample-2VMs.cfg configuration file.  
+ * 
+ */
 
 #include <arch.h>
 #include <libc.h>
 #include <guest_interrupts.h>
+#include <hypercalls.h>
+#include <platform.h>
+#include <network.h>
 
 
 volatile int32_t t2 = 0;
@@ -46,7 +48,7 @@ int main() {
     interrupt_register(irq_timer, GUEST_TIMER_INT);
     
     serial_select(UART2);
-    printf("\npong VM ID %d", hyp_get_guest_id());
+	printf("\npong VM ID %d", get_guestid());
     while (1){
         ret = ReceiveMessage(&source, buffer, sizeof(buffer), 1);
         if (ret<0){

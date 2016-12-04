@@ -41,17 +41,17 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define OUTFILE "include/config.h"
 #define INCLUDE_DIR "include"
 #define DEBUG_COMMENT "/* Debug UART prints */\n"
-#define SYSTEM_COMMENT "/* Hypervisor kernel configuration and board info */\n"
+#define SYSTEM_COMMENT "/* Hypervisor kernel configuration */\n"
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
 
 /* Intermediate Physical address of the first VM on the RAM */
-#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80010000
+#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80008000
 
 /* Virtual address for VM's RAM */
 #define VMS_RAM_VIRTUAL_BASE_ADDRESS  0x80000000
 
 /* Intermediate Physical address of the first VM on the FLASH */
-#define VMS_FLASH_INTERMEDIATE_BASE_ADDRESS  0x9D010000
+#define VMS_FLASH_INTERMEDIATE_BASE_ADDRESS  0x9D008000
 
 /* Virtual address for VM's FLASH */
 #define VMS_FLASH_VIRTUAL_BASE_ADDRESS  0x9D000000
@@ -244,56 +244,14 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
     
 	/* Insert system configuration comment */
 	if ( (ret = write_to_conf_file(outfile, SYSTEM_COMMENT)) ) {
-		return ret;
-	}
-    
-	/* get platform info*/
-	setting = config_lookup(&cfg, "system.platform");
-	if(setting){
-		/* CPU_ID */
-		if (config_setting_lookup_string(setting, "cpu", &auxstrp)){
-			strings_cat(str, STRSZ, "#define CPU_ID ", "\"", auxstrp, "\"\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
-				return ret;
-			}
-		}else{
-			fprintf(stderr, "Missing cpu configuration on system.platform group.\n");
-			return EXIT_FAILURE;
-		}
-
-		/*CPU_ARCH */
-		if (config_setting_lookup_string(setting, "platform_str", &auxstrp)){
-			strings_cat(str, STRSZ, "#define CPU_ARCH ", "\"", auxstrp, "\"\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
-				return ret;
-			}
-		}else{
-			fprintf(stderr, "Missing platform_str configuration on system.platform group.\n");
-			return EXIT_FAILURE;
-		}
-
-		/*CPU_FREQ */
-		if (config_setting_lookup_int(setting, "system_clock", &value)){
-			snprintf(auxstr, STRSZ, "%d", value);
-			strings_cat(str, STRSZ, "#define CPU_FREQ ", auxstr, "\n", NULL);
-			if ( (ret = write_to_conf_file(outfile, str)) ) {
 				return ret;
 			}	
             
 			/* MILISECOND */
-			snprintf(auxstr, STRSZ, "%d", value/2);
-			strings_cat(str, STRSZ, "#define MILISECOND ", "(", auxstr, "/ 1000)", "\n", NULL);
+	strings_cat(str, STRSZ, "#define MILISECOND ", "(", "(CPU_FREQ/2)", "/ 1000)", "\n", NULL);
 			if ( (ret = write_to_conf_file(outfile, str)) ) {
 				return ret;
 			}
-		}else{
-			fprintf(stderr, "Missing system_clock configuration on system.platform group.\n");
-			return EXIT_FAILURE;		
-		}
-	}else{
-		fprintf(stderr, "Missing platform configuration on system group.\n");
-		return EXIT_FAILURE;
-	} /*end platform configuration  */
     
 	/* UART speed */
 	if (config_lookup_int(&cfg, "system.uart_speed", &value)){
@@ -306,12 +264,26 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
        
 	/* scheduler_quantum_ms  */
 	if (config_lookup_int(&cfg, "system.scheduler_quantum_ms", &value)){
+		if(value<3){
+			printf("Minimal scheduler_quantum_ms is 3.\n\n");
+			return -1;
+		}
 		snprintf(auxstr, STRSZ, "%d", value);
-		strings_cat(str, STRSZ, "#define QUANTUM_SCHEDULER ", auxstr, " \n", NULL);
+		strings_cat(str, STRSZ, "#define QUANTUM_SCHEDULER_MS ", auxstr, " \n", NULL);
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
 		}
 	}
+	
+	/* system_tick_us  */
+	if (config_lookup_int(&cfg, "system.guest_quantum_ms", &value)){
+		snprintf(auxstr, STRSZ, "%d", value);
+		strings_cat(str, STRSZ, "#define GUEST_QUANTUM_MS ", auxstr, " \n", NULL);
+		if ( (ret = write_to_conf_file(outfile, str)) ) {
+			return ret;
+		}
+	}
+	
        
 	if ( (ret = insert_blank_line(outfile)) ){
 		return ret;
@@ -521,32 +493,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
 		}
-        
-		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
-		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
-		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
-			return ret;
-		}
-        
-		/* write num of tlb entries */
-		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
-		aux = mem_maps? config_setting_length(mem_maps) : 0;
-		/* RAM and FLASH mapping requires 2 additional TLB entries */
-		aux += 2;
-		snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
-		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
-			return ret;
-		}
-        
-		/* The current hypervisor implementation uses static tlb configuration.	
-		Only 15 TLB entries are available, 1 is reserved for interVM communication. 
-		Stop compilation if more then 15 TLB entries are used. */
-		total_tlb_entries += aux;
-		if(total_tlb_entries > TOTAL_TLB_ENTRIES){
-			fprintf(stderr, "You are using more than %d TLB entries.\n", TOTAL_TLB_ENTRIES);
-			return EXIT_FAILURE;
-		}
-        
+                		
 		/* get OS type  */
 		if( !config_setting_lookup_string(vm_conf, "os_type", &auxstrp)){
 			fprintf(stderr, "Missing os_type proprierty on virtual_machines group.\n");
@@ -633,6 +580,56 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			}
 		}
 		
+		/* interrupt_redirect array  */
+		config_setting_t * int_redirect_setting = config_setting_lookup(vm_conf, "interrupt_redirect");
+		if(int_redirect_setting){
+			int int_red_sz = config_setting_length(int_redirect_setting);
+			int i;
+			/* get fast_int_sz */
+			snprintf(str, STRSZ, "\t\tinterrupt_redirect_sz: %d,\n", int_red_sz);
+			if ( (ret = write_to_conf_file(outfile, str)) ) {
+				return ret;
+			}
+			
+			if ( (ret = write_to_conf_file(outfile, "\t\tinterrupt_redirect: (uint32_t []) {")) ) {
+				return ret;
+			}
+			
+			for(i = 0; i < int_red_sz; ++i){
+				if(i>0){
+					if ( (ret = write_to_conf_file(outfile, ", ")) ) {
+						return ret;
+					}
+				}
+				const char* int_red = config_setting_get_string_elem(int_redirect_setting, i);
+				if ( (ret = write_to_conf_file(outfile, (char*)int_red)) ) {
+					return ret;
+				}
+			}
+			
+			if ( (ret = write_to_conf_file(outfile, " },\n")) ) {
+				return ret;
+			}
+		}
+		
+		/* write num of tlb entries */
+		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
+		aux = mem_maps? config_setting_length(mem_maps) : 0;
+		/* RAM and FLASH mapping requires 2 additional TLB entries */
+		aux += 2;
+		snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+        
+		/* The current hypervisor implementation uses static tlb configuration.	
+		Only 15 TLB entries are available, 1 is reserved for interVM communication. 
+		Stop compilation if more then 15 TLB entries are used. */
+		total_tlb_entries += aux;
+		if(total_tlb_entries > TOTAL_TLB_ENTRIES){
+			fprintf(stderr, "You are using more than %d TLB entries.\n", TOTAL_TLB_ENTRIES);
+			return EXIT_FAILURE;
+		}
         
 		/* Generate the TLB entries to the current VM's configuration */
 		if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
@@ -702,10 +699,28 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
         
 		/* Close the TLB array group  */
-		if ( (ret = write_to_conf_file(outfile, "\t\t}\n")) ) {
+		if ( (ret = write_to_conf_file(outfile, "\t\t},\n")) ) {
 			return ret;
 		}
-        
+		
+		/* write the address where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
+		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+                
+		/* write the size of the VM in the flah */
+		snprintf(auxstr, STRSZ, "\t\tflash_size: 0x%x,\n", flash_size);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+                
+		/* write the adress where the VM is in the flah */
+		snprintf(auxstr, STRSZ, "\t\tflash_base_add: 0x%x\n", vm_flash_inter_addr);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+		   
 		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_flash_inter_addr);
 		strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
 		strcat(vms_info, str);

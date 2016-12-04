@@ -36,6 +36,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercall_defines.h>
 #include <mips_cp0.h>
 #include <hal.h>
+#include <scheduler.h>
+#include <libc.h>
 
 /**
  * @brief A local array of pointers to the vmconf_t data structure.
@@ -66,7 +68,7 @@ void read_address(){
 	for(i = 0; i < vmconf_p[vcpu_index]->devices_mapping_sz; i++){
 		if(vmconf_p[vcpu_index]->devices[i].start_addr <= memory_addr &&
 			vmconf_p[vcpu_index]->devices[i].start_addr + vmconf_p[vcpu_index]->devices[i].size >= memory_addr){
-			MoveToPreviousGuestGPR(REG_V0, *(uint32_t*)memory_addr);
+			MoveToPreviousGuestGPR(REG_V0, *(volatile unsigned*)memory_addr);
 			return;
 		}
 	}
@@ -95,8 +97,7 @@ void write_address(){
 	for(i = 0; i < vmconf_p[vcpu_index]->devices_mapping_sz; i++){
 		if(vmconf_p[vcpu_index]->devices[i].start_addr <= memory_addr &&
 			vmconf_p[vcpu_index]->devices[i].start_addr + vmconf_p[vcpu_index]->devices[i].size >= memory_addr){
-			
-			*(uint32_t*)memory_addr = value;
+			*(volatile unsigned*)memory_addr = value;
 			MoveToPreviousGuestGPR(REG_V0, 0);
 			return;
 		}

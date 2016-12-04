@@ -99,7 +99,6 @@ isr_return:
 	.align 2
 	.section .e_entry
 	.global _entry
-	.ent	_entry
 _entry:
 	.set noreorder
 
@@ -140,58 +139,6 @@ $COPY_DATA:
 $L1:
 	beq	$zero, $zero, $L1
 	nop
-.end _entry
-
-        .text
-        .global hyp_puf_shared_memory
-        .ent hyp_puf_shared_memory        
-hyp_puf_shared_memory:
-        .set noreorder 
-        hypcall 0x150
-        jr $ra
-        nop
-        .set reorder
-.end hyp_puf_shared_memory
-
-        .global hyp_flash_read
-        .ent hyp_flash_read
-hyp_flash_read:
-        .set noreorder
-        hypcall 0x151
-        jr $ra
-        nop
-        .set reorder
-.end hyp_flash_read
-
-        .global hyp_flash_write
-        .ent hyp_flash_write
-hyp_flash_write:
-        .set noreorder
-        hypcall 0x152
-        jr $ra
-        nop
-        .set reorder
-.end hyp_flash_write
-        
-        .global hyp_get_guest_id
-        .ent hyp_get_guest_id        
-hyp_get_guest_id:
-        .set noreorder 
-        hypcall 0
-        jr $ra
-        nop
-        .set reorder        
-.end hyp_get_guest_id
-        
-        .global guest_is_up
-        .ent guest_is_up        
-guest_is_up:
-        .set noreorder 
-        hypcall 0x3
-        jr $ra
-        nop
-        .set reorder        
-.end guest_is_up
 
 
         .global spinlock
@@ -235,44 +182,3 @@ unlock:
         sw $zero, 0($a0)
         .set reorder                
 .end unlock
-
-        .global hyper_usb_vm_register
-        .ent hyper_usb_vm_register
-hyper_usb_vm_register:
-        .set noreorder 
-        hypcall 0x20
-        jr $ra
-        nop
-        .set reorder                
-.end hyper_usb_vm_register
-
-    .global hyper_usb_get_descr
-    .ent hyper_usb_get_descr
-hyper_usb_get_descr:
-    .set noreorder 
-    hypcall 9
-    jr $ra
-    nop
-    .set reorder                
-.end hyper_usb_get_descr
-
-.global hyper_usb_polling
-.ent hyper_usb_polling
-hyper_usb_polling:
-.set noreorder 
-hypcall 8
-jr $ra
-nop
-.set reorder                
-.end hyper_usb_polling
-
-
-.global hyper_usb_send_data
-.ent hyper_usb_send_data
-hyper_usb_send_data:
-    .set noreorder 
-    hypcall 0x23
-    jr $ra
-    nop
-    .set reorder                
-.end hyper_usb_send_data

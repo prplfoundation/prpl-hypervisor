@@ -1,11 +1,11 @@
 # Define your additional include paths
-#INC_DIRS = 
+#INC_DIRS += 
 
 #Aditional C flags
-#CFLAGS = 
+#CFLAGS += 
 
 #Aditional Libraries
-#LIBS=
+#LIBS +=
 
 #default stack size 512 bytes
 STACK_SIZE = 512

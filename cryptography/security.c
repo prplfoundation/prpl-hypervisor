@@ -14,6 +14,7 @@
 #include <vm.h>
 #include <config.h>
 #include <vm.h>
+#include <globals.h>
 //xxd -ps blink.bin
 //int lVmConfig[][VMCONF_NUMCOLUNS] = VMCONF;
 
@@ -27,41 +28,34 @@ int isVmTrust(void) {
 
     //mostrar numero de vms
     
-    int numMachines = 0;
+    
+    printf("\nInicio validacao VMS\n");
+    printf("\nNUM MACHINES: %d\n", NVMACHINES);
+    //printf("\nVM %d, size: %d\n", );
+    //printf("\nVM %d, base_add: %l\n", 0, VMCONF[0].flash_base);
+    
+    INFO("Configuring %d VM starting at 0x%x FLASH address.", 0, VMCONF[0].flash_base_add);
+    INFO("Configuring %d VM size of 0x%x .", 1, VMCONF[0].flash_size);
+    
+    return 0;
+    int countNumMachines = 0;
     //loop to verify all vms
-    for (; numMachines < NVMACHINES; numMachines++) {
-      
-        
+    for (; countNumMachines < NVMACHINES; countNumMachines++) {
 
         //teste tempo para autenticacao VM
         //hal_sr_rcount(0);//set counter to 0
         //uint32_t count = hal_lr_rcount();
         //printf("\nValidacao da VM");
 
-        char *lAddrVm;/* = (unsigned char*) 0x9d010000;*/
-        //lAddrVm = (unsigned char*) 0x9d010000;
-        
-        //lAddrVm=VMCONF[numMachines].
-        
-        //lAddrVm = (unsigned char*) 0x9d018000;
-        
-        
-        
-        
-        
-
-        //teste leitura da VM
-        long i = 0;
+        //char *lAddrVm;/* = (unsigned char*) 0x9d010000;*/
+        char *lAddrVm = (char*) 0x9d010000;
+        //long i = 0;
         int countSign = 0, countPubKey = 0;
-        unsigned char value, countLine = 0;
-        //long sizeVm = 131072; //size VM+pubKey+signature
+        //unsigned char /*value,*/ countLine = 0;
         //TODO - get size of vm dynamic
-        long sizeVm = 32768; //size VM+pubKey+signature 
+        //long sizeVm = 32768; //size VM+pubKey+signature 
+        long sizeVm = VMCONF[countNumMachines].flash_size; //size VM+pubKey+signature 
         long sizeHash = sizeVm - 128; //only the size to calculate hash of vm
-        //long sizeHash = 32768 - 128; //only the size to calculate hash of vm
-        //char hash[32640]; //tamanho da VM
-        //char *hash; //tamanho da VM
-        //hash=(char*)malloc(sizeof(sizeHash));
         uint8_t public[64];
         uint8_t sigReceived[64];
 
@@ -77,10 +71,10 @@ int isVmTrust(void) {
             printf("\nValid Public Key\n");
         }
         //debug public key
-        /*printf("uint8_t PubKey[2*NUM_ECC_DIGITS] = {");
+        printf("uint8_t PubKey[2*NUM_ECC_DIGITS] = {");
         vli_print(public, sizeof (public));
         printf("};\n");
-        printf("\n\n");*/
+        printf("\n\n");
 
         //read signature
         for (countSign = 0; countSign < 64; countSign++) {
@@ -88,10 +82,10 @@ int isVmTrust(void) {
         }
 
         //debug signature
-        /*printf("uint8_t Signature[2*NUM_ECC_DIGITS] = {");
+        printf("uint8_t Signature[2*NUM_ECC_DIGITS] = {");
         vli_print(sigReceived, sizeof (sigReceived));
         printf("};\n");
-        printf("\n\n");*/
+        printf("\n\n");
 
         //read vm to calculate hash
         //for (i = 0; i < (sizeVm-128); i++) {//read vm excluding Public Key and Signature
@@ -130,10 +124,10 @@ int isVmTrust(void) {
         sha256_final(&contextHash, buf);
 
         //debug hash
-        /*printf("uint8_t hash[NUM_ECC_DIGITS] = {");
+        printf("uint8_t hash[NUM_ECC_DIGITS] = {");
         vli_print(buf, sizeof (buf));
         printf("};\n");
-        printf("\n\n");*/
+        printf("\n\n");
 
 
         /*tests to detect fail*/
@@ -152,5 +146,7 @@ int isVmTrust(void) {
 
         //    count = hal_lr_rcount();
         //    printf("Count totoal: %d\n", count);
+        
+        //sum base add to vm already tested to jump to next vm verification
     }
 }

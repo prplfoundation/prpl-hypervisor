@@ -19,6 +19,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define __SCHEDULER_H
 
 #include <linkedlist.h>
+#include <vcpu.h>
 
 /**
  * Keeps the virtual machine and VCPU lists. Additionally, it 
@@ -31,6 +32,11 @@ struct scheduler_info_t{
 	struct list_t *vcpu_executing_nd;
 	struct list_t *next_vcpu;
 };
+
+void fast_interrupt_delivery(struct list_t *target);
+void run_scheduler();
+vcpu_t* get_vcpu_from_id(uint32_t id);
+struct list_t* get_fast_int_vcpu_node(uint32_t fast_int);
 
 
 #endif /* __SCHEDULER_H */

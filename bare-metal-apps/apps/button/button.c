@@ -15,32 +15,35 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple switch button usage on Bare-metal application */
+/* Simple switch button usage on Bare-metal application 
+ *
+ * Reads SW2 button on Microchip Connectivity Starter Kit.
+ * 
+ * Enable device access on the cfg file. 
+ * 	device_mapping = [ "PORTH", "UART2", "PORTB"];
+ */
 
 #include <arch.h>
 #include <libc.h>
+#include <hypercalls.h>
 
-
-
-void irq_timer(){
-    return;
-}
 
 int main() {
+
     /* Configure pin RB13 for input (SW2) */
-    TRISBSET =  (1 << 13);     /* RB13 input */
-    CNPUB =     (1 << 13);     /* enable pull-up */
-    
+	write(TRISBSET, 1 << 13);     	/* RB13 input */
+	write(CNPUBSET, 1 << 13);   	/* enable pull-up */
 
     /* Configure pin RH1 for output (LED 2) */
-    TRISHCLR = 2;
+	write(TRISHCLR, 2);
     
     while (1){
         
         /* Read SW2 status */
-        if (!(PORTB & (1 << 13))) {
+		if (!(read(PORTB)  & (1 << 13))) {
             /* on/off led */
-            LATHINV = 2;
+			write(LATHINV, 2);
+			
         }
     }
     

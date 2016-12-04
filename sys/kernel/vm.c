@@ -167,10 +167,6 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){
 	/* Mark VCPU as not initialized */
 	vcpu->init=1;
 
-	/* Initialize compare and count registers. */
-	vcpu->cp0_registers[9][0] = 0;
-	vcpu->cp0_registers[11][0] = 0;
-		
 	vcpu->pc  = entry_point;
 
 	/* Point to the VM owner */

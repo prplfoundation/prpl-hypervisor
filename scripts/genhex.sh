@@ -53,6 +53,7 @@ for i in $*; do
     fi
     echo "padding"
     echo $PADDING
+    echo $flash_size
     #padding the VM's bin to its maximum size
     dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
     

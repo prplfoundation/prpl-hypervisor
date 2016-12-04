@@ -19,7 +19,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define __VCPU_H
 
 #include <types.h>
-#include <scheduler.h>
 #include <vm.h>
 
 #define NUM_ASIDS 64
@@ -114,16 +113,12 @@ typedef struct {
 
 typedef struct vcpu_t {  
 	uint32_t id;
-	uint32_t rootcount;
-	uint32_t offseTelapsedTime;
 	uint32_t gprshadowset;
-	uint32_t cp0_registers[32][4];
-	uint32_t gp_registers[34];	
+	uint32_t cp0_registers[16];
 	uint32_t guestclt2;
 	vm_t *vm;
 	uint32_t pc;
 	uint32_t init;	
-        uint32_t timer_interval;
 	message_buffer_t messages;
 }vcpu_t;
 
@@ -135,6 +130,10 @@ typedef struct {
 
 extern processor_t* proc; 
 extern vcpu_t *idle_vcpu;
+
+void contextSave();
+uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount);
+void contextRestore();
 
 
 #endif

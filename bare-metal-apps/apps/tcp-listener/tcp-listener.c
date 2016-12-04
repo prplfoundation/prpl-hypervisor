@@ -20,10 +20,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
    To compile this application, first download the picoTCP sources from:
    https://github.com/tass-belgium/picotcp/releases/tag/prpl-v0.1. Then, compile with:
       
-      make clean; make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -O2 -c -Wa,-mvirt -mips32r2 
-      -mtune=m14k -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib 
-      -fomit-frame-pointer -G 0" DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=1 ICMP4=1 
-      DNS_CLIENT=0 MDNS=0 DNS_SD=0 SNTP_CLIENT=0 ARCH=pic32
+	make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -Os -c -Wa,-mvirt -mips32r5 -mtune=m14k \
+	-mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer \
+	-G 0" DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=1 ICMP4=1 DNS_CLIENT=0 MDNS=0 DNS_SD=0 \
+	SNTP_CLIENT=0 PPP=0 MCAST=1 MLD=0 IPFILTER=0 ARCH=pic32
 
    The compiled picoTCP directory tree must be at the same directory level of the prpl-hypervisor, 
    example:
@@ -37,17 +37,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
 
 
+#include <pico_defines.h>
+#include <pico_stack.h>
+#include <pico_ipv4.h>
+#include <pico_tcp.h>
+#include <pico_socket.h>
 
 #include <arch.h>
-#include <libc.h>
 #include <eth.h>
 #include <guest_interrupts.h>
-
-#include "pico_defines.h"
-#include "pico_stack.h"
-#include "pico_ipv4.h"
-#include "pico_tcp.h"
-#include "pico_socket.h"
+#include <hypercalls.h>
+#include <platform.h>
+#include <libc.h>
+#include <eth.h>
 
 #define LISTENING_PORT 80
 #define MAX_CONNECTIONS 1
@@ -61,7 +63,6 @@ static char rx_buf[ETH_RX_BUF_SIZE] = {0};
 
 static struct pico_socket *s = NULL;
 static struct pico_ip4 my_eth_addr, netmask;
-static struct pico_device *pico_dev_eth;
 
 volatile unsigned int pico_ms_tick = 0;
 static uint32_t cp0_ms_ticks = CPU_SPEED/2/1000;
@@ -83,20 +84,17 @@ void irq_timer()
     static uint32_t prev_count = 0;
     uint32_t cur_count = mfc0(CP0_COUNT, 0);
 
-    if (!prev_init)
-    {
+	if (!prev_init){
         prev_count = mfc0(CP0_COUNT, 0);
         prev_init = 1;
     }
 
     /* pico_ms_tick is not 100% accurate this way but at this point it's not required
      * currently there's a 10% accuracy loss(1000ms only produces 900 pico_ms_ticks) */
-    if (cur_count >= prev_count + cp0_ms_ticks)
-    {
+	if (cur_count >= prev_count + cp0_ms_ticks){
         pico_ms_tick += calculate_ms_passed(prev_count, cur_count);
         prev_count = cur_count;
     }
-
 }
 
 
@@ -135,13 +133,11 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
         
         ret = pico_socket_write(s_client, msg2, strlen(msg2));
         if (ret < 0)
-            printf("Failed to send message\n");
-        
+            printf("Failed to send message\n");        
     }
 
     /* Incomming connection */
-    if (ev & PICO_SOCK_EV_CONN)
-    {
+	if (ev & PICO_SOCK_EV_CONN) {
         s_client = pico_socket_accept(s, &peer, &port);
         printf("Accepted connection\n");
 
@@ -152,8 +148,7 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock)
 
         ret = pico_socket_write(s_client, msg2, strlen(msg2));
         if (ret < 0)
-            printf("Failed to send message\n");
-        
+            printf("Failed to send message\n");      
     }
 
     /* process error event, socket error occured */
@@ -174,11 +169,10 @@ int main()
     uint32_t timer = 0;
     
     /* Obtain the ethernet MAC address */
-    eth_get_mac(mac);
+	eth_mac(mac);
     
     const char *ipaddr="192.168.0.2";
     uint16_t port_be = 0;
-    int i = 0;
     
     interrupt_register(irq_timer, GUEST_TIMER_INT);
   

@@ -34,41 +34,44 @@ constants, tests and transformations
 #define ntohs(A)		(((A)>>8) | (((A)&0xff)<<8))
 #define ntohl(A)		(((A)>>24) | (((A)&0xff0000)>>8) | (((A)&0xff00)<<8) | ((A)<<24))
 
-/*
-custom C library
+/* FIXME: picoTCP includes stdlib which conflicts with the following 
+ * definitions.
 */
 #ifndef PICOTCP
+extern int32_t serial_select(uint32_t serial_number);
 extern void putchar(int32_t value);
 extern int32_t kbhit(void);
 extern uint32_t getchar(void);
-extern int8_t *strcpy(int8_t *dst, const int8_t *src);
-extern int8_t *strncpy(int8_t *s1, int8_t *s2, int32_t n);
-extern int8_t *strcat(int8_t *dst, const int8_t *src);
-extern int8_t *strncat(int8_t *s1, int8_t *s2, int32_t n);
-extern int32_t strcmp(const int8_t *s1, const int8_t *s2);
-extern int32_t strncmp(int8_t *s1, int8_t *s2, int32_t n);
-extern int8_t *strstr(const int8_t *string, const int8_t *find);
-extern int32_t strlen(const int8_t *s);
-extern int8_t *strchr(const int8_t *s, int32_t c);
-extern int8_t *strpbrk(int8_t *str, int8_t *set);
-extern int8_t *strsep(int8_t **pp, int8_t *delim);
-extern int8_t *strtok(int8_t *s, const int8_t *delim);
+extern char *strcpy(char *dst, const char *src);
+extern char *strncpy(char *s1, char *s2, int32_t n);
+extern char *strcat(char *dst, const char *src);
+extern char *strncat(char *s1, char *s2, int32_t n);
+extern int32_t strcmp(const char *s1, const char *s2);
+extern int32_t strncmp(char *s1, char *s2, int32_t n);
+extern char *strstr(const char *string, const char *find);
+extern int32_t strlen(const char *s);
+extern char *strchr(const char *s, int32_t c);
+extern char *strpbrk(char *str, char *set);
+extern char *strsep(char **pp, char *delim);
+extern char *strtok(char *s, const char *delim);
 extern void *memcpy(void *dst, const void *src, uint32_t n);
 extern void *memmove(void *dst, const void *src, uint32_t n);
 extern int32_t memcmp(const void *cs, const void *ct, uint32_t n);
 extern void *memset(void *s, int32_t c, uint32_t n);
-extern int32_t strtol(const int8_t *s, int8_t **end, int32_t base);
-extern int32_t atoi(const int8_t *s);
-extern float atof(const int8_t *p);
-extern int8_t *itoa(int32_t i, int8_t *s, int32_t base);
-extern int32_t puts(const int8_t *str);
-extern int8_t *gets(int8_t *s);
+extern int32_t strtol(const char *s, char **end, int32_t base);
+extern int32_t atoi(const char *s);
+extern float atof(const char *p);
+extern char *itoa(int32_t i, char *s, int32_t base);
+extern int32_t puts(const char *str);
+extern char *gets(char *s);
 extern int32_t abs(int32_t n);
 extern int32_t random(void);
 extern void srand(uint32_t seed);
-extern int32_t printf(const int8_t *fmt, ...);
-extern int32_t sprintf(int8_t *out, const int8_t *fmt, ...);
+extern int32_t printf(char *fmt, ...);
+extern int32_t sprintf(char *out, const char *fmt, ...);
+extern void udelay(uint32_t usec);
 #endif
+
 typedef volatile unsigned int mutex_t;
 
 void lock(mutex_t *mutex);

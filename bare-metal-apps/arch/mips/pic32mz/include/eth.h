@@ -49,6 +49,7 @@ struct eth_message_list_t{
 int eth_send(struct pico_device *dev, void *buf, int len);
 int eth_poll(struct pico_device *dev, int loop_score);
 int eth_link_state(struct pico_device *dev);
+void eth_watchdog(uint32_t *time, uint32_t ms_delay);
     
 #endif
 #endif
