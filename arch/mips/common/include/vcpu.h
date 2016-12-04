@@ -113,6 +113,10 @@ typedef struct {
 
 typedef struct vcpu_t {  
 	uint32_t id;
+	uint32_t priority;
+	uint32_t priority_rem;
+	uint32_t critical;
+	uint32_t bgjobs;
 	uint32_t gprshadowset;
 	uint32_t cp0_registers[16];
 	uint32_t guestclt2;

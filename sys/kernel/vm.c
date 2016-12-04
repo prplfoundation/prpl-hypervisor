@@ -129,7 +129,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	}
 	
 	/* Set the VM entry Point and scheduler*/
-	vcpu = create_vcpu(vm, entry_point);	
+	vcpu = create_vcpu(vm, entry_point, vm_conf->priority);	
 	
 	queue_addtail(scheduler_info.vcpu_ready_list, vcpu);
 	
@@ -143,18 +143,19 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
  * @param entry_point VCPU initial program counter address.
  * @return Pointer to the VM data structure. 
  */
-vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){	
+vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){	
 	static uint32_t vcpu_id=1;
-	uint32_t num_shadow_gprs;
+	uint32_t num_shadow_gprs = (mfc0(CP0_SRSCTL, 2) & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
+	
+	if (vcpu_id > num_shadow_gprs){
+		CRITICAL("No GPR Shadows enough remaining");
+	}
 	
 	vcpu_t *vcpu;
 	
 	vcpu = (vcpu_t*)malloc(sizeof(vcpu_t));
 
 	memset(vcpu, 0, sizeof(vcpu_t));
-
-	num_shadow_gprs = mfc0(CP0_SRSCTL, 2);
-	num_shadow_gprs = (num_shadow_gprs & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	
 	/* Lowest GPR shadown (zero) is used by the hypervisor */
 	vcpu->gprshadowset = vcpu_id;
@@ -166,6 +167,8 @@ vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point){
 	vcpu->init=1;
 
 	vcpu->pc  = entry_point;
+	vcpu->priority = priority;
+	vcpu->priority_rem = priority;	
 
 	/* Point to the VM owner */
 	vcpu->vm = vm;

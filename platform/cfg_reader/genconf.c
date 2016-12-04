@@ -448,6 +448,7 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 	const char *auxstrp;
 	config_setting_t *setting;
 	int total_tlb_entries = 0;
+	unsigned int priority = 0;
     
 	/* make sure app_list and vm_info are an empty str */
 	strcpy(app_list, "");
@@ -501,6 +502,22 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return EXIT_FAILURE;
 		}	
 		strings_cat(str, STRSZ, "\t\tos_type: ", auxstrp, ",\n", NULL);
+		if ( (ret = write_to_conf_file(outfile, str)) ) {
+			return ret;
+		}
+			
+		/* priority  */
+		if (!config_setting_lookup_int(vm_conf, "priority", &priority)){
+			fprintf(stderr, "Missing priority proprierty on virtual_machines group. Using default: 100.\n");
+			priority = 100;
+		}else{
+			if (priority > 255 || priority < 0){
+				fprintf(stderr, "Priority value %d is not valid. Using default: 100.\n", priority);
+				priority = 100;
+			}
+		}
+		snprintf(auxstr, STRSZ, "%d", priority);
+		strings_cat(str, STRSZ, "\t\tpriority: ", auxstr, ",\n", NULL);
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
 		}

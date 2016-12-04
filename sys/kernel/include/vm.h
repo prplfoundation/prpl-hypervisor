@@ -60,6 +60,7 @@ struct vmconf_t{
     char vm_name[VM_NAME_SZ];
     uint32_t ram_base;
     uint32_t os_type;
+    uint32_t priority;
     uint32_t fast_int_sz;
     uint32_t *fast_interrupts;
     uint32_t interrupt_redirect_sz;
@@ -83,7 +84,7 @@ typedef struct vm_t {
 }vm_t;
 
 vm_t *create_vm(const struct vmconf_t const *vm);
-vcpu_t *create_vcpu(vm_t *vm, unsigned int entry_point);
+vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority);
 void initializeMachines(void);
 
 

@@ -29,7 +29,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <scheduler.h>
 #include <vcpu.h>
 #include <globals.h>
-#include <linkedlist.h>
+#include <queue.h>
+#include <libc.h>
 
 #define TICKS_BEFORE_SCHEDULING ( QUANTUM_SCHEDULER_MS / (SYSTEM_TICK_US/1000))
 
@@ -40,22 +41,70 @@ struct scheduler_info_t scheduler_info = {NULL, NULL, NULL};
  */ 
 static uint32_t tick_count = 0;
 
-/** 
- * Keeps a pointer to the last scheduled VCPU. 
- */
-static uint32_t next_rr = 0;
 
 /**
- * @brief round-robin scheduler implementation. 
+ * @brief priority round-robin scheduler implementation. 
  * 
- * @return Pointer to the node in the list of VCPUs of the scheduled VCPU. 
+ * @return Pointer to the vcpu in the queue. 
  */
 static vcpu_t* round_robin_scheduler(){
-	uint32_t current = next_rr;
+	uint32_t i;
+	int32_t k;
+	uint32_t highestp = 255;
+	vcpu_t * vcpu = NULL;
+	vcpu_t * vcpu_aux = NULL;
+     
+	k = queue_count(scheduler_info.vcpu_ready_list);
+         
+	/* search for the highest priority task */
+	for (i = 0; i < k; i++){
+		vcpu = queue_remhead(scheduler_info.vcpu_ready_list);
+		if (!vcpu){
+			goto error1;
+		}
+		if (queue_addtail(scheduler_info.vcpu_ready_list, vcpu)){
+			goto error2;
+		}
+		/* high priority VCPU. Bypass the queue */
+		if (vcpu->critical){
+			vcpu->critical = 0;
+			goto done;
+		}
+		if (highestp > vcpu->priority_rem){
+			highestp = vcpu->priority_rem;
+			vcpu_aux = vcpu;
+		}
+	}
+     
+	/* update priorities of all tasks */
+	for (i = 0; i < k; i++){
+		vcpu = queue_remhead(scheduler_info.vcpu_ready_list);
+		if (!vcpu){
+			goto error1;
+		}
+		if (queue_addtail(scheduler_info.vcpu_ready_list, vcpu)){
+			goto error2;
+		}
+		if (vcpu != vcpu_aux){
+			vcpu->priority_rem -= vcpu_aux->priority_rem;
+		}
+	}
+ 
+	vcpu = vcpu_aux;
+	vcpu->priority_rem = vcpu->priority;
+
+done:
+	vcpu->bgjobs++;
 	
-	next_rr = (next_rr + 1) % queue_count(scheduler_info.vcpu_ready_list);
+	return vcpu;
 	
-	return (vcpu_t*)queue_get(scheduler_info.vcpu_ready_list, current);
+error1:
+	CRITICAL("Error removing VCPU to head.");
+	
+error2:
+	CRITICAL("Error adding VCPU to tail.");
+
+	return NULL;
 }
 
 
@@ -83,7 +132,8 @@ void run_scheduler(){
 		scheduler_info.vcpu_executing = round_robin_scheduler();
 		contextRestore();
 	}
-	tick_count++;	
+	tick_count++;
+
 }
 
 /**
