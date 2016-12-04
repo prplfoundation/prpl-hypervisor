@@ -31,6 +31,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <queue.h>
 #include <libc.h>
+#include <board.h>
 
 #define TICKS_BEFORE_SCHEDULING ( QUANTUM_SCHEDULER_MS / (SYSTEM_TICK_US/1000))
 
@@ -40,6 +41,11 @@ struct scheduler_info_t scheduler_info = {NULL, NULL, NULL};
  * @brief Tick counter. Used for VM's scheduling. 
  */ 
 static uint32_t tick_count = 0;
+
+/** 
+ * @brief Critical event pending. 
+ */ 
+static uint32_t pending = 0;
 
 
 /**
@@ -68,6 +74,7 @@ static vcpu_t* round_robin_scheduler(){
 		/* high priority VCPU. Bypass the queue */
 		if (vcpu->critical){
 			vcpu->critical = 0;
+			pending = 0;
 			goto done;
 		}
 		if (highestp > vcpu->priority_rem){
@@ -119,7 +126,10 @@ error2:
  * 
  */
 void fast_interrupt_delivery(vcpu_t *target){
-	/* Needs implementation */
+	if (vcpu_in_execution != target){
+		target->critical = 1;
+		pending = 1;
+	}
 }
 
 /**
@@ -127,7 +137,7 @@ void fast_interrupt_delivery(vcpu_t *target){
  * 
  */
 void run_scheduler(){
-	if ( tick_count % TICKS_BEFORE_SCHEDULING == 0){
+	if ( tick_count % TICKS_BEFORE_SCHEDULING == 0 || pending){
 		contextSave();   
 		scheduler_info.vcpu_executing = round_robin_scheduler();
 		contextRestore();

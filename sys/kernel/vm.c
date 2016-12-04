@@ -38,6 +38,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <globals.h>
 #include <mips_cp0.h>
 #include <queue.h>
+#include <board.h>
 
 /**
  * @brief Responsable by the VM's data initialization.
