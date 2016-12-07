@@ -74,7 +74,7 @@ static vcpu_t* round_robin_scheduler(){
 		/* high priority VCPU. Bypass the queue */
 		if (vcpu->critical){
 			vcpu->critical = 0;
-			pending = 0;
+			pending -= 1;
 			goto done;
 		}
 		if (highestp > vcpu->priority_rem){
@@ -127,8 +127,10 @@ error2:
  */
 void fast_interrupt_delivery(vcpu_t *target){
 	if (vcpu_in_execution != target){
-		target->critical = 1;
-		pending = 1;
+		if (!target->critical){
+			target->critical = 1;
+			pending += 1;
+		}
 	}
 }
 
