@@ -19,8 +19,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * Ping-Pong application - Inter-VM communication.
  * 
  * To execute the Ping-Pong set the CFG_FILE on the main 
- * Makefile to the sample-2VMs.cfg configuration file.  
+ * Makefile to the sample-ping-pong.cfg configuration file.  
  * 
+ * The ping-pong sample measures the inter-VM communication 
+ * latency with different message sizes. 
  */
 
 #include <arch.h>
@@ -30,40 +32,118 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <hypercalls.h>
 #include <platform.h>
 
+#define NUMBER_OF_ROUNDS 10000
 
-volatile int32_t t2 = 0;
-
-void irq_timer(){
-	t2++;     
+static void irq_timer(){
+	return;
 }
 
 
-char message_buffer[128];
-
+static uint8_t message_buffer[256];
 
 int main() {
 	int32_t ret;
+	uint32_t timestart;
+	uint32_t timenow;
+	uint32_t diff_time;
+	uint32_t i;
 	uint32_t source;
-    
+	uint32_t worst_one_way = 0;
+	uint32_t worst_round_trip = 0;
+	uint32_t best_one_way = 9999999;
+	uint32_t best_round_trip = 9999999;
+	float average_one_way = 0;
+	float average_round_trip = 0;
+	uint32_t message_size = 64;
+	
+	memset(message_buffer, 0, sizeof(message_buffer));
+	
 	interrupt_register(irq_timer, GUEST_TIMER_INT);
     
 	serial_select(UART2);
 	
-	printf("\nping VM ID %d", get_guestid());
+	printf("Measuring Inter VM communication latency.");
+	
 	while (1){
-		sprintf(message_buffer, "%s %d", "ping?", t2);
-		ret = SendMessage(2, message_buffer, strlen(message_buffer)+1);
-		if (ret<0){
-			print_net_error(ret);
-		}else{
-			ret = ReceiveMessage(&source, message_buffer, sizeof(message_buffer), 1);
+		
+		worst_one_way = 0;
+		worst_round_trip = 0;
+		best_one_way = 9999999;
+		best_round_trip = 9999999;
+		average_one_way = 0;
+		average_round_trip = 0;
+		
+		for(i = 0; i < NUMBER_OF_ROUNDS; i++){
+			/* start time */
+			timestart = mfc0(CP0_COUNT, 0);
+			
+			/* send the initial time to the recipient VM. */
+			memcpy(message_buffer, &timestart, sizeof(uint32_t));
+		
+			/* send message to VM 2. */
+			ret = SendMessage(2, message_buffer, message_size);
+		
 			if (ret<0){
 				print_net_error(ret);
 			}else{
-				if(ret)
-					printf("\nping VM: message from VM ID %d: \"%s\" (%d bytes)", source, message_buffer, ret);
+				/* Receive VM's 2 response */
+				ret = ReceiveMessage(&source, message_buffer, sizeof(message_buffer), 1);
+			
+				if (ret<0){
+					print_net_error(ret);
+				}else{	
+					if(ret){
+						/* get current time */
+						timenow = mfc0(CP0_COUNT, 0);
+						
+						/* calc round trip average, worst and best cases. */
+						diff_time = calc_diff_time(timenow, timestart);
+						
+						average_round_trip = (average_round_trip + diff_time)/2.0;
+						
+						if(diff_time > worst_round_trip){
+							worst_round_trip = diff_time;
+						}
+			
+						if(best_round_trip > diff_time){
+							best_round_trip = diff_time;
+						}
+						
+						/* get one way delay from VM's 2 response */ 
+						memcpy(&diff_time, message_buffer, sizeof(uint32_t));
+						
+						/* calc one way average, worst and best cases. */
+						average_one_way = (average_one_way + diff_time)/2.0;
+						
+						if(diff_time > worst_one_way){
+							worst_one_way = diff_time;
+						}
+			
+						if(best_one_way > diff_time){
+							best_one_way = diff_time;
+						}
+						
+					}
+				}
 			}
 		}
+		printf("\n");
+		/* show results and move the next message size. */
+		printf("\nRound trip latency for messages %d bytes long.\n\tAverage %0.2% us\n\tWorst %d us\n\tBest %d us", 
+			message_size, 
+			CPU_TICK_TO_US(average_round_trip), 
+			CPU_TICK_TO_US(worst_round_trip), 
+			CPU_TICK_TO_US(best_round_trip));
+		
+		printf("\nOne way latency for messages %d bytes long.\n\tAverage %0.2% us\n\tWorst %d us\n\tBest %d us\n", 
+			message_size, 
+			CPU_TICK_TO_US(average_one_way), 
+			CPU_TICK_TO_US(worst_one_way), 
+			CPU_TICK_TO_US(best_one_way));
+			
+		putchar('\n');
+		
+		message_size = (message_size + 64) > 256? 64 : message_size + 64;
 	}
 	
 	return 0;

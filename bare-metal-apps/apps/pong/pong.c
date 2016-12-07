@@ -19,8 +19,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
  * Ping-Pong application - Inter-VM communication.
  * 
  * To execute the Ping-Pong set the CFG_FILE on the main 
- * Makefile to the sample-2VMs.cfg configuration file.  
+ * Makefile to the sample-ping-pong.cfg configuration file.  
  * 
+ * The ping-pong sample measures the inter-VM communication 
+ * latency with different message sizes. 
  */
 
 #include <arch.h>
@@ -31,31 +33,36 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <network.h>
 
 
-volatile int32_t t2 = 0;
-
-void irq_timer(){
-	t2++;     
-}
-
-
-char buffer[128];
-char resp[] = "pong!";
+uint32_t message_buffer[256];
 
 int main() {
 	uint32_t source;
 	int32_t ret;
-    
-	interrupt_register(irq_timer, GUEST_TIMER_INT);
-    
+	uint32_t timesstart, timenow, diff_time;
+	
 	serial_select(UART2);
-	printf("\npong VM ID %d", get_guestid());
+	
+	printf("\nWait...");
+	
+	memset(message_buffer, 0, sizeof(message_buffer));
+	
 	while (1){
-		ret = ReceiveMessage(&source, buffer, sizeof(buffer), 1);
+		/* Receive a message */
+		ret = ReceiveMessage(&source, message_buffer, sizeof(message_buffer), 1);
 		if (ret<0){
 			print_net_error(ret);
 		}else{
-			printf("\npong VM: message from VM ID %d: \"%s\" (%d bytes)", source, buffer, ret);
-			SendMessage(source, resp, strlen(resp)+1);
+			/* get current time and calculates one way delay. */
+			timenow = mfc0(CP0_COUNT, 0);
+			
+			memcpy(&timesstart, message_buffer, sizeof(uint32_t));
+			
+			diff_time = calc_diff_time(timenow, timesstart);
+			
+			/* send the calculated delay back to sender VM. */
+			memcpy(message_buffer, &diff_time, sizeof(uint32_t));
+			
+			SendMessage(source, message_buffer, ret);
 		}
 	}
     
