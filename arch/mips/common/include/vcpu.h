@@ -85,7 +85,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define MESSAGE_VCPU_NOT_INIT -5
 
 #define MESSAGELIST_SZ	5
-#define MESSAGE_SZ 	255
+#define MESSAGE_SZ 	256
 
 #define NETWORK_VINTERRUPT	14
 
