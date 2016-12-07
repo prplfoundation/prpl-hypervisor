@@ -117,6 +117,8 @@ void intervm_send_msg(){
                                 
 	/* Return success to sender */
 	MoveToPreviousGuestGPR(REG_V0, message_size);
+	
+	fast_interrupt_delivery(vcpu);
      
 }
 
