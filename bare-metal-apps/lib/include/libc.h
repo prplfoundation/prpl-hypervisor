@@ -72,6 +72,7 @@ extern void srand(uint32_t seed);
 extern int32_t printf(char *fmt, ...);
 extern int32_t sprintf(char *out, const char *fmt, ...);
 extern void udelay(uint32_t usec);
+extern uint32_t calc_diff_time(uint32_t now, uint32_t old);
 #endif
 
 typedef volatile unsigned int mutex_t;
