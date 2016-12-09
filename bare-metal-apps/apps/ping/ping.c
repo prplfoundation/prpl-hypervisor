@@ -52,8 +52,8 @@ int main() {
 	uint32_t worst_round_trip = 0;
 	uint32_t best_one_way = 9999999;
 	uint32_t best_round_trip = 9999999;
-	float average_one_way = 0;
-	float average_round_trip = 0;
+	uint32_t average_one_way = 0;
+	uint32_t average_round_trip = 0;
 	uint32_t message_size = 64;
 	
 	memset(message_buffer, 0, sizeof(message_buffer));
@@ -99,7 +99,8 @@ int main() {
 						/* calc round trip average, worst and best cases. */
 						diff_time = calc_diff_time(timenow, timestart);
 						
-						average_round_trip = (average_round_trip + diff_time)/2.0;
+						//average_round_trip = (average_round_trip + diff_time)/2.0;
+						average_round_trip += diff_time;
 						
 						if(diff_time > worst_round_trip){
 							worst_round_trip = diff_time;
@@ -113,7 +114,7 @@ int main() {
 						memcpy(&diff_time, message_buffer, sizeof(uint32_t));
 						
 						/* calc one way average, worst and best cases. */
-						average_one_way = (average_one_way + diff_time)/2.0;
+						average_one_way += diff_time;
 						
 						if(diff_time > worst_one_way){
 							worst_one_way = diff_time;
@@ -129,15 +130,15 @@ int main() {
 		}
 		printf("\n");
 		/* show results and move the next message size. */
-		printf("\nRound trip latency for messages %d bytes long.\n\tAverage %0.2% us\n\tWorst %d us\n\tBest %d us", 
+		printf("\nRound trip latency for messages %d bytes long.\n\tAverage %0.2f us\n\tWorst %d us\n\tBest %d us", 
 			message_size, 
-			CPU_TICK_TO_US(average_round_trip), 
+			CPU_TICK_TO_US((float)average_round_trip/NUMBER_OF_ROUNDS), 
 			CPU_TICK_TO_US(worst_round_trip), 
 			CPU_TICK_TO_US(best_round_trip));
 		
-		printf("\nOne way latency for messages %d bytes long.\n\tAverage %0.2% us\n\tWorst %d us\n\tBest %d us\n", 
+		printf("\nOne way latency for messages %d bytes long.\n\tAverage %0.2f us\n\tWorst %d us\n\tBest %d us\n", 
 			message_size, 
-			CPU_TICK_TO_US(average_one_way), 
+			CPU_TICK_TO_US((float)average_one_way/NUMBER_OF_ROUNDS), 
 			CPU_TICK_TO_US(worst_one_way), 
 			CPU_TICK_TO_US(best_one_way));
 			

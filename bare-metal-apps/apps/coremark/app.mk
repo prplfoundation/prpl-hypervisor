@@ -14,17 +14,17 @@
 
 
 # Define your additional include paths
-#INC_DIRS += $(TOPDIR)../../benchmark/dhrystone/
+#INC_DIRS += 
 
 #Aditional C flags
-CFLAGS += -DVIRTUALIZED_IO -DPIC32MZ -DMEM_METHOD=MEM_STATIC -DHAS_PRINTF -DMAIN_HAS_NOARGC -DLITTLE_ENDIAN
+CFLAGS += -DVIRTUALIZED_IO -DPIC32MZ  -DMEM_METHOD=MEM_STATIC -DHAS_PRINTF -DMAIN_HAS_NOARGC -DLITTLE_ENDIAN -finline-limit=200 -fselective-scheduling -falign-jumps=4 -falign-loops=4 -Wno-unused-result -Wno-pointer-to-int-cast 
 
 PORT_CFLAGS = -O2 -EL
 XCFLAGS = -DPERFORMANCE_RUN=1
 XLFLAGS = -lrt -static
 FLAGS_STR = "$(PORT_CFLAGS) $(XCFLAGS) $(XLFLAGS) $(LFLAGS_END)"
 CFLAGS  += $(PORT_CFLAGS) $(IPATH) -DFLAGS_STR=\"$(FLAGS_STR)\"
-CFLAGS += -DITERATIONS=0 
+CFLAGS += -DITERATIONS=0
 CFLAGS += $(XCFLAGS)
 
 
