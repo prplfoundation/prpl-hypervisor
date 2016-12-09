@@ -139,10 +139,14 @@ void fast_interrupt_delivery(vcpu_t *target){
  * 
  */
 void run_scheduler(){
+	struct vcpu_t *aux;
 	if ( tick_count % TICKS_BEFORE_SCHEDULING == 0 || pending){
-		contextSave();   
-		scheduler_info.vcpu_executing = round_robin_scheduler();
-		contextRestore();
+		aux = round_robin_scheduler();
+		if (aux != scheduler_info.vcpu_executing){
+			contextSave();   
+			scheduler_info.vcpu_executing = aux;
+			contextRestore();
+		}
 	}
 	tick_count++;
 
