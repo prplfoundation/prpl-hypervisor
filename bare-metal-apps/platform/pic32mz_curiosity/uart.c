@@ -32,43 +32,24 @@ int32_t serial_select(uint32_t serial_number){
 }
 
 
-void putchar(int32_t value){
-#ifdef VIRTUALIZED_IO
-	if (serial_port == UART1){
-		while(readio(U1STA) & USTA_UTXBF);
-		writeio(U1TXREG, value);    
-	}
-#else
+/*void putchar(int32_t value){
 	if (serial_port == UART1){
 		while(U1STA & USTA_UTXBF);
 		U1TXREG = value;    
 	}
-#endif	
-}
+}*/
 
 int32_t kbhit(void){
-#ifdef VIRTUALIZED_IO	
-	if (serial_port == UART1){
-		return (readio(U1STA) & USTA_URXDA);
-	}
-#else
 	if (serial_port == UART1){
 		return (U1STA & USTA_URXDA);
 	}
-#endif
 	return 0;
 }
 
 uint32_t getchar(void){
 	while(!kbhit());
-#ifdef VIRTUALIZED_IO		
-	if (serial_port == UART1){
-		return (uint32_t)readio(U1RXREG);
-	}
-#else
 	if (serial_port == UART1){
 		return (uint32_t)U1RXREG;
 	}
-#endif
 	return 0;
 }

@@ -17,7 +17,7 @@
 #INC_DIRS += $(TOPDIR)../../benchmark/dhrystone/
 
 #Aditional C flags
-CFLAGS += -DVIRTUALIZED_IO -DPIC32MZ -DTIME -DREG=register
+CFLAGS += -DPIC32MZ -DTIME -DREG=register
 
 #Aditional Libraries
 #LIBS +=

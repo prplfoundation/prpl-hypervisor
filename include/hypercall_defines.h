@@ -147,5 +147,19 @@ typedef void hypercall_t();
  */
 #define HCALL_PERFORMANCE_COUNTER_STOP 17
 
+/* UART send hypercall. 
+ *  A0 = Pointer to string buffer. 
+ *  A1 = Number of bytes.
+ *  V0 = 1 in case of success or error code otherwise. 
+ */
+#define HCALL_UART_SEND 18
+
+/* Uart receive hypercall. 
+ *  A0 = Pointer to string buffer. 
+ *  A1 = Number of bytes to read.
+ *  V0 = Number of bytes read or error code. 
+ */
+#define HCALL_UART_RECV 19
+
 #endif
 

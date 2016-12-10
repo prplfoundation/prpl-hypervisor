@@ -18,7 +18,7 @@
 #INC_DIRS += 
 
 #Aditional C flags
-CFLAGS += -DVIRTUALIZED_IO
+#CFLAGS += 
 
 #Aditional Libraries
 #LIBS +=

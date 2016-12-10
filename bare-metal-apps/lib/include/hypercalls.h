@@ -175,6 +175,16 @@ asm volatile (                    \
  move %0, $v0" \
  : "=r" (__ret) : "r" ((uint32_t) (buf)), "I" (HCALL_PERFORMANCE_COUNTER_STOP) : "a0", "v0"); \
  __ret; })
+
+ /* UART send msg */
+#define uart_send(msg, size) ({ int32_t __ret; \
+asm volatile (                    \
+"move $a0, %z1 \n \
+ move $a1, %z2 \n \
+ hypcall %3 \n\
+ move %0, $v0" \
+ : "=r" (__ret) : "r" ((uint32_t) (msg)), "r" ((uint32_t) (size)), "I" (HCALL_UART_SEND) : "a0", "a1", "v0"); \
+ __ret; })
  
 #endif
 

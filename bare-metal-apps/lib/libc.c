@@ -302,27 +302,6 @@ char *itoa(int32_t i, char *s, int32_t base){
 	return s;
 }
 
-int32_t puts(const char *str){
-	while(*str)
-		putchar(*str++);
-	putchar('\n');
-
-	return 0;
-}
-
-char *gets(char *s){
-	int32_t c;
-	char *cs;
-
-	cs = s;
-	while ((c = getchar()) != '\n' && c >= 0)
-		*cs++ = c;
-	if (c<0 && cs==s)
-		return(NULL);
-	*cs++ = '\0';
-	return(s);
-}
-
 int32_t abs(int32_t n){
 	return n>=0 ? n:-n;
 }
@@ -346,13 +325,56 @@ printf() and sprintf()
 #define PAD_ZERO 2
 #define PRINT_BUF_LEN 30
 
+/**
+ * Auxiliar buffer for print functions. 
+ * 
+ * Instead to make a hypercall for each character,
+ * do only a hypercall sending strhyper characters. 
+ * 
+ */
+#define STRHYPERSZ	256
+
+struct strhyper_t{
+	char str[STRHYPERSZ];
+	uint32_t size;
+};
+
+static struct strhyper_t strhyper = { str: {""}, size: 0 };
+
 static void printchar(char **str, int32_t c){
 	if (str){
 		**str = c;
 		++(*str);
-	} else
-		(void)putchar(c);
+	} else{
+		strhyper.str[strhyper.size] = c;
+		strhyper.size++;
+		if (strhyper.size == STRHYPERSZ){
+			uart_send(strhyper.str, strhyper.size);
+			strhyper.size = 0;
+		}
+	}
 }
+
+int32_t puts(const char *str){
+	while(*str){
+		printchar(NULL, *str++);
+	}
+	return 0;
+}
+
+char *gets(char *s){
+	int32_t c;
+	char *cs;
+
+	cs = s;
+	while ((c = getchar()) != '\n' && c >= 0)
+		*cs++ = c;
+	if (c<0 && cs==s)
+		return(NULL);
+	*cs++ = '\0';
+	return(s);
+}
+
 
 static int32_t prints(char **out, const char *string, int32_t width, int32_t pad){
 	int32_t pc = 0, padchar = ' ';
@@ -517,13 +539,13 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 				case 'f':
 					f = va_arg(args, double);
 					if (f < 0.0f){
-						putchar('-');
+						printchar((char**)out, '-');
 						f = -f;
 					}
 					itoa((int32_t)f,(char*)buf,10);
 					j=0;
-					while(buf[j]) putchar(buf[j++]);
-					putchar('.');
+					while(buf[j]) printchar((char**)out, buf[j++]);
+					printchar((char**)out, '.');
 					for(j=0; j<precision_n; j++)
 						precision_v *= 10;
 					f1 = (f - (int32_t)f) * precision_v;
@@ -554,9 +576,16 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 
 int32_t printf(char *fmt, ...){
         va_list args;
+	uint32_t size;
         
         va_start(args, fmt);
-        return print(0, (int8_t*)fmt, args);
+        size = print(0, (int8_t*)fmt, args);
+	
+	/* hypercall str send */
+	uart_send(strhyper.str, strhyper.size);
+	strhyper.size = 0;
+	
+	return size;
 }
 
 int32_t sprintf(char *out, const char *fmt, ...){

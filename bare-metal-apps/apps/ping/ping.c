@@ -60,8 +60,6 @@ int main() {
 	
 	interrupt_register(irq_timer, GUEST_TIMER_INT);
     
-	serial_select(UART2);
-	
 	printf("Measuring Inter VM communication latency.");
 	
 	while (1){
@@ -142,7 +140,7 @@ int main() {
 			CPU_TICK_TO_US(worst_one_way), 
 			CPU_TICK_TO_US(best_one_way));
 			
-		putchar('\n');
+		puts("\n");
 		
 		message_size = (message_size + 64) > 256? 64 : message_size + 64;
 	}
