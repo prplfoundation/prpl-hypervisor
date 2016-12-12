@@ -45,7 +45,7 @@ int main() {
 		TOGGLE_LED1;
 	
 		/* 1 second delay */
-		udelay(1000000);
+		mdelay(1000);
 	}
     
 	return 0;

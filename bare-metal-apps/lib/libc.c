@@ -600,14 +600,10 @@ int32_t sprintf(char *out, const char *fmt, ...){
 }
 
 
-void udelay(uint32_t usec){
+void mdelay(uint32_t msec){
     uint32_t now = mfc0 (CP0_COUNT, 0);
-    uint32_t final = now + usec * (CPU_SPEED / 1000000) / 2;
-
-    for (;;) {
-        now = mfc0 (CP0_COUNT, 0);
-        if ((int32_t) (now - final) >= 0) break;
-    }
+    
+    while(!wait_time(now, msec));
 }
 
 uint32_t calc_diff_time(uint32_t now, uint32_t old){

@@ -71,7 +71,7 @@ extern int32_t random(void);
 extern void srand(uint32_t seed);
 extern int32_t printf(char *fmt, ...);
 extern int32_t sprintf(char *out, const char *fmt, ...);
-extern void udelay(uint32_t usec);
+extern void mdelay(uint32_t msec);
 extern uint32_t calc_diff_time(uint32_t now, uint32_t old);
 #endif
 
