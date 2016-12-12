@@ -41,6 +41,7 @@ void setGuestID(uint32_t guestid);
 uint32_t getGuestID(void);
 uint32_t isRootASID();
 void setGuestMode();
+void clearGuestMode();
 void setStatusReg(uint32_t bits);
 uint32_t has1KPageSupport();
 void Disable1KPageSupport();

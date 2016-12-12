@@ -72,38 +72,39 @@ static vcpu_t* round_robin_scheduler(){
 			goto error2;
 		}
 		/* high priority VCPU. Bypass the queue */
-		if (vcpu->critical){
+		if (vcpu->critical && vcpu->state == VCPU_RUNNING){
 			vcpu->critical = 0;
+			vcpu->bgjobs++;
 			pending -= 1;
-			goto done;
+			return vcpu;
 		}
-		if (highestp > vcpu->priority_rem){
+		if (highestp > vcpu->priority_rem && vcpu->state == VCPU_RUNNING){
 			highestp = vcpu->priority_rem;
 			vcpu_aux = vcpu;
 		}
 	}
      
-	/* update priorities of all tasks */
-	for (i = 0; i < k; i++){
-		vcpu = queue_remhead(scheduler_info.vcpu_ready_list);
-		if (!vcpu){
-			goto error1;
+	if (vcpu_aux){
+		/* update priorities of all tasks */
+		for (i = 0; i < k; i++){
+			vcpu = queue_remhead(scheduler_info.vcpu_ready_list);
+			if (!vcpu){
+				goto error1;
+			}
+			if (queue_addtail(scheduler_info.vcpu_ready_list, vcpu)){
+				goto error2;
+			}
+			if (vcpu != vcpu_aux  && vcpu->state == VCPU_RUNNING){
+				vcpu->priority_rem -= vcpu_aux->priority_rem;
+			}
 		}
-		if (queue_addtail(scheduler_info.vcpu_ready_list, vcpu)){
-			goto error2;
-		}
-		if (vcpu != vcpu_aux){
-			vcpu->priority_rem -= vcpu_aux->priority_rem;
-		}
-	}
- 
-	vcpu = vcpu_aux;
-	vcpu->priority_rem = vcpu->priority;
-
-done:
-	vcpu->bgjobs++;
 	
-	return vcpu;
+		vcpu = vcpu_aux;
+		vcpu->priority_rem = vcpu->priority;
+		vcpu->bgjobs++;
+		return vcpu;
+	}
+	return NULL;
 	
 error1:
 	CRITICAL("Error removing VCPU to head.");
@@ -140,13 +141,17 @@ void fast_interrupt_delivery(vcpu_t *target){
  */
 void run_scheduler(){
 	struct vcpu_t *aux;
-	if ( tick_count % TICKS_BEFORE_SCHEDULING == 0 || pending){
+	if ( tick_count % TICKS_BEFORE_SCHEDULING == 0 || /* its time to preempt the VCPU in execution. */
+		pending || /* Critical event is pending. */
+		(vcpu_in_execution && vcpu_in_execution->state == VCPU_BLOCKED)) /* The current VCPU was blocked, perform a context-switching. */
+	{
 		aux = round_robin_scheduler();
 		if (aux != scheduler_info.vcpu_executing){
 			contextSave();   
 			scheduler_info.vcpu_executing = aux;
 			contextRestore();
 		}
+		
 	}
 	tick_count++;
 

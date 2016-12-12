@@ -430,7 +430,7 @@ uint32_t isRootASID(){
 
 
 /**
- * @brief Set the processor to Guest Mode. 
+ * @brief Set the processor's to Guest Mode bit. 
  * 
  */
 void setGuestMode(){
@@ -438,6 +438,17 @@ void setGuestMode(){
 	mtc0(CP0_GUESTCTL0, 6, mfc0(CP0_GUESTCTL0, 6) | GUESTCTL0_GM | GUESTCTL0_CP0 | GUESTCTL0_GT | 1 << 12);
 	
 }
+
+/**
+ * @brief Clear the processor's to Guest Mode bit. 
+ * 
+ */
+void clearGuestMode(){
+	
+	mtc0(CP0_GUESTCTL0, 6, mfc0(CP0_GUESTCTL0, 6) & ~GUESTCTL0_GM);
+	
+}
+
 
 /**
  * @brief Set specific bits on CP0 STATUS reg.. 

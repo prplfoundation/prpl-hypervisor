@@ -14,6 +14,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
+#CFG_FILE = cfg/sample-blink.cfg
 CFG_FILE = cfg/sample-ping-pong.cfg
 
 # CROSS Compiler 
@@ -29,6 +30,7 @@ CONFIG_INTERRUPT_REDIRECT_DRV = yes
 # The following drivers is only for tests/performance purpose. 
 #CONFIG_TIMER_TEST_DRV = yes
 #CONFIG_PERFORMANCE_COUNTER_DRV = yes
+#CONFIG_INTERRUPT_LATENCY_TEST_DRV = yes
 
 # Platform info
 CFLAGS = -DCPU_ID="M5150"
@@ -140,7 +142,8 @@ clean: config_vms
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
-	rm -rf include
+	rm -f include/vms.info
+	rm -f include/config.h
 	rm -f genconf
 	
 	for i in $(APP_LIST) ; do \

@@ -329,10 +329,10 @@ printf() and sprintf()
  * Auxiliar buffer for print functions. 
  * 
  * Instead to make a hypercall for each character,
- * do only a hypercall sending strhyper characters. 
+ * do a hypercall sending STRHYPERSZ characters. 
  * 
  */
-#define STRHYPERSZ	256
+#define STRHYPERSZ	1024
 
 struct strhyper_t{
 	char str[STRHYPERSZ];
@@ -358,6 +358,10 @@ static void printchar(char **str, int32_t c){
 int32_t puts(const char *str){
 	while(*str){
 		printchar(NULL, *str++);
+	}
+	if(strhyper.size > 0){
+		uart_send(strhyper.str, strhyper.size);
+		strhyper.size = 0;
 	}
 	return 0;
 }

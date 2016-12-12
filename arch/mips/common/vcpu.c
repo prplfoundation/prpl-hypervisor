@@ -84,23 +84,27 @@ void contextSave(){
 }
 
 /**
- * @brief Determines the Guest Time Offset. No being used in the current implementation.
- * Guests have absolute time view. 
- */
-uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount){
-	uint32_t offset;	
-	
-	/* check for count overflow */
-	if(savedcounter > currentCount){
-		offset= (0xFFFFFFFF - savedcounter) + currentCount;
-	}else{
-		offset= currentCount - savedcounter;
+ * @brief The hypervisor performs this routine when there is 
+ * 	no VCPU read to execute. In this case the hypervisor 
+ * 	will wait by the next interrupt event. 
+ */ 
+static void cpu_idle(){
+	while(1){
+		/* No VCPU read for execution. Wait by the next interrupt. */
+		asm("wait");
 	}
-	
-	/* gtoffset is the two's complement of the time between save and restore the context of a VCPU.*/
-	return (~offset) + 1;
 }
 
+/** 
+ * @brief  Configure the processor to enter in idle mode. 
+ * 
+ */
+static void config_idle_cpu(){
+		setGuestID(0); /* Root guest ID */
+		setPreviousShadowSet(0); /* Hypervisor GPR shadow page  */
+		clearGuestMode(); /* keep the processor in root mode. */
+		setEPC((uint32_t)cpu_idle);
+}
 
 /**
  * @brief  Restore the VCPU context on context switch. 
@@ -108,6 +112,13 @@ uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount){
 void contextRestore(){
 	
 	vcpu_t *vcpu = vcpu_in_execution;
+	
+	/* 
+	/* There are not VCPUs ready to execute. Put CPU in adle mode. */
+	if(!vcpu){
+		config_idle_cpu();
+		return;
+	}
 	
 	setPreviousShadowSet(vcpu->gprshadowset);
 	
@@ -138,6 +149,7 @@ void contextRestore(){
 	mtgc0(30, 0, vcpu->cp0_registers[15]);
 	
 	setGuestCTL2(vcpu->guestclt2);
+	
 	/* clear timer int. */
 	vcpu->guestclt2 &= ~(GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT);
 	

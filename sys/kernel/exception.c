@@ -57,7 +57,12 @@ static uint32_t guest_exit_exception(){
 	}
 	
 	vcpu_in_execution->pc = epc+4;
-	setEPC(vcpu_in_execution->pc);
+
+	setEPC(vcpu_in_execution->pc);	
+
+	if(vcpu_in_execution->state == VCPU_BLOCKED){
+		run_scheduler();
+	}
 	
 	return 0;
 }

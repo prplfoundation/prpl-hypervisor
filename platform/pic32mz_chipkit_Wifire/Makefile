@@ -138,7 +138,8 @@ clean: config_vms
 	rm -f $(APP).* 
 	rm -f *.o
 	rm -f firmware.hex
-	rm -rf include
+	rm -f include/vms.info
+	rm -f include/config.h
 	rm -f genconf
 	
 	for i in $(APP_LIST) ; do \

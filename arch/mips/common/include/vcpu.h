@@ -92,11 +92,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 struct vm_t;
 typedef struct vm_t vm_t;
 
+enum vcpu_state {
+	VCPU_RUNNING,
+	VCPU_BLOCKED
+};
 
 /** Struct for message exchange 
     It is a circular buffer. Message_list is a char matrix statically allocated.
  */
-
 typedef struct{
 	uint32_t source_id;
 	uint32_t size; /* size of each message in message_list */
@@ -116,6 +119,7 @@ typedef struct vcpu_t {
 	uint32_t priority;
 	uint32_t priority_rem;
 	uint32_t critical;
+	enum vcpu_state state; 
 	uint32_t bgjobs;
 	uint32_t gprshadowset;
 	uint32_t cp0_registers[16];
@@ -136,7 +140,6 @@ extern processor_t* proc;
 extern vcpu_t *idle_vcpu;
 
 void contextSave();
-uint32_t calculateGTOffset(uint32_t savedcounter, uint32_t currentCount);
 void contextRestore();
 
 
