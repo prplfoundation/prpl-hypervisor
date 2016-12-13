@@ -15,26 +15,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-/* Simple TCP listener server using picoTCP stack 
-
-	To compile this application, first download the picoTCP sources from:
-	https://github.com/tass-belgium/picotcp/releases/tag/prpl-v0.1. Then, compile with:
-      
-	make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -Os -c -Wa,-mvirt -mips32r5 -mtune=m14k \
-	-mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer \
-	-G 0" DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=1 ICMP4=1 DNS_CLIENT=0 MDNS=0 DNS_SD=0 \
-	SNTP_CLIENT=0 PPP=0 MCAST=1 MLD=0 IPFILTER=0 ARCH=pic32
-
-	The compiled picoTCP directory tree must be at the same directory level of the prpl-hypervisor, 
-	example:
-   
-	~/hyper
-		/prp-hypervisor
-		/picotcp
-        
-	Once the application is compiled and uploaded to the board, you can use telnet or nc (netcat)
-	to interact with this demo connecting to the 192.168.0.2 port 80. 
-*/
+/**
+ * Simple TCP listener server using picoTCP stack 
+ * 
+ * PicoTCP sources will be cloned from GitHub to folder at
+ * the same level of the prpl-hypervisor. Example:
+ * 
+ *	~/hyper
+ *		/prp-hypervisor
+ *		/picotcp
+ *        
+ * Once the application is compiled and uploaded to the board, you can use telnet or nc (netcat)
+ *	to interact with this demo connecting to the 192.168.0.2 port 80. 
+ */
 
 
 #include <pico_defines.h>

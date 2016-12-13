@@ -13,7 +13,7 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 
-all: conf_liker lib hal platform app $(APP)
+all: conf_liker app lib hal platform $(APP)
 
 ifndef CLEAN
     ifndef CROSS_COMPILER
