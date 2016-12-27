@@ -17,6 +17,7 @@
 //#include <memory.h>
 //#include "sha256.h"
 #include "sha256.h"
+#include <libc.h>
 /****************************** MACROS ******************************/
 #define ROTLEFT(a,b) (((a) << (b)) | ((a) >> (32-(b))))
 #define ROTRIGHT(a,b) (((a) >> (b)) | ((a) << (32-(b))))

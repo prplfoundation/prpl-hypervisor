@@ -9,60 +9,62 @@
 #include <sha256.h>
 #include <security.h>
 //#include <rw_regs.h>
-
+#include <hal.h>
 #include <libc.h>
 #include <vm.h>
 #include <config.h>
 #include <vm.h>
 #include <globals.h>
-//xxd -ps blink.bin
-//int lVmConfig[][VMCONF_NUMCOLUNS] = VMCONF;
+//#include <crypto.h>
+
+int sha_test(void) {
+
+
+    //    securityAssociation enc_sa __attribute__((coherent, aligned (16)));
+    //    securityAssociation dec_sa __attribute__((coherent, aligned (16)));
+
+    return 1;
+
+}
 
 int isVmTrust(void) {
-    //Tarefas: 
-
-    //2) Funcionar contador de ticks para medir tempo
-    //3) Work for two vm
-    //4) Read hypercalls
-    //5) Get size vm dinamicaly
-
-    //mostrar numero de vms
-    
+    uint32_t initialCountTotal = 0, finalCountTotal = 0;
+    uint32_t initialCountHash = 0, finalCountHash = 0;
+    uint32_t initialCountVerifySignature = 0;
+    uint32_t initialCountVerifyPK = 0, finalCounterVerifyPK = 0;
     
     printf("\nInicio validacao VMS\n");
     printf("\nNUM MACHINES: %d\n", NVMACHINES);
-    //printf("\nVM %d, size: %d\n", );
-    //printf("\nVM %d, base_add: %l\n", 0, VMCONF[0].flash_base);
-    
-    INFO("Configuring %d VM starting at 0x%x FLASH address.", 0, VMCONF[0].flash_base_add);
-    INFO("Configuring %d VM size of 0x%x .", 1, VMCONF[0].flash_size);
-    
-    return 0;
+
+
+    unsigned char *lAddrVm = NULL;
     int countNumMachines = 0;
+
     //loop to verify all vms
     for (; countNumMachines < NVMACHINES; countNumMachines++) {
+        initialCountTotal = getCounter();
 
-        //teste tempo para autenticacao VM
-        //hal_sr_rcount(0);//set counter to 0
-        //uint32_t count = hal_lr_rcount();
-        //printf("\nValidacao da VM");
+        (lAddrVm) = (unsigned char*) VMCONF[countNumMachines].flash_base_add;
 
-        //char *lAddrVm;/* = (unsigned char*) 0x9d010000;*/
-        char *lAddrVm = (char*) 0x9d010000;
-        //long i = 0;
+        //        INFO("Configuring VM %d, of size %d FLASH size, address: %x.\n\n", countNumMachines, VMCONF[countNumMachines].flash_size, (char*) lAddrVm);
+
         int countSign = 0, countPubKey = 0;
-        //unsigned char /*value,*/ countLine = 0;
-        //TODO - get size of vm dynamic
-        //long sizeVm = 32768; //size VM+pubKey+signature 
         long sizeVm = VMCONF[countNumMachines].flash_size; //size VM+pubKey+signature 
         long sizeHash = sizeVm - 128; //only the size to calculate hash of vm
         uint8_t public[64];
         uint8_t sigReceived[64];
 
+        //----------------------------------------------------------------------
         //read public key
         for (countPubKey = 0; countPubKey < 64; countPubKey++) {
             public[countPubKey] = lAddrVm[(sizeVm - 128) + countPubKey];
         }
+        //debug public key
+        //        printf("uint8_t PubKey[2*NUM_ECC_DIGITS] = {");
+        //        vli_print(public, sizeof (public));
+        //        printf("};\n");
+        //        printf("\n\n");
+        initialCountVerifyPK = getCounter();
         //verify public key
         if (!uECC_valid_public_key(public, uECC_secp256k1())) {
             printf("\nuECC_valid_public_key() failed\n");
@@ -70,22 +72,18 @@ int isVmTrust(void) {
         } else {
             printf("\nValid Public Key\n");
         }
-        //debug public key
-        printf("uint8_t PubKey[2*NUM_ECC_DIGITS] = {");
-        vli_print(public, sizeof (public));
-        printf("};\n");
-        printf("\n\n");
-
+        finalCounterVerifyPK = getCounter();
+        //----------------------------------------------------------------------
         //read signature
         for (countSign = 0; countSign < 64; countSign++) {
             sigReceived[countSign] = lAddrVm[(sizeVm - 64) + countSign];
         }
-
         //debug signature
-        printf("uint8_t Signature[2*NUM_ECC_DIGITS] = {");
-        vli_print(sigReceived, sizeof (sigReceived));
-        printf("};\n");
-        printf("\n\n");
+        //        printf("uint8_t Signature[2*NUM_ECC_DIGITS] = {");
+        //        vli_print(sigReceived, sizeof (sigReceived));
+        //        printf("};\n");
+        //        printf("\n\n");
+        //----------------------------------------------------------------------
 
         //read vm to calculate hash
         //for (i = 0; i < (sizeVm-128); i++) {//read vm excluding Public Key and Signature
@@ -102,8 +100,8 @@ int isVmTrust(void) {
 
         //test- read memory of flas and sendo byte-byte do hash
         //calculate hash of vm
-        uint8_t tmp[2 * SHA256_BLOCK_SIZE + 64];
-        SHA256_HashContext ctx = {
+        //uint8_t tmp[2 * SHA256_BLOCK_SIZE + 64];
+        /*SHA256_HashContext ctx = {
             {
              &init_SHA256,
              &update_SHA256,
@@ -112,8 +110,9 @@ int isVmTrust(void) {
              SHA256_BLOCK_SIZE,
              tmp
             }
-        };
+        };*/
 
+        initialCountHash = getCounter();
         SHA256_CTX contextHash;
         BYTE buf[SHA256_BLOCK_SIZE];
         sha256_init(&contextHash);
@@ -122,12 +121,13 @@ int isVmTrust(void) {
         sha256_update(&contextHash, lAddrVm, sizeHash);
         //}
         sha256_final(&contextHash, buf);
+        finalCountHash = getCounter();
 
         //debug hash
-        printf("uint8_t hash[NUM_ECC_DIGITS] = {");
-        vli_print(buf, sizeof (buf));
-        printf("};\n");
-        printf("\n\n");
+        //        printf("uint8_t hash[NUM_ECC_DIGITS] = {");
+        //        vli_print(buf, sizeof (buf));
+        //        printf("};\n");
+        //        printf("\n\n");
 
 
         /*tests to detect fail*/
@@ -137,16 +137,26 @@ int isVmTrust(void) {
 
 
         //verify signature
+        initialCountVerifySignature = getCounter();
         if (!uECC_verify(public, buf, sizeof (buf), sigReceived, uECC_secp256k1())) {
             printf("uECC_verify() failed\n");
             return 1;
         } else {
             printf("uECC_verify() OK\n");
         }
-
         //    count = hal_lr_rcount();
-        //    printf("Count totoal: %d\n", count);
+        finalCountTotal = getCounter();       
         
-        //sum base add to vm already tested to jump to next vm verification
+        
+        printf("Count TOTAL:                  %d\n", (finalCountTotal - initialCountTotal));
+        printf("Count TOTAL HASh:             %d\n", (finalCountHash-initialCountHash));
+        printf("Count TOTAL Verify PK:        %d\n", (finalCounterVerifyPK-initialCountVerifyPK));
+        printf("Count TOTAL Verify Signature: %d\n", (finalCountTotal-initialCountVerifySignature));
+        finalCountTotal=0;
+        initialCountTotal=0;
+        finalCountHash=0;
+        initialCountHash=0;
     }
+
+    return 1;
 }

@@ -70,10 +70,11 @@ for i in $*; do
 
     ((COUNT++))
     BASE_ADDR=$(expr $BASE_ADDR + $PADDING)
+    rm -rf /tmp/$i.bin.security.tmp
 done
 
 rm -rf /tmp/tmp.bin
-rm -rf /tmp/$i.bin.security.tmp
+
 
 cat /tmp/prplHypervisor.bin > /tmp/firmware.bin 
 

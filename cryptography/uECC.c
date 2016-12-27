@@ -4,7 +4,7 @@
 //#include "./include/uECC_vli.h"
 #include "./include/sha256.h"
 #include "./include/types.h"//TODO - fazer merge com o types.h do hypervisor.
-
+#include <libc.h>
 
 #ifndef uECC_RNG_MAX_TRIES
     #define uECC_RNG_MAX_TRIES 64
