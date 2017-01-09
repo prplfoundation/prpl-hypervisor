@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>PIC32MZ Starter Kit</title>
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800|Open+Sans+Condensed:300,700" rel="stylesheet" />
+    <link href="picotcp_style.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="board.js"></script>
+</head>
+
+<body onload="updateBoardInfo();getIp();getMAC()">
+
+<div id="logo" class="container">
+    <h1><img alt="cloud" src="cloud.png" /><a href="/">Pico<span>TCP</span></a></h1>
+    <p>prplHypervisor Webserver Sample</p>
+</div>
+
+<div id="wrapper" class="container">
+    <div id="menu" class="container">
+        <ul>
+            <li class="current_page_item"><a href="pic32mz.html" title="">PIC32MZ Starter Kit</a></li>
+        </ul>
+    
+    </div>
+        <div class="center-column">
+        <img src="pic32mz.jpg" alt="PIC32mz Starter Kit"/>
+    </div>
+    
+    <div id="three-column" class="container">
+        <div class="two-column">
+            <p id="my_ip"><b>IP:</b> <span id="ip"></span></p>
+            <p id="my_mac"><b>MAC Address:</b> <span id="mac"></span></p>
+            <p id="my_uptime"><b>Uptime:</b> <span id="uptime">0 seconds</span></p>
+
+            <p><span id="led1_state">LED 1</span></p>
+            <p><span id="led2_state">LED 2</span></p>
+        </div>
+        
+        <div class="two-column">
+            <div class="button" onclick="toggle_led1()">Toggle LED 1</div> <br/>
+            <div class="button" onclick="toggle_led2()">Toggle LED 2</div> <br/>
+        </div>
+        
+    </div>
+</div>
+<div id="copyright">
+    <p>Embedded Systems Group (GSE) - PUCRS - Brazil. | Adaptaded from https://github.com/tass-belgium/cyassl-picotcp.git </p>
+</div>
+</body>
+</html>
