@@ -66,7 +66,7 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
-CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK)
+CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK) -DLITTLE_ENDIAN
 # AS flags
 ASFLAGS += -EL -mvirt -mips32r2
 # LD flags
