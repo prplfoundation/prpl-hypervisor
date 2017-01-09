@@ -22,16 +22,16 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 constants, tests and transformations
 */
 #define NULL			((void *)0)
-#define USED			1
+//#define USED			1
 #define TRUE			1
 #define FALSE			0
 #define isprint(c)		(' '<=(c)&&(c)<='~')
 #define isspace(c)		((c)==' '||(c)=='\t'||(c)=='\n'||(c)=='\r')
 #define isdigit(c)		('0'<=(c)&&(c)<='9')
-#define islower(c)		('a'<=(c)&&(c)<='z')
+/*#define islower(c)		('a'<=(c)&&(c)<='z')
 #define isupper(c)		('A'<=(c)&&(c)<='Z')
 #define isalpha(c)		(islower(c)||isupper(c))
-#define isalnum(c)		(isalpha(c)||isdigit(c))
+#define isalnum(c)		(isalpha(c)||isdigit(c))*/
 #define min(a,b)		((a)<(b)?(a):(b))
 #define ntohs(A)		(((A)>>8) | (((A)&0xff)<<8))
 #define ntohl(A)		(((A)>>24) | (((A)&0xff0000)>>8) | (((A)&0xff00)<<8) | ((A)<<24))
@@ -73,7 +73,12 @@ extern int32_t printf(char *fmt, ...);
 extern int32_t sprintf(char *out, const char *fmt, ...);
 extern void mdelay(uint32_t msec);
 extern uint32_t calc_diff_time(uint32_t now, uint32_t old);
+extern uint32_t toupper (uint32_t c);
+extern uint32_t tolower (uint32_t c);
+extern uint8_t* strdup(uint8_t* s);
+
 #endif
+
 
 typedef volatile unsigned int mutex_t;
 
@@ -102,5 +107,9 @@ union float_long{
 	float f;
 	int32_t l;
 };
+
+//char    *__ctype_ptr__;
+typedef long time_t;
+
 
 #endif

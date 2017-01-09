@@ -578,6 +578,13 @@ static int32_t print(int8_t **out, const int8_t *format, va_list args){
 	return pc;
 }
 
+uint8_t* strdup(uint8_t* s){
+	uint32_t n = strlen(s);
+	uint8_t *aux = (uint8_t*)malloc(n+1);
+	memcpy(aux, s, n+1);
+	return aux;
+}
+
 int32_t printf(char *fmt, ...){
         va_list args;
 	uint32_t size;
@@ -1294,3 +1301,26 @@ float __floatunsisf(uint32_t af){
 	return resp;
 }
 
+time_t time(time_t *t){
+	uint32_t aux = mfc0(CP0_COUNT, 0);
+	if(t){
+		*t = aux;
+	}
+	return aux;
+}
+
+uint32_t toupper (uint32_t ch){
+	 if(('a' <= ch) && (ch <= 'z')){
+		ch = 'A' + (ch - 'a');
+	 }
+	 
+	return ch;
+}
+
+uint32_t tolower (uint32_t ch){
+	if(('A' <= ch) && (ch <= 'Z')){
+		ch = 'a' + (ch - 'A');	
+	}
+	
+	return ch;	
+}
