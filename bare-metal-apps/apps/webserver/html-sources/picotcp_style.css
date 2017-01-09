@@ -1,0 +1,305 @@
+/*********************************************************************************/
+/* Global variables                                                              */
+/*********************************************************************************/
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0px;
+  padding: 0px;
+  background: #e9e9e9 url(bg_stripe.png) repeat;
+  font-family: 'Open Sans', 'Droid Sans', sans-serif;
+  font-size: 11pt;
+  font-weight: 400;
+  color: #969696;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  padding: 0;
+  font-weight: 900;
+}
+p,
+ol,
+ul {
+  margin-top: 0;
+}
+ol,
+ul {
+  padding: 0;
+  list-style: none;
+}
+p {
+  line-height: 180%;
+}
+a {
+  color: #0000FF;
+}
+a:hover {
+  text-decoration: none;
+}
+.container {
+  margin: 0px auto;
+  width: 1200px;
+}
+/*********************************************************************************/
+/* Button Style                                                                  */
+/*********************************************************************************/
+.button {
+  display: inline-block;
+  background: #F13C9F;
+  border-radius: 5px;
+  line-height: 4em;
+  padding: 0 3em;
+  -webkit-transition: all 0.25s ease-in-out;
+  -moz-transition: all 0.25s ease-in-out;
+  -ms-transition: all 0.25s ease-in-out;
+  -o-transition: all 0.25s ease-in-out;
+  transition: all 0.25s ease-in-out;
+  letter-spacing: 0.25em;
+  text-decoration: none;
+  text-transform: uppercase;
+  outline: 0;
+  white-space: nowrap;
+  font-weight: 900;
+  font-size: 1em !important;
+  color: #fff !important;
+  cursor: pointer;
+}
+.button:hover {
+  background: #18ACD9;
+  -webkit-transition: all 0.25s ease-in-out;
+  -moz-transition: all 0.25s ease-in-out;
+  -ms-transition: all 0.25s ease-in-out;
+  -o-transition: all 0.25s ease-in-out;
+  transition: all 0.25s ease-in-out;
+}
+.button:active {
+  background: #0091BD;
+  -webkit-transition: all 0.25s ease-in-out;
+  -moz-transition: all 0.25s ease-in-out;
+  -ms-transition: all 0.25s ease-in-out;
+  -o-transition: all 0.25s ease-in-out;
+  transition: all 0.25s ease-in-out;
+}
+/*********************************************************************************/
+/* Wrappers                                                                      */
+/*********************************************************************************/
+#wrapper {
+  position: relative;
+  padding: 0em 0em 2em 0em;
+  background: #FFF;
+  box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.1);
+}
+/*********************************************************************************/
+/* Logo                                                                          */
+/*********************************************************************************/
+#logo {
+  margin: 0.5em auto 0.5em auto;
+  text-transform: uppercase;
+}
+#logo h1 {
+  font-size: 2.2em;
+  color: #292929;
+}
+#logo h1 a {
+  margin-left: 0.50em;
+  text-decoration: none;
+  font-size: 1.5em;
+  color: #292929;
+}
+#logo span {
+  color: #E2007A;
+}
+#logo .icon-size {
+  padding-top: 0.20em;
+  font-size: 2em !important;
+  color: #E2007A;
+}
+#logo p {
+  margin: 0;
+  padding: 0 0 0 5em;
+  letter-spacing: 0.10em;
+  font-size: 0.90em;
+  color: #828282;
+}
+#logo p a {
+  text-decoration: none;
+  color: #828282;
+}
+/*********************************************************************************/
+/* Menu                                                                          */
+/*********************************************************************************/
+#menu {
+  background: #292929;
+}
+#menu ul {
+  margin: 0;
+  padding: 0px 0px 0px 0px;
+  list-style: none;
+  line-height: normal;
+  text-align: center;
+}
+#menu li {
+  display: inline-block;
+}
+#menu a {
+  display: block;
+  padding: 0em 2em;
+  line-height: 60px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-size: 1em;
+  font-weight: 700;
+  color: #838383;
+}
+#menu .current_page_item a {
+  background: #E2007A;
+  color: #FFF;
+}
+#menu a:hover {
+  text-decoration: none;
+  color: #FFF;
+}
+.arrow-down {
+  margin: 0 auto;
+  width: 0;
+  height: 0;
+  border-top: 40px solid #FFF;
+  border-left: 50px solid transparent;
+  border-right: 50px solid transparent;
+  display: block;
+  text-align: center;
+  border-top-color: #292929;
+}
+/*********************************************************************************/
+/* Copyright                                                                     */
+/*********************************************************************************/
+#led1_state {
+  color:white;
+  background-color:#002200;
+}
+#led2_state {
+  color:white;
+  background-color:#000022;
+}
+#led3_state {
+  color:white;
+  background-color:#221100;
+}
+#led4_state {
+  color:white;
+  background-color:#220000;
+}
+/*********************************************************************************/
+/* Copyright                                                                     */
+/*********************************************************************************/
+#copyright {
+  padding: 6em 0em;
+  font-size: 0.70em;
+  letter-spacing: 0.20em;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 1px #FFF;
+  color: #6A6A6A;
+}
+#copyright a {
+  color: #747474;
+}
+/*********************************************************************************/
+/* Columns                                                                       */
+/*********************************************************************************/
+#three-column {
+  overflow: hidden;
+  text-align: center;
+  color: #525252;
+}
+#three-column h2 {
+  margin: 1em 0em;
+  text-transform: uppercase;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #454445;
+}
+#three-column .icon {
+  position: relative;
+  display: block;
+  margin: 0px auto 0.5em auto;
+  line-height: 150px;
+  font-size: 4em;
+  background: #FFF;
+  border-radius: 100px;
+  border: 6px solid #F13C9F;
+  text-align: center;
+  color: #F13C9F;
+}
+#three-column #tbox1,
+#three-column #tbox2,
+#three-column #tbox3 {
+  float: left;
+  width: 320px;
+  padding: 30px 40px 20px 40px;
+}
+#three-column .two-column {
+  float: left;
+  width: 520px;
+  padding: 30px 40px 20px 40px;
+}
+#three-column .title {
+  letter-spacing: 0.10em;
+  text-align: center;
+  text-transform: uppercase;
+}
+#three-column .title h2 {
+  font-size: 1.60em;
+  font-weight: 900;
+  font-family: 'Open Sans', sans-serif;
+  color: #F13C9F;
+}
+#three-column .title .byline {
+  padding-top: 0.50em;
+  font-size: 0.90em;
+  color: #858585;
+}
+#three-column input {
+  font-family: 'Open Sans', 'Droid Sans', sans-serif;
+  font-size: 1em;
+  text-align: center;
+  border-radius: 5px;
+  padding: 1em 0;
+}
+#three-column progress {
+  width: 300px;
+  height: 20px;
+}
+.center-column {
+  width: 100%;
+  padding: 30px 0 0;
+  text-align: center;
+}
+/*********************************************************************************/
+/* Terminal                                                                      */
+/*********************************************************************************/
+.terminal {
+  color: #aaa;
+  font-family: "Droid Sans Mono", "Courier New", monospace;
+  background-color: #000;
+  border-radius: 10px;
+  padding: 10px 2%;
+}
+.output {
+  height: 20em;
+  overflow: auto;
+}
+.input {
+  height: 1em;
+  border: 0;
+  outline: none;
+  width: 96%;
+}
+#terminal_container {
+  margin: 20px 80px 0px;
+}
