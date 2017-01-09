@@ -34,7 +34,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pico_https_server.h>
 #include <pico_https_util.h>
 
-#include "SSL_keys.h"
+#include "SSL_cert.h"
 #include "web_files.h"
 
 #ifdef HAVE_CONFIG_H
