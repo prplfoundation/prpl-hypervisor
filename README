@@ -30,9 +30,9 @@ How to build?
 
 Once you have the building environment configured, choose to a platform board folder:
 
-platform/pic32mz_starter_kit;
-platform/pic32mz_chipkit_Wifire, or;
-platform/pic32mz_curiosity.
+prpl-hypervisor/platform/pic32mz_starter_kit;
+prpl-hypervisor/platform/pic32mz_chipkit_Wifire, or;
+prpl-hypervisor/platform/pic32mz_curiosity.
 
 In the platform board folder perform:
 
