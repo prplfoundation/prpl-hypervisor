@@ -1,0 +1,5 @@
+target remote localhost:3333 
+set endian little
+mem auto
+mem 0x80000000 0x80080000 rw 32 
+monitor reset halt
