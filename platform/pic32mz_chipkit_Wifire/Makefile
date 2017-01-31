@@ -30,6 +30,9 @@ CFLAGS = -DCPU_ID="M5150"
 CFLAGS += -DCPU_ARCH="Digilent ChipKit Wi-Fire"
 CFLAGS += -DCPU_FREQ=200000000
 
+# Define DEBUG_GUEST to yes if you desire to compile the guests for debug. The code optimization will be O0.
+DEBUG_GUEST = no
+
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -53,13 +56,13 @@ VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 LINKER_SCRIPT = ../../arch/mips/pic32mz/pic32mz.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -O2 -mips32r5 -mmicromips 
+CFLAGS += -EL -g -O2 -mips32r2 -mmicromips 
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt 
 #flointing pointing options
 CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
-CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
+CFLAGS += -c -ffreestanding -nostdlib  -G 0
 #Additional features flags
 CFLAGS += -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION}
 # LD flags
@@ -118,7 +121,7 @@ debug: serial
 bare_apps:
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_chipkit_Wifire APP=$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_chipkit_Wifire APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
+		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_chipkit_Wifire APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` DEBUG_GUEST=$(DEBUG_GUEST) \
 	;done
 
 generate_firmware:
