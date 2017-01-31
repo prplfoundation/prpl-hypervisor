@@ -57,8 +57,14 @@ STRIP = $(CROSS_COMPILER)strip
 
 LINKER_SCRIPT = ../../apps/$(APP)/pic32mz.ld
 
+ifeq ($(DEBUG_GUEST), yes)
+	CFLAGS += -O0 -g
+else
+	CFLAGS += -O2
+endif
+
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -O2 -mtune=m14k -mips32r2 -Wall
+CFLAGS += -EL -mtune=m14k -mips32r2 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options

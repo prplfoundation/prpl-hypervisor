@@ -31,6 +31,8 @@ CFLAGS = -DCPU_ID="M5150"
 CFLAGS += -DCPU_ARCH="Microchip Curiosity Board"
 CFLAGS += -DCPU_FREQ=200000000
 
+# Define DEBUG_GUEST to yes if you desire to compile the guests for debug. The code optimization will be O0.
+DEBUG_GUEST = no
 
 ########################################################################################################
 # SHOULD NOT BE NEEDED TO MODIFY ANYTHING FROM WHERE. UNLESS YOU ARE ADDING NEW HYPERVISOR SOURCE FILES
@@ -119,7 +121,7 @@ load: serial
 bare_apps:
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_curiosity APP=$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_curiosity APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` \
+		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_curiosity APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` DEBUG_GUEST=$(DEBUG_GUEST) \
 	;done
 
 generate_firmware:
