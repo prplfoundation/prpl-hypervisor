@@ -1,5 +1,6 @@
 target remote localhost:3333 
 set endian little
 mem auto
-mem 0x80000000 0x80080000 rw 32 
+mem 0x80000000 0x80080000 rw 
+mon mips32 scan_delay 20000000
 monitor reset halt
