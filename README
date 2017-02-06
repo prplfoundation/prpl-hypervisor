@@ -28,13 +28,13 @@ framework and are released under prpl Foundation permissive license – see http
 
 How to build?
 
-Once you have the building environment configured, choose to a platform board folder:
+Once you have the building environment configured, go to a platform board folder:
 
 prpl-hypervisor/platform/pic32mz_starter_kit;
 prpl-hypervisor/platform/pic32mz_chipkit_Wifire, or;
 prpl-hypervisor/platform/pic32mz_curiosity.
 
-In the platform board folder perform:
+Then, perform:
 
 make && make load
 
