@@ -18,6 +18,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __ARCH_H
 #define __ARCH_H
 
-#include <baikal-t1.h>
+#include <pic32mz.h>
 
 #endif
