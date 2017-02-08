@@ -12,12 +12,17 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OT
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
 */
 
-#ifndef __ARCH_H
-#define __ARCH_H
+#ifndef __INTERRUPTS_H__
+#define __INTERRUPTS_H__
 
-#include <baikal-t1.h>
+typedef void  handler_vector_t();
+
+uint32_t register_interrupt(handler_vector_t * handler);
+uint32_t InterruptHandler();
+
 
 #endif
+
+    

@@ -12,12 +12,34 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OT
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
 */
 
-#ifndef __ARCH_H
-#define __ARCH_H
+/* Linker script for the qemu bootloader to the prplHypervisor on qemu-system-mipsel.
+ *
+ * Based on the work of Dmitry Dunaev to Baikal Electronics.
+ *
+ */
 
-#include <baikal-t1.h>
 
-#endif
+#include "../include/addr.h"
+
+OUTPUT_FORMAT("elf32-tradlittlemips")
+OUTPUT_ARCH("mips")
+
+TARGET(binary)
+INPUT(./boot.o)
+INPUT(KERNEL)
+
+
+SECTIONS
+{
+	. = CPHYSADDR(BOOT_BASE);
+	.text : { boot.o }
+
+	. = CPHYSADDR(KERNEL_OFFSET);
+	kernel = .;
+	.kernel : { KERNEL }
+
+	.data : { *(.data) }
+	.bss : { *(.bss) }
+}

@@ -18,6 +18,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __ARCH_H
 #define __ARCH_H
 
-#include <baikal-t1.h>
+#define MILISECOND (100000000/ 1000)
+
+#include <../../../../../arch/mips/pic32mz/include/pic32mz.h>
+#include <../../../../../arch/mips/common/include/mips_cp0.h>   
 
 #endif
+

@@ -121,6 +121,12 @@
 #define CP0_ERROREPC            30
 #define CP0_DESAVE              31
 
+#define C0_SEGCTL0 		5,	2
+#define C0_SEGCTL1 		5,	3
+#define C0_SEGCTL2 		5,	4
+#define C0_CONFIG5 		16,	5
+
+
 /* STATUS register */
 #define STATUS_CU0              0x10000000
 #define STATUS_RP               0x08000000
