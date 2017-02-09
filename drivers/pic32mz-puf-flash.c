@@ -52,7 +52,7 @@ static uint32_t flash_write1Kbuffer(uint8_t *buffer);
 static void flash_read(){
 	uint32_t ret;
 	
-	uint8_t * dest = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), vm_executing->base_addr, sizeof(uint8_t) * 1024, 0xf, CACHEABLE);
+	uint8_t * dest = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), vm_in_execution->base_addr, sizeof(uint8_t) * 1024, 0xf, CACHEABLE);
 	
 	ret = flash_read1Kbuffer(dest);
 	
@@ -68,7 +68,7 @@ static void flash_read(){
 static void flash_write(){
 	uint32_t ret;
 	
-	uint8_t * source = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), vm_executing->base_addr, sizeof(uint8_t) * 1024, 0xf, CACHEABLE);
+	uint8_t * source = (uint8_t *) tlbCreateEntry((uint32_t) MoveFromPreviousGuestGPR(REG_A0), vm_in_execution->base_addr, sizeof(uint8_t) * 1024, 0xf, CACHEABLE);
 	
 	ret = flash_write1Kbuffer(source);
 	
