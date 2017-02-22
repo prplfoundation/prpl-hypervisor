@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 #Copyright (c) 2016, prpl Foundation
 #
@@ -13,7 +14,6 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
-#!/bin/bash
 
 URL_MPLABIPE=http://www.microchip.com/mplabx-ide-linux-installer
 URL_CODESCAPE=https://community.imgtec.com/?do-download=53163
