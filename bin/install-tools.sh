@@ -16,7 +16,7 @@
 
 
 URL_MPLABIPE=http://www.microchip.com/mplabx-ide-linux-installer
-URL_CODESCAPE=https://community.imgtec.com/?do-download=53163
+URL_CODESCAPE=https://community.imgtec.com/?do-download=linux-x64-mti-bare-metal-2016-05-03
 MPLABIPE=MPLABX-v3.51-linux-installer.tar
 CODESCAPE=Codescape-Bare-Metal.tar.gz
 DOWNLOAD_DIR=~/Downloads/hyper_files
