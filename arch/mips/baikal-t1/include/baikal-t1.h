@@ -25,7 +25,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define BAIKAL_PBASE(a)        *(volatile unsigned*) (a)
 
-#define UART_BASE	BAIKAL_PBASE(0xBF04A000)
 #define UART_LSR	BAIKAL_PBASE(0xBF04A014)
 #define UART_THR	BAIKAL_PBASE(0xBF04A000)
 

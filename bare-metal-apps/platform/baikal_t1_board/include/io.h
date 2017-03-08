@@ -20,13 +20,4 @@
 
 #include <arch.h>
 
-#define ENABLE_LED1 writeio(TRISHCLR, 1) 
-#define ENABLE_LED2 writeio(TRISHCLR, 2); 
-#define ENABLE_LED3 writeio(TRISHCLR, 4)
-
-#define TOGGLE_LED1 writeio(LATHINV, 1)
-#define TOGGLE_LED2 writeio(LATHINV, 2) 
-#define TOGGLE_LED3 writeio(LATHINV, 4) 
-
-
 #endif

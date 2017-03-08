@@ -20,7 +20,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define MILISECOND (100000000/ 1000)
 
-#include <../../../../../arch/mips/pic32mz/include/pic32mz.h>
+#include <../../../../../arch/mips/baikal-t1/include/baikal-t1.h>
 #include <../../../../../arch/mips/common/include/mips_cp0.h>   
 
 #endif

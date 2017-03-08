@@ -30,7 +30,6 @@
  *
  */
 
-#include<pic32mz.h>
 #include <driver.h>
 #include <mips_cp0.h>
 #include <vcpu.h>
@@ -68,30 +67,26 @@ uint32_t register_interrupt(handler_vector_t * handler){
 }
 
 /** 
- * @brief Configures the pic32mz in vectored interrupt mode. 
- * Additionally, configure all interrupt levels to be handled
- * at GPR shadow 0. 
+ * @brief Configures the P5600 in vectored interrupt mode. 
  */
 static void interrupt_init(){
-    uint32_t temp_CP0;
+    uint32_t temp;
     
-    /* All root interrupt levels are handled at GPR shadow 0 where the
-     * hypervisor resides.  Other GPR shadows are used for VM's execution. 
-     */
-    PRISS = 0;
-
+    /*Enable the Global Interrupt Controller */
+    GCR_GIC |= 1;
+    
     /* Configure the processor to vectored interrupt mode. */
-    mtc0 (CP0_EBASE, 1, 0x9d000000);    /* Set an EBase value of 0x9D000000 */
-    temp_CP0 = mfc0(CP0_CAUSE, 0);      /* Get Cause */
-    temp_CP0 |= CAUSE_IV;               /* Set Cause IV */
-    mtc0(CP0_CAUSE, 0, temp_CP0);       /* Update Cause */
-    INTCONSET = INTCON_MVEC;            /* Set the MVEC bit - Vetored interrupt mode. */
-    temp_CP0 = mfc0(CP0_STATUS, 0);     /* Get Status */
-    temp_CP0 &= ~STATUS_BEV;            /* Clear Status IV */
-    temp_CP0 &= ~STATUS_EXL; 
-    mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
+    mtc0 (CP0_EBASE, 1, 0x80000000);    /* Set an EBase value of 0x9D000000 */
+    temp = mfc0(CP0_CAUSE, 0);      /* Get Cause */
+    temp |= CAUSE_IV;               /* Set Cause IV */
+    mtc0(CP0_CAUSE, 0, temp);       /* Update Cause */
     
-    INFO("PIC32mz in Vectored Interrupt Mode.");
+    temp = mfc0(CP0_STATUS, 0);     /* Get Status */
+    temp &= ~STATUS_BEV;            /* Clear Status BEV */
+    temp &= ~STATUS_EXL; 
+    mtc0(CP0_STATUS, 0, temp);      /* Update Status */
+    
+    INFO("P5600 core in Vectored Interrupt Mode.");
 }
 
 driver_init(interrupt_init);

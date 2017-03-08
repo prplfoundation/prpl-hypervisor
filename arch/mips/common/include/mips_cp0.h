@@ -180,6 +180,8 @@
 #define CONFIG3_VEIC    (1<<6)
 #define CONFIG3_SP      (1<<4)
 
+#define CONFIG5_K       (1<<30)
+
 #define GUESTCTL0_GM    (1<<31)
 #define GUESTCTL0_CP0   (1<<28)
 #define GUESTCTL0_GT    (1<<25)

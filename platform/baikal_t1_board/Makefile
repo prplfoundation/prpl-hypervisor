@@ -15,7 +15,7 @@
 
 #Input CFG file for VMs configuration
 #CFG_FILE = cfg/sample-blink.cfg
-CFG_FILE = cfg/sample-ping-pong.cfg
+CFG_FILE = cfg/sample-blink.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mipsel-unknown-linux-gnu-
@@ -111,7 +111,6 @@ $(APP):
 	$(OBJDUMP) -s $(APP).elf > $(APP).cnt
 	$(OBJCOPY) -O binary $(APP).elf $(APP).bin
 	$(SIZE) $(APP).elf
-	$(MAKE) -C ../../arch/mips/baikal-t1/boot-qemu CROSS_COMPILER=$(CROSS_COMPILER)
 
 bare_apps:
 	for i in $(APP_LIST) ; do \
@@ -139,6 +138,7 @@ clean: config_vms
 	rm -f include/vms.info
 	rm -f include/config.h
 	rm -f genconf
+	rm firmware.bin
 	$(MAKE) -C ../../arch/mips/baikal-t1/boot-qemu clean
 	
 	for i in $(APP_LIST) ; do \

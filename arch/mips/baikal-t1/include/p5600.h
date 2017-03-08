@@ -53,4 +53,22 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 /* CPC Core Other address shift */
 #define MIPS_CPC_ADDR_SHFT	16
 
+/*Global Interrupt Controler Registers */
+#define P5600_GIC_BASE(a)        *(volatile unsigned*) (0xBBDC0000 + a)
+#define GIC_SH_CONFIG           P5600_GIC_BASE(0)
+#define GIC_SH_COUNTERLO        P5600_GIC_BASE(0x10)
+#define GIC_SH_COUNTERHI        P5600_GIC_BASE(0x14)
+#define GIC_SH_REV              P5600_GIC_BASE(0x20)
+
+
+/*Global Control Block Registers */
+#define P5600_GCB_BASE(a)       *(volatile unsigned*) (0xBFBF8000 + a)
+#define GCR_GIC                 P5600_GCB_BASE(0x80)
+
+/* Global Control Block Register Bits */
+#define GCR_GIC_EN              1
+
+
+
+
 #endif /* _ASM_P5600_H */

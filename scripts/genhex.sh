@@ -68,3 +68,4 @@ for i in $*; do
 done
 
 srec_cat /tmp/firmware.bin -binary -offset 0x1d000000 -o firmware.hex -intel -line-length=44
+cp /tmp/firmware.bin firmware.bin
