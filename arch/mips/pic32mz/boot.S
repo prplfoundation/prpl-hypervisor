@@ -16,7 +16,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
     
     .section .exception
-    .org    0xf8
+    .org    0x08
 _ebase:
     .word   0x9d000000
 _imgptr:

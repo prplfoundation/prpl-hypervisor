@@ -14,6 +14,23 @@
 #
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
+usage() {
+    echo "Usage: $0 [ -k private_key.pem ] app_list"
+    exit 1
+}
+
+while getopts ":k:" opt; do
+  case $opt in
+    k)
+      PRIV_KEY=$OPTARG
+      ;;
+    \?|:)
+      usage
+      usage
+      ;;
+  esac
+done
+shift $((OPTIND-1))
 
 #hypervisor base address
 BASE_ADDR=0x9d000000
@@ -24,18 +41,24 @@ for i in $*; do
     START_ADDR=$(awk '$1=='\"$i\"' {print $4}' include/vms.info)
     address_array[$NUM_VM]=$(echo $(($START_ADDR)))
     ((NUM_VM++))
-    
+    echo $START_ADDR
 done 
 
 # Determines the hypervisor padding based on the start address of the first VM.  
 AUX=$(echo $(($BASE_ADDR)))
 PADDING=$(expr ${address_array[0]} - $AUX)
+echo $PADDING
 
 #increment to the first VM address
 BASE_ADDR=$(expr $AUX + $PADDING)
 
 # fill the hypervisor bin file to the padding
 dd if=prplHypervisor.bin of=/tmp/prplHypervisor.bin bs=$PADDING conv=sync
+
+if [ -e "$PRIV_KEY" ]
+then
+    gen_header $PRIV_KEY /tmp/prplHypervisor.bin
+fi
 
 #padding of the VM's
 COUNT=1
@@ -58,8 +81,12 @@ done
 
 rm -rf /tmp/tmp.bin
 
-cat /tmp/prplHypervisor.bin > /tmp/firmware.bin 
-
+if [ -e "/tmp/prplHypervisor.bin.signed" ]
+then
+    cat /tmp/prplHypervisor.bin.signed > /tmp/firmware.bin
+else
+    cat /tmp/prplHypervisor.bin > /tmp/firmware.bin
+fi
 
 for i in $*; do 
     # concatenate all binary files to the firmware.bin file

@@ -14,8 +14,11 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 #Input CFG file for VMs configuration
-#CFG_FILE = cfg/sample-blink.cfg
-CFG_FILE = cfg/sample-ping-pong.cfg
+CFG_FILE = cfg/sample-blink.cfg
+#CFG_FILE = cfg/sample-ping-pong.cfg
+
+# Path to the private key to sign firmware image
+PRIV_KEY = $(HOME)/prpl-secure-boot/tests/sample/private_key.pem
 
 # CROSS Compiler 
 CROSS_COMPILER = mips-mti-elf-
@@ -128,8 +131,12 @@ bare_apps:
 		$(MAKE) -C ../../bare-metal-apps/platform/pic32mz_starter_kit APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` DEBUG_GUEST=$(DEBUG_GUEST) \
 	;done
 
+ifneq ($(PRIV_KEY),)
+PRIV_KEY_OPTION := -k $(PRIV_KEY)
+endif
+
 generate_firmware:
-	../../scripts/genhex.sh $(APP_LIST)
+	../../scripts/genhex.sh $(PRIV_KEY_OPTION) $(APP_LIST)
 
 make_genconf:
 	gcc -o genconf ../cfg_reader/genconf.c -lconfig
