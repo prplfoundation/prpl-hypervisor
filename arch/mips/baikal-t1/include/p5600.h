@@ -59,15 +59,40 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GIC_SH_COUNTERLO        P5600_GIC_BASE(0x10)
 #define GIC_SH_COUNTERHI        P5600_GIC_BASE(0x14)
 #define GIC_SH_REV              P5600_GIC_BASE(0x20)
+#define GIC_SH_RMASK31_0        P5600_GIC_BASE(0x300)
+#define GIC_SH_SMASK31_0        P5600_GIC_BASE(0x380)
+#define GIC_SH_PEND31_0         P5600_GIC_BASE(0x480)
+#define GIC_SH_MAP0_PIN         P5600_GIC_BASE(0x500)
+#define GIC_SH_MAP1_PIN         P5600_GIC_BASE(0x504)
+#define GIC_SH_MAP2_PIN         P5600_GIC_BASE(0x508)
+#define GIC_SH_MAP0_CORE        P5600_GIC_BASE(0x2000)
+#define GIC_SH_MAP1_CORE        P5600_GIC_BASE(0x2020)
+#define GIC_SH_MAP2_CORE        P5600_GIC_BASE(0x2040)
+
+/*Global Interrupt Controler Registers Bits */
+#define GIC_SH_CONFIG_COUNTSTOP (1<<28)
 
 
 /*Global Control Block Registers */
 #define P5600_GCB_BASE(a)       *(volatile unsigned*) (0xBFBF8000 + a)
-#define GCR_GIC                 P5600_GCB_BASE(0x80)
+#define GCB_GIC                 P5600_GCB_BASE(0x80)
 
 /* Global Control Block Register Bits */
 #define GCR_GIC_EN              1
 
+/* Core-Local Register Map */
+#define P5600_GIC_CL_BASE(a)        *(volatile unsigned*) (0xBFBFA000 + a)
+#define GIC_CL_PEND                 P5600_GIC_CL_BASE(0x04)
+#define GIC_CL_RMASK                P5600_GIC_CL_BASE(0x0C)
+#define GIC_CL_SMASK                P5600_GIC_CL_BASE(0x10)
+#define GIC_CL_COREi_COMPARE_MAP    P5600_GIC_CL_BASE(0x44) /*COUNTER/COMPARE*/
+#define GIC_CL_COREi_TIMER_MAP      P5600_GIC_CL_BASE(0x48)
+#define GIC_CL_COMPARELO            P5600_GIC_CL_BASE(0xA0)
+#define GIC_CL_COMPAREHI            P5600_GIC_CL_BASE(0xA4) 
+#define GIC_CL_ID                   P5600_GIC_CL_BASE(0x88)
+
+/* Core-Local Registers Bits */
+#define GIC_CL_TIMER_MASK       0x4
 
 
 

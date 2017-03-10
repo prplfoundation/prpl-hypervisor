@@ -73,19 +73,26 @@ static void interrupt_init(){
     uint32_t temp;
     
     /*Enable the Global Interrupt Controller */
-    GCR_GIC |= 1;
+    GCB_GIC |= 1;
     
     /* Configure the processor to vectored interrupt mode. */
-    mtc0 (CP0_EBASE, 1, 0x80000000);    /* Set an EBase value of 0x9D000000 */
+
+//    mtc0 (CP0_EBASE, 1, 0x80000000);    /* Set an EBase value of 0x9D000000 */
     temp = mfc0(CP0_CAUSE, 0);      /* Get Cause */
     temp |= CAUSE_IV;               /* Set Cause IV */
     mtc0(CP0_CAUSE, 0, temp);       /* Update Cause */
-    
+
+
     temp = mfc0(CP0_STATUS, 0);     /* Get Status */
     temp &= ~STATUS_BEV;            /* Clear Status BEV */
     temp &= ~STATUS_EXL; 
+    temp |= (0x7f << STATUS_IM_SHIFT);
     mtc0(CP0_STATUS, 0, temp);      /* Update Status */
     
+    temp = mfc0(CP0_INTCTL, 1);
+    temp = (temp & ~(0x1f<<INTCTL_VS_SHIFT)) | (0x10 << INTCTL_VS_SHIFT);
+    mtc0(CP0_INTCTL, 1, temp);
+   
     INFO("P5600 core in Vectored Interrupt Mode.");
 }
 

@@ -92,22 +92,49 @@ void start_timer(){
 	uint32_t temp_CP0, offset;
     
 	offset = register_interrupt(timer_interrupt_handler);
-	OFF(0) = offset;
 	INFO("CP0 Timer interrupt registered at 0x%x.", offset);
-    
-	IPC(0) = 0x1f;
-	IFSCLR(0) = 1;
-	IECSET(0) = 1;
-    
-	temp_CP0 = mfc0(CP0_COUNT, 0);
-	temp_CP0 += 10000;
-	mtc0(CP0_COMPARE, 0, temp_CP0);
-	
-	INFO("Starting hypervisor execution.\n");
+        printf("\n0x%x\n", mfc0(16, 3));
+        
+        /* Stop counter */
+        GIC_SH_CONFIG |= GIC_SH_CONFIG_COUNTSTOP;
+        
+       // GIC_CL_RMASK = GIC_CL_TIMER_MASK;
+         GIC_CL_RMASK = 0xffffffff;
+        
+        GIC_SH_COUNTERLO = 0;
+        GIC_SH_COUNTERHI = 0;
+        
+        GIC_CL_COMPARELO = 0xffffffff;
+        GIC_CL_COMPAREHI = 1;
+        
+        GIC_SH_SMASK31_0 = 0xffffffff; /* GIC local 64-bit timer interrupt */
+  //      GIC_SH_MAP2_PIN = 0x10000002;
+        
+        INFO("Starting hypervisor execution.\n");
 
+        //GIC_CL_SMASK = GIC_CL_TIMER_MASK;
+        GIC_CL_SMASK = 0xffffffff;
+        
+        GIC_CL_COREi_TIMER_MAP = 0x80000002;
+        GIC_CL_COREi_COMPARE_MAP = 0x80000002; 
+        GIC_SH_MAP2_PIN = 0x80000002;
+        GIC_SH_MAP2_CORE = 2;
+        
 	asm volatile ("ei");    
+        
+        /* Start counter */
+        GIC_SH_CONFIG &= ~GIC_SH_CONFIG_COUNTSTOP;
     
 	/* Wait for a timer interrupt */
-	while(1){};
+        offset = 0;
+	while(1){
+            offset++;
+            if(offset%90000000 == 0){
+                printf("0x%x\n", GIC_SH_PEND31_0);
+                printf("0x%x\n", mfc0(CP0_STATUS, 0));
+                printf("0x%x\n", GIC_SH_COUNTERLO);
+                printf("0x%x\n", mfc0(CP0_CAUSE, 0));
+            }
+        };
 }
 

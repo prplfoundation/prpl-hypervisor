@@ -154,8 +154,9 @@ int32_t ConfigureGPRShadow(){
 	srsclt_reg = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (srsclt_reg & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	if(num_shadow_gprs == 0){
+            WARNING("GPR Shadows not available.");
 		/* panic */
-		return 1;
+		//return 1;
 	}
 	
 	/* Set the ESS field and PSS to zero.*/
@@ -212,8 +213,6 @@ int32_t LowLevelProcInit(){
             Disable1KPageSupport();     
         }
         
-	mtc0(CP0_INTCTL, 1, mfc0(CP0_INTCTL, 1) | (INTCTL_VS << INTCTL_VS_SHIFT));
-	
 	/* Initializing guestCtl0 options
 	GUESTCTL0_CP0 Allow guest access to some CP0 registers
 	GUESTCTL0_GT Allow guest read acess to count and compare registers

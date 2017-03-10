@@ -91,6 +91,8 @@ static void interrupt_init(){
     temp_CP0 &= ~STATUS_EXL; 
     mtc0(CP0_STATUS, 0, temp_CP0);      /* Update Status */
     
+    mtc0(CP0_INTCTL, 1, mfc0(CP0_INTCTL, 1) | (INTCTL_VS << INTCTL_VS_SHIFT));
+    
     INFO("PIC32mz in Vectored Interrupt Mode.");
 }
 
