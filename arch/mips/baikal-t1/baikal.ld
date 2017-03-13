@@ -33,22 +33,17 @@ SECTIONS
 {
 	.kernel 0x80000000:
 	{
+	. = 0x200;
         *(.exception)
-        . = 0x200;
-        *(.vector0)
-        . = 0x220;
-        *(.vector_1)
-        . = 0x240;
-        *(.vector_2)
-        . = 0x260;
-        *(.vector_3)
-        . = 0x280;
-        *(.vector_4)
-        . = 0x300;
-        *(.vector_5)
-        . = 0x320;
-        *(.vector_6)
-        . = 0x1000;
+/*        . = 0x600;
+        *(.vector_hwint_0)
+        . = 0x800;
+        *(.vector_hwint_1)*/
+        . = 0xA00;
+        *(.vector_hwint_4)
+/*        . = 0x8'00;
+        *(.vector_hwint_3)*/
+        . = 0x2000;
         *(.entry)
         _text = .;
 	*(.text)

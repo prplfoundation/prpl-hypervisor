@@ -15,6 +15,5 @@
 
 platform:
 	$(CC) $(CFLAGS) $(INC_DIRS) \
-	        board/reset.c \
 		board/uart.c \
 		board/board.c

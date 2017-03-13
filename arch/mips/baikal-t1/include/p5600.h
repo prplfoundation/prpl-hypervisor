@@ -81,10 +81,12 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GCR_GIC_EN              1
 
 /* Core-Local Register Map */
-#define P5600_GIC_CL_BASE(a)        *(volatile unsigned*) (0xBFBFA000 + a)
-#define GIC_CL_PEND                 P5600_GIC_CL_BASE(0x04)
-#define GIC_CL_RMASK                P5600_GIC_CL_BASE(0x0C)
-#define GIC_CL_SMASK                P5600_GIC_CL_BASE(0x10)
+//#define P5600_GIC_CL_BASE(a)        *(volatile unsigned*) (0xBFBFA000 + a)
+#define P5600_GIC_CL_BASE(a)        *(volatile unsigned*) (0xBBDC8000 + a)
+#define GIC_CL_COREi_PEND           P5600_GIC_CL_BASE(0x04)
+#define GIC_CL_COREi_MASK           P5600_GIC_CL_BASE(0x08)
+#define GIC_CL_COREi_RMASK          P5600_GIC_CL_BASE(0x0C)
+#define GIC_CL_COREi_SMASK          P5600_GIC_CL_BASE(0x10)
 #define GIC_CL_COREi_COMPARE_MAP    P5600_GIC_CL_BASE(0x44) /*COUNTER/COMPARE*/
 #define GIC_CL_COREi_TIMER_MAP      P5600_GIC_CL_BASE(0x48)
 #define GIC_CL_COMPARELO            P5600_GIC_CL_BASE(0xA0)

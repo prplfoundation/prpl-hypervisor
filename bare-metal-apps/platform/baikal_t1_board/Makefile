@@ -71,6 +71,8 @@ CFLAGS += -Wa,-mvirt
 CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
+#Reserve registers t8 and t9 for hypervisor purposes
+#CFLAGS += -ffixed-t8 -ffixed-t9
 #Additional features flags
 CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK) -DLITTLE_ENDIAN
 # AS flags

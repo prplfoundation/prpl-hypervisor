@@ -145,34 +145,45 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
  * @return Pointer to the VM data structure. 
  */
 vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){	
-	static uint32_t vcpu_id=1;
-	uint32_t num_shadow_gprs = (mfc0(CP0_SRSCTL, 2) & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
-	
-	if (vcpu_id > num_shadow_gprs){
-		CRITICAL("No GPR Shadows enough remaining");
-	}
-	
-	vcpu_t *vcpu;
-	
-	vcpu = (vcpu_t*)malloc(sizeof(vcpu_t));
+    static uint32_t vcpu_id=1;
+    uint32_t num_shadow_gprs = ((mfc0(CP0_SRSCTL, 2) & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT) +1;
+        
+    vcpu_t *vcpu;
 
-	memset(vcpu, 0, sizeof(vcpu_t));
-	
-	/* Lowest GPR shadown (zero) is used by the hypervisor */
-	vcpu->gprshadowset = vcpu_id;
-	
-	vcpu->id = vcpu_id;	
-	vcpu_id++;
-	
-	/* Mark VCPU as not initialized */
-	vcpu->init=1;
+    vcpu = (vcpu_t*)malloc(sizeof(vcpu_t));
 
-	vcpu->pc  = entry_point;
-	vcpu->priority = priority;
-	vcpu->priority_rem = priority;	
+    memset(vcpu, 0, sizeof(vcpu_t));
 
-	/* Point to the VM owner */
-	vcpu->vm = vm;
-		
-	return vcpu;
+    /* Lowest GPR shadown (zero) is used by the hypervisor */
+    vcpu->gprshadowset = vcpu_id;
+    
+    if (vcpu_id > num_shadow_gprs){
+        /* Check if the processor supports GPR Shadows. */
+        if (num_shadow_gprs == 0) {
+            /* No GPR Shadow support, use the normal GPR*/
+            vcpu->gprshadowset = 0;
+        }else{
+            /* Not enougth GPR shadows to the next VM. Share the GPR shadow number 1.*/
+            /* TODO: implement policy for better sharing the  */
+            vcpu->gprshadowset = 1;
+        }
+        
+        /* Alloc memory for GPR saving. */
+        vcpu->gpr = (uint32_t*)malloc(32 * 4);
+    }
+
+    vcpu->id = vcpu_id;	
+    vcpu_id++;
+
+    /* Mark VCPU as not initialized */
+    vcpu->init=1;
+
+    vcpu->pc  = entry_point;
+    vcpu->priority = priority;
+    vcpu->priority_rem = priority;	
+
+    /* Point to the VM owner */
+    vcpu->vm = vm;
+            
+    return vcpu;
 }

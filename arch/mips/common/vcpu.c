@@ -120,9 +120,12 @@ void contextRestore(){
 		return;
 	}
 	
-	setPreviousShadowSet(vcpu->gprshadowset);
+	if (vcpu->gprshadowset){
+            setPreviousShadowSet(vcpu->gprshadowset);
 	
-	setLowestGShadow(vcpu->gprshadowset);	
+            setLowestGShadow(vcpu->gprshadowset);	
+        }
+        
 	setGuestID(vcpu->id);
 	
 	setGuestMode();

@@ -31,7 +31,7 @@ CONFIG_INTERVMCOMM_DRV = yes
 # Platform info
 CFLAGS = -DCPU_ID="P5600"
 CFLAGS += -DCPU_ARCH="Baikal-T1 board."
-CFLAGS += -DCPU_FREQ=1200000000
+CFLAGS += -DCPU_FREQ=850000000
 
 # Define DEBUG_GUEST to yes if you desire to compile the guests for debug. The code optimization will be O0.
 DEBUG_GUEST = no
@@ -43,13 +43,13 @@ DEBUG_GUEST = no
 ########################################################################################################
 APP_LIST = ""
 
-HYPERVISOR_OFFSET = 0x00001000
+HYPERVISOR_OFFSET = 0x80001000
 
 SHELL := /bin/bash
 
 # Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
-BAUDRATE=115200
-F_CLK=1200000000
+BAUDRATE=38600
+F_CLK=850000000
 SERIAL_DEV=/dev/ttyACM0
 
 TOPDIR=../../
@@ -65,7 +65,7 @@ CFLAGS += -EL -O2 -mips32r5 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt 
 #flointing pointing options
-CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
+CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double 
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags

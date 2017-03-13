@@ -80,7 +80,7 @@ void init_proc(){
 
 	/* configure the interrupt controller to compatibility mode */
 	asm volatile("di");         		/* Disable all interrupts */
-	mtc0 (CP0_EBASE, 1, 0x9d000000);    	/* Set an EBase value of 0x9D000000 */
+	mtc0 (CP0_EBASE, 1, 0x80000000);    	/* Set an EBase value of 0x80000000 */
 	temp_CP0 = mfc0(CP0_CAUSE, 0);      	/* Get Cause */
 	temp_CP0 |= CAUSE_IV;           	/* Set Cause IV */
 	mtc0(CP0_CAUSE, 0, temp_CP0);       	/* Update Cause */

@@ -154,9 +154,7 @@ int32_t ConfigureGPRShadow(){
 	srsclt_reg = mfc0(CP0_SRSCTL, 2);
 	num_shadow_gprs = (srsclt_reg & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT;
 	if(num_shadow_gprs == 0){
-            WARNING("GPR Shadows not available.");
-		/* panic */
-		//return 1;
+		return 0;
 	}
 	
 	/* Set the ESS field and PSS to zero.*/

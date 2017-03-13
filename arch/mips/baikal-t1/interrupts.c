@@ -39,8 +39,7 @@
 #include <interrupts.h>
 #include <libc.h>
 
-#define MAX_NUM_INTERRUPTS 10
-#define VECTOR_1_OFFSET 0x220
+#define MAX_NUM_INTERRUPTS 7
 
 /** 
  * @brief Interrupt handlers is an array of pointers to 
@@ -56,13 +55,7 @@ handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS] = {NULL};
  * could not be registered. 
  */
 uint32_t register_interrupt(handler_vector_t * handler){
-    uint32_t i;
-    for(i=0; i<MAX_NUM_INTERRUPTS; i++){
-        if(interrupt_handlers[i] == NULL){
-            interrupt_handlers[i] = handler;
-            return VECTOR_1_OFFSET + i*32;
-        }
-    }
+    interrupt_handlers[2] = handler;
     return 0;
 }
 

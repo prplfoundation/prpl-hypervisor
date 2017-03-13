@@ -22,7 +22,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 	.section .exception
 	.org    0xf8
 _ebase:
-	.word   0x9d000000
+	.word   0x80000000
 _imgptr:
 	.word   -1
 

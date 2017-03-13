@@ -74,8 +74,8 @@ struct vmconf_t{
 /* Holds information about a Virtual machine on runtime.  */
 typedef struct vm_t {
 	const char *vm_name;
-	unsigned int id;
-	unsigned int base_addr;
+	uint32_t id;
+	uint32_t base_addr;
 	uint32_t os_type;
 	uint32_t init;	
 	const struct vmconf_t * vmconf;
