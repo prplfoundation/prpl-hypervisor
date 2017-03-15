@@ -149,3 +149,22 @@ $L1:
     beq $zero, $zero, $L1
     nop
     .set micromips
+
+    #pic32mz doesn't need to save/restore registers. 
+    #guests using gpr shadows. 
+    .set at
+    .align 2
+    .section .text
+    .global gpr_context_save
+gpr_context_save:
+    jr $ra
+    nop
+    
+    .set at
+    .align 2
+    .section .text
+    .global gpr_context_restore
+gpr_context_restore:
+    jr $ra
+    nop
+    
