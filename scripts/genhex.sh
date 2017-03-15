@@ -16,7 +16,8 @@
 
 
 #hypervisor base address
-BASE_ADDR=0x9d000000
+
+BASE_ADDR=${BASE_ADDR:=0x9d000000}
 
 # Determine the list of the VM's flash start addresses.
 NUM_VM=0

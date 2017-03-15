@@ -119,16 +119,16 @@ bare_apps:
 	;done
 
 generate_firmware:
-	../../scripts/genhex.sh $(APP_LIST)
+	$(shell export BASE_ADDR=0x80000000; ../../scripts/genhex.sh $(APP_LIST))
 
 make_genconf:
-	gcc -o genconf ../cfg_reader/genconf.c -lconfig
+	gcc -o genconf ../cfg_reader/genconf-baikal.c -lconfig
 	
 config_vms: make_genconf
 	#execute first and exit in case of errors
-	./genconf $(CFG_FILE) || (exit 1)
+	./genconf $(CFG_FILE) baikal-t1 || (exit 1)
 	#execute and export to a makefile variable the ouput of the script
-	$(eval APP_LIST:=$(shell ./genconf $(CFG_FILE) || (exit 1)))
+	$(eval APP_LIST:=$(shell ./genconf $(CFG_FILE) baikal-t1 || (exit 1)))
 
 	
 clean: config_vms
@@ -138,7 +138,7 @@ clean: config_vms
 	rm -f include/vms.info
 	rm -f include/config.h
 	rm -f genconf
-	rm firmware.bin
+	rm -f firmware.bin
 	$(MAKE) -C ../../arch/mips/baikal-t1/boot-qemu clean
 	
 	for i in $(APP_LIST) ; do \
