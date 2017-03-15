@@ -40,7 +40,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define QUEST_TICK_INTERVAL (GUEST_QUANTUM_MS * MILISECOND)
 
 static uint64_t read64_counter(){
-    return (GIC_SH_COUNTERHI << 32) | GIC_SH_COUNTERLO;
+    return ((uint64_t)GIC_SH_COUNTERHI << 32) | GIC_SH_COUNTERLO;
 }
 
 static void write64_compare(uint64_t compare){
@@ -74,17 +74,6 @@ static void timer_interrupt_handler(){
 	
 	run_scheduler();
 	
-	now = read64_counter();
-	if (now >= past)
-		diff_time = now - past;
-	else
-		diff_time = 0xffffffff - (past - now);
-
-	/* Insert a virtual timer interrupt to the guest each other timer tick. */
-	if(diff_time >= QUEST_TICK_INTERVAL){
-		setGuestCTL2(getGuestCTL2() | (GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT));
-		past = now;
-	}
 }
 
 /**
@@ -94,8 +83,6 @@ static void timer_interrupt_handler(){
  * first timer interrupt.
  */
 void start_timer(){
-    uint32_t temp_CP0, offset;
-    
     /* TODO: Missing interrupt registration */
     register_interrupt(timer_interrupt_handler);
         
