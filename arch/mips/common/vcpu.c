@@ -80,6 +80,11 @@ void contextSave(){
 		 vcputosave->guestclt2 |= getGuestCTL2();
 
 		 vcputosave->pc = getEPC();
+                 
+                 /* Save the GPR shadow if needed. */
+                 if(vcputosave->gpr){
+                     gpr_context_save(vcputosave->gpr);
+                 }
 	}
 }
 
@@ -157,4 +162,8 @@ void contextRestore(){
 	vcpu->guestclt2 &= ~(GUEST_TIMER_INT << GUESTCLT2_GRIPL_SHIFT);
 	
 	setEPC(vcpu->pc);
+	
+        if(vcpu->gpr){
+            gpr_context_restore(vcpu->gpr);
+        }
 }
