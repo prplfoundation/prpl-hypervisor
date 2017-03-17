@@ -20,11 +20,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 	.section .exception
-	.org    0xf8
-_ebase:
-	.word   0x80000000
-_imgptr:
-	.word   -1
 
 	.section .vector0
 	.global _isr
@@ -102,6 +97,10 @@ isr_return:
 _entry:
 	.set noreorder
 
+$L2:
+	beq	$zero, $zero, $L2
+	nop
+	
 	la	$gp, _gp
 	la	$sp, _stack
 
@@ -113,19 +112,6 @@ $BSS_CLEAR:
 	slt	$v1, $a1, $a0
 	addiu	$a1, $a1, 4
 	bnez	$v1, $BSS_CLEAR
-	nop
-
-	# copy .data from flash to SRAM
-	la	$a0, _edata
-	la	$a1, _data
-	la	$a2, _erodata
-$COPY_DATA:
-	lw	$v0, 0($a2)
-	sw	$v0, 0($a1)
-	slt	$v1, $a1, $a0
-	addiu	$a1, $a1, 4
-	addiu	$a2, $a2, 4
-	bnez	$v1, $COPY_DATA
 	nop
 
 	jal     init_mem
