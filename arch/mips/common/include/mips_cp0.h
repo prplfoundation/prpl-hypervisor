@@ -119,6 +119,9 @@
 #define CP0_TAGLO               28
 #define CP0_DATALO              28
 #define CP0_ERROREPC            30
+#define CP0_KSCRATCH1		30
+#define CP0_KSCRATCH2		30
+#define CP0_KSCRATCH3		30
 #define CP0_DESAVE              31
 
 #define C0_SEGCTL0 		5,	2

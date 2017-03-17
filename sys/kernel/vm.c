@@ -40,6 +40,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <queue.h>
 #include <board.h>
 
+
 /**
  * @brief Responsable by the VM's data initialization.
  * Called once during the hypervisor's startup. 
@@ -146,13 +147,15 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
  */
 vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){	
     static uint32_t vcpu_id=1;
-    uint32_t num_shadow_gprs = ((mfc0(CP0_SRSCTL, 2) & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT) +1;
+    uint32_t num_shadow_gprs = ((mfc0(CP0_SRSCTL, 2) & SRSCTL_HSS) >> SRSCTL_HSS_SHIFT);
         
     vcpu_t *vcpu;
 
     vcpu = (vcpu_t*)malloc(sizeof(vcpu_t));
 
     memset(vcpu, 0, sizeof(vcpu_t));
+    
+    initialize_vcpu_cp0(vcpu);
 
     /* Lowest GPR shadown (zero) is used by the hypervisor */
     vcpu->gprshadowset = vcpu_id;
@@ -169,7 +172,9 @@ vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){
         }
         
         /* Alloc memory for GPR saving. */
-        vcpu->gpr = (uint32_t*)malloc(32 * 4);
+        vcpu->gpr = (uint32_t*)malloc(GPR_SIZE);
+	
+	memset(vcpu->gpr, 0, GPR_SIZE);
     }
 
     vcpu->id = vcpu_id;	

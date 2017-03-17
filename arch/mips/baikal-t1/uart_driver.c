@@ -40,6 +40,17 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <pic32mz.h>
 #include <platform.h>
 
+
+extern uint32_t _stack;
+
+
+void print_stack(){
+    uint32_t i;
+    for(i=((uint32_t)(&_stack))-(32*4); i<((int)(&_stack)); i+=sizeof(uint32_t*)){
+        printf("0x%08x\n", ((uint32_t)*(uint32_t*)i));
+    }
+}
+
 /** 
  * @brief UART TX hypercall.
  * Write characters to the hardware queue and block the VCPU when
@@ -66,7 +77,6 @@ static void send(){
  * @brief UART Driver init call. 
  */
 static void uart_driver_init(){
-	uint32_t offset;
 	
 	if (register_hypercall(send, HCALL_UART_SEND) < 0){
 		ERROR("Error registering the HCALL_GET_VM_ID hypercall");

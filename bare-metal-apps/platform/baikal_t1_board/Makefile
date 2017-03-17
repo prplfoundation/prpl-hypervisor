@@ -64,7 +64,7 @@ else
 endif
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -mtune=m14k -mips32r2 -Wall
+CFLAGS += -EL -mips32r5 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options
@@ -76,14 +76,14 @@ CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
 CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK) -DLITTLE_ENDIAN
 # AS flags
-ASFLAGS += -EL -mvirt -mips32r2
+ASFLAGS += -EL -mvirt -mips32r5
 # LD flags
 LDFLAGS += -EL
 
 $(APP): 
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -Map ../../apps/$(APP)/$(APP).map -o ../../apps/$(APP)/$(APP).elf ../../apps/$(APP)/*.o -N $(LIBS)
-	$(STRIP) ../../apps/$(APP)/$(APP).elf
-	$(OBJDUMP) --disassemble --reloc ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).lst
+#	$(STRIP) ../../apps/$(APP)/$(APP).elf
+	$(OBJDUMP) -Dz ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).lst
 	$(OBJDUMP) -h ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).sec
 	$(OBJDUMP) -s ../../apps/$(APP)/$(APP).elf > ../../apps/$(APP)/$(APP).cnt
 	$(OBJCOPY) -O binary ../../apps/$(APP)/$(APP).elf ../../apps/$(APP)/$(APP).bin

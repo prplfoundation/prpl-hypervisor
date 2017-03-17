@@ -21,52 +21,53 @@ _isr:
     .set noreorder
     .set noat
     
-    la  $t8, _stack          # $t8 is reserved for hypervisor usage
-    addi $t8, $t8, -128      # initialize stack 
+    mtc0 $sp, $30, 2		#kscratch1
+    
+    la  $sp, _stack          # set hypervisor stack
+    addi $sp, $sp, -132      # reserved space for gpr st stack
 
-    sw    $at, 0($t8)           #save all GPR
-    sw    $v0, 4($t8)
-    sw    $v1, 8($t8)
-    sw    $a0, 12($t8)
-    sw    $a1, 16($t8)
-    sw    $a2, 20($t8)
-    sw    $a3, 24($t8)
-    sw    $t0, 28($t8)
-    sw    $t1, 32($t8)
-    sw    $t2, 36($t8)
-    sw    $t3, 40($t8)
-    sw    $t4, 44($t8)
-    sw    $t5, 48($t8)
-    sw    $t6, 52($t8)
-    sw    $t7, 56($t8)
-    sw    $s0, 60($t8)
-    sw    $s1, 64($t8)
-    sw    $s2, 68($t8)
-    sw    $s3, 72($t8)
-    sw    $s4, 76($t8)
-    sw    $s5, 80($t8)
-    sw    $s6, 84($t8)
-    sw    $s7, 88($t8)
-    sw    $k0, 92($t8)
-    sw    $k1, 96($t8)
-    sw    $gp, 100($t8)
-    sw    $sp, 104($t8)
-    sw    $fp, 108($t8)
-    sw    $ra, 112($t8)
-    mfc0  $k0, $14          #C0_EPC=14 (Exception PC)
-    sw    $k0, 116($t8)
+    sw    $at, 0($sp)           #save all GPR
+    sw    $v0, 4($sp)
+    sw    $v1, 8($sp)
+    sw    $a0, 12($sp)
+    sw    $a1, 16($sp)
+    sw    $a2, 20($sp)
+    sw    $a3, 24($sp)
+    sw    $t0, 28($sp)
+    sw    $t1, 32($sp)
+    sw    $t2, 36($sp)
+    sw    $t3, 40($sp)
+    sw    $t4, 44($sp)
+    sw    $t5, 48($sp)
+    sw    $t6, 52($sp)
+    sw    $t7, 56($sp)
+    sw    $t8, 60($sp)
+    sw    $t9, 64($sp)
+    sw    $s0, 68($sp)
+    sw    $s1, 72($sp)
+    sw    $s2, 76($sp)
+    sw    $s3, 80($sp)
+    sw    $s4, 84($sp)
+    sw    $s5, 88($sp)
+    sw    $s6, 92($sp)
+    sw    $s7, 96($sp)
+    sw    $k0, 100($sp)
+    sw    $k1, 104($sp)
+    sw    $gp, 108($sp)
+    sw    $fp, 112($sp)
+    sw    $ra, 116($sp)
+    mfc0  $k1, $30, 2	    # saved $sp
+    sw	  $k1, 120($sp)	
     mfhi  $k1
-    sw    $k1, 120($t8)
+    sw    $k1, 124($sp)
     mflo  $k1
-    sw    $k1, 124($t8)
+    sw    $k1, 128($sp)
 
-    move  $sp, $t8          #
-    la    $t8, general_exception_handler
-    jalr  $t8
+    la    $k0, general_exception_handler
+    jalr  $k0
     nop
 	
-    #Restore all temporary registers
-    lw    $at, 0($sp)
+    lw    $at, 0($sp)           #restore all GPR
     lw    $v0, 4($sp)
     lw    $v1, 8($sp)
     lw    $a0, 12($sp)
@@ -81,26 +82,31 @@ _isr:
     lw    $t5, 48($sp)
     lw    $t6, 52($sp)
     lw    $t7, 56($sp)
-    lw    $s0, 60($sp)
-    lw    $s1, 64($sp)
-    lw    $s2, 68($sp)
-    lw    $s3, 72($sp)
-    lw    $s4, 76($sp)
-    lw    $s5, 80($sp)
-    lw    $s6, 84($sp)
-    lw    $s7, 88($sp)
-    lw    $k0, 92($sp)
-    lw    $k1, 96($sp)
-    lw    $gp, 100($sp)
-    #sp is restored at the end
-    lw    $fp, 108($sp)
-    lw    $ra, 112($sp)
-    lw    $t8, 116($sp)
-    mtc0  $t8, $14	
-    lw    $t8, 120($sp)
-    mthi  $t8
-    lw    $t8, 124($sp)
-    mtlo  $t8
+    lw    $t8, 60($sp)
+    lw    $t9, 64($sp)
+    lw    $s0, 68($sp)
+    lw    $s1, 72($sp)
+    lw    $s2, 76($sp)
+    lw    $s3, 80($sp)
+    lw    $s4, 84($sp)
+    lw    $s5, 88($sp)
+    lw    $s6, 92($sp)
+    lw    $s7, 96($sp)
+    # $k0 restored at the end
+    lw    $k1, 104($sp)
+    lw    $gp, 108($sp)
+    lw    $fp, 112($sp)
+    lw    $ra, 116($sp)
+    # $sp restored at the end
+    lw    $k0, 124($sp)
+    mthi  $k0
+    lw    $k0, 128($sp)
+    mtlo  $k0
+    
+    lw    $k0, 100($sp)
+    lw	  $sp, 120($sp)	
+    
+    ehb
     eret
     nop
     
@@ -109,52 +115,54 @@ _isr:
 vector_hwint_2:
     .set noat
 
-    la  $t8, _stack          # $t8 is reserved for hypervisor usage
-    addi $t8, $t8, -128      # initialize stack 
+    mtc0 $sp, $30, 2		#kscratch1
+    
+    la  $sp, _stack         	# set hypervisor stack
+    addi $sp, $sp, -132      	# reserved space for gpr st stack
 
-    sw    $at, 0($t8)           #save all GPR
-    sw    $v0, 4($t8)
-    sw    $v1, 8($t8)
-    sw    $a0, 12($t8)
-    sw    $a1, 16($t8)
-    sw    $a2, 20($t8)
-    sw    $a3, 24($t8)
-    sw    $t0, 28($t8)
-    sw    $t1, 32($t8)
-    sw    $t2, 36($t8)
-    sw    $t3, 40($t8)
-    sw    $t4, 44($t8)
-    sw    $t5, 48($t8)
-    sw    $t6, 52($t8)
-    sw    $t7, 56($t8)
-    sw    $s0, 60($t8)
-    sw    $s1, 64($t8)
-    sw    $s2, 68($t8)
-    sw    $s3, 72($t8)
-    sw    $s4, 76($t8)
-    sw    $s5, 80($t8)
-    sw    $s6, 84($t8)
-    sw    $s7, 88($t8)
-    sw    $k0, 92($t8)
-    sw    $k1, 96($t8)
-    sw    $gp, 100($t8)
-    sw    $sp, 104($t8)
-    sw    $fp, 108($t8)
-    sw    $ra, 112($t8)
-    mfc0  $k0, $14          #C0_EPC=14 (Exception PC)
-    sw    $k0, 116($t8)
-    mfhi  $k1
-    sw    $k1, 120($t8)
-    mflo  $k1
-    sw    $k1, 124($t8)
+    sw    $at, 0($sp)		#save all GPR
+    sw    $v0, 4($sp)
+    sw    $v1, 8($sp)
+    sw    $a0, 12($sp)
+    sw    $a1, 16($sp)
+    sw    $a2, 20($sp)
+    sw    $a3, 24($sp)
+    sw    $t0, 28($sp)
+    sw    $t1, 32($sp)
+    sw    $t2, 36($sp)
+    sw    $t3, 40($sp)
+    sw    $t4, 44($sp)
+    sw    $t5, 48($sp)
+    sw    $t6, 52($sp)
+    sw    $t7, 56($sp)
+    sw    $t8, 60($sp)
+    sw    $t9, 64($sp)
+    sw    $s0, 68($sp)
+    sw    $s1, 72($sp)
+    sw    $s2, 76($sp)
+    sw    $s3, 80($sp)
+    sw    $s4, 84($sp)
+    sw    $s5, 88($sp)
+    sw    $s6, 92($sp)
+    sw    $s7, 96($sp)
+    sw    $k0, 100($sp)
+    sw    $k1, 104($sp)
+    sw    $gp, 108($sp)
+    sw    $fp, 112($sp)
+    sw    $ra, 116($sp)
+    mfc0  $k0, $30, 2	    	# saved $sp
+    sw	  $k0, 120($sp)	
+    mfhi  $k0
+    sw    $k0, 124($sp)
+    mflo  $k0
+    sw    $k0, 128($sp)
 
-    la $k1, interrupt_handlers
-    lw $k1, 8($k1)
-    jalr $k1
+    la $k0, interrupt_handlers
+    lw $k0, 8($k0)
+    jalr $k0
     nop
 	
-    #Restore all temporary registers
-    lw    $at, 0($sp)
+    lw    $at, 0($sp)          	#restore all GPR
     lw    $v0, 4($sp)
     lw    $v1, 8($sp)
     lw    $a0, 12($sp)
@@ -169,27 +177,31 @@ vector_hwint_2:
     lw    $t5, 48($sp)
     lw    $t6, 52($sp)
     lw    $t7, 56($sp)
-    lw    $s0, 60($sp)
-    lw    $s1, 64($sp)
-    lw    $s2, 68($sp)
-    lw    $s3, 72($sp)
-    lw    $s4, 76($sp)
-    lw    $s5, 80($sp)
-    lw    $s6, 84($sp)
-    lw    $s7, 88($sp)
-    lw    $k0, 92($sp)
-    lw    $k1, 96($sp)
-    lw    $gp, 100($sp)
-    #sp is restored at the end
-    lw    $fp, 108($sp)
-    lw    $ra, 112($sp)
-    lw    $t8, 116($sp)
-    mtc0  $t8, $14	
-    lw    $t8, 120($sp)
-    mthi  $t8
-    lw    $t8, 124($sp)
-    mtlo  $t8
-    lw    $sp, 104($sp)
+    lw    $t8, 60($sp)
+    lw    $t9, 64($sp)
+    lw    $s0, 68($sp)
+    lw    $s1, 72($sp)
+    lw    $s2, 76($sp)
+    lw    $s3, 80($sp)
+    lw    $s4, 84($sp)
+    lw    $s5, 88($sp)
+    lw    $s6, 92($sp)
+    lw    $s7, 96($sp)
+    # $k0 restored at the end
+    lw    $k1, 104($sp)
+    lw    $gp, 108($sp)
+    lw    $fp, 112($sp)
+    lw    $ra, 116($sp)
+    # $sp restored at the end
+    lw    $k0, 124($sp)
+    mthi  $k0
+    lw    $k0, 128($sp)
+    mtlo  $k0
+    
+    lw    $k0, 100($sp)
+    lw	  $sp, 120($sp)	
+    
+    ehb
     eret
     nop
 
@@ -201,7 +213,7 @@ _entry:
     .set noreorder
     .set noat
 
-    la  $gp, _gp
+    #la  $gp, _gp
     la  $sp, _stack
     
     # clear the .bss
@@ -222,153 +234,4 @@ $L1:
     nop
 
     
-    .set at
-    .align 2
-    .section .text
-    .global gpr_context_restore
-gpr_context_restore:
-    la  $a1, _stack
-    addi $a1, $a1, -128
-    
-    lw    $v0, 0($a0)
-    sw    $v0, 0($a1)  
-    lw    $v0, 4($a0)
-    sw    $v0, 4($a1)
-    lw    $v0, 8($a0)
-    sw    $v0, 8($a1)
-    lw    $v0, 12($a0)
-    sw    $v0, 12($a1)
-    lw    $v0, 16($a0)
-    sw    $v0, 16($a1)
-    lw    $v0, 20($a0)
-    sw    $v0, 20($a1)
-    lw    $v0, 24($a0)
-    sw    $v0, 24($a1)
-    lw    $v0, 28($a0)
-    sw    $v0, 28($a1)
-    lw    $v0, 32($a0)
-    sw    $v0, 32($a1)
-    lw    $v0, 36($a0)
-    sw    $v0, 36($a1)
-    lw    $v0, 40($a0)
-    sw    $v0, 40($a1)
-    lw    $v0, 44($a0)
-    sw    $v0, 44($a1)
-    lw    $v0, 48($a0)
-    sw    $v0, 48($a1)
-    lw    $v0, 52($a0)
-    sw    $v0, 52($a1)
-    lw    $v0, 56($a0)
-    sw    $v0, 56($a1)
-    lw    $v0, 60($a0)
-    sw    $v0, 60($a1)
-    lw    $v0, 64($a0)
-    sw    $v0, 64($a1)
-    lw    $v0, 68($a0)
-    sw    $v0, 68($a1)
-    lw    $v0, 72($a0)
-    sw    $v0, 72($a1)
-    lw    $v0, 76($a0)
-    sw    $v0, 76($a1)
-    lw    $v0, 80($a0)
-    sw    $v0, 80($a1)
-    lw    $v0, 84($a0)
-    sw    $v0, 84($a1)
-    lw    $v0, 88($a0)
-    sw    $v0, 88($a1)
-    lw    $v0, 92($a0)
-    sw    $v0, 92($a1)
-    lw    $v0, 96($a0)
-    sw    $v0, 96($a1)
-    lw    $v0, 100($a0)
-    sw    $v0, 100($a1)
-    lw    $sp, 104($a0)
-    sw    $sp, 104($a1)
-    lw    $v0, 108($a0)
-    sw    $v0, 108($a1)
-    lw    $v0, 112($a0)
-    sw    $v0, 112($a1)
-    lw    $v0, 116($a0)
-    sw    $v0, 116($a1)
-    lw    $v0, 120($a0)
-    sw    $v0, 120($a1)
-    lw    $v0, 124($a0)
-    sw    $v0, 124($a1)
-    jr    $ra
-    nop
-    
-    .set at
-    .align 2
-    .section .text
-    .global gpr_context_save
-gpr_context_save:
-    la  $a1, _stack
-    addi $a1, $a1, -128
-    
-    lw    $v0, 0($a1)
-    sw    $v0, 0($a0)  
-    lw    $v0, 4($a1)
-    sw    $v0, 4($a0)
-    lw    $v0, 8($a1)
-    sw    $v0, 8($a0)
-    lw    $v0, 12($a1)
-    sw    $v0, 12($a0)
-    lw    $v0, 16($a1)
-    sw    $v0, 16($a0)
-    lw    $v0, 20($a1)
-    sw    $v0, 20($a0)
-    lw    $v0, 24($a1)
-    sw    $v0, 24($a0)
-    lw    $v0, 28($a1)
-    sw    $v0, 28($a0)
-    lw    $v0, 32($a1)
-    sw    $v0, 32($a0)
-    lw    $v0, 36($a1)
-    sw    $v0, 36($a0)
-    lw    $v0, 40($a1)
-    sw    $v0, 40($a0)
-    lw    $v0, 44($a1)
-    sw    $v0, 44($a0)
-    lw    $v0, 48($a1)
-    sw    $v0, 48($a0)
-    lw    $v0, 52($a1)
-    sw    $v0, 52($a0)
-    lw    $v0, 56($a1)
-    sw    $v0, 56($a0)
-    lw    $v0, 60($a1)
-    sw    $v0, 60($a0)
-    lw    $v0, 64($a1)
-    sw    $v0, 64($a0)
-    lw    $v0, 68($a1)
-    sw    $v0, 68($a0)
-    lw    $v0, 72($a1)
-    sw    $v0, 72($a0)
-    lw    $v0, 76($a1)
-    sw    $v0, 76($a0)
-    lw    $v0, 80($a1)
-    sw    $v0, 80($a0)
-    lw    $v0, 84($a1)
-    sw    $v0, 84($a0)
-    lw    $v0, 88($a1)
-    sw    $v0, 88($a0)
-    lw    $v0, 92($a1)
-    sw    $v0, 92($a0)
-    lw    $v0, 96($a1)
-    sw    $v0, 96($a0)
-    lw    $v0, 100($a1)
-    sw    $v0, 100($a0)
-    lw    $sp, 104($a1)
-    sw    $sp, 104($a0)
-    lw    $v0, 108($a1)
-    sw    $v0, 108($a0)
-    lw    $v0, 112($a1)
-    sw    $v0, 112($a0)
-    lw    $v0, 116($a1)
-    sw    $v0, 116($a0)
-    lw    $v0, 120($a1)
-    sw    $v0, 120($a0)
-    lw    $v0, 124($a1)
-    sw    $v0, 124($a0)
-    jr    $ra
-    nop
     

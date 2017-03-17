@@ -43,11 +43,9 @@ DEBUG_GUEST = no
 ########################################################################################################
 APP_LIST = ""
 
-HYPERVISOR_OFFSET = 0x80001000
-
 SHELL := /bin/bash
 
-# Setup PIC32MZEF core configuration to be used with Microchip_UART.hex bootloader
+# Setup Baikal-T1 core configuration used with u-boot.
 BAUDRATE=38600
 F_CLK=850000000
 SERIAL_DEV=/dev/ttyACM0
@@ -69,7 +67,7 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
-CFLAGS += -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION} -DHYPERVISOR_OFFSET=$(HYPERVISOR_OFFSET)
+CFLAGS += -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION} 
 # LD flags
 LDFLAGS = -EL  
 

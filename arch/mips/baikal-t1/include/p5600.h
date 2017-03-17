@@ -71,6 +71,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /*Global Interrupt Controler Registers Bits */
 #define GIC_SH_CONFIG_COUNTSTOP (1<<28)
+#define GIC_SH_CONFIG_VZE	(1<<30)
 
 
 /*Global Control Block Registers */
@@ -95,6 +96,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Core-Local Registers Bits */
 #define GIC_CL_TIMER_MASK       0x4
+
+/* IM bits of Status Register*/
+
+#define IM4_COMPARE_INT		0x10
 
 
 

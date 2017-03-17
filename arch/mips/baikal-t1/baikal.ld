@@ -33,77 +33,76 @@ SECTIONS
 {
 	.kernel 0x80000000:
 	{
-	. = 0x200;
-        *(.exception)
-/*        . = 0x600;
-        *(.vector_hwint_0)
-        . = 0x800;
-        *(.vector_hwint_1)*/
-        . = 0xA00;
-        *(.vector_hwint_4)
-/*        . = 0x8'00;
-        *(.vector_hwint_3)*/
-        . = 0x2000;
-        *(.entry)
-        _text = .;
-	*(.text)
-        *(.text.*)
-        _etext = .;
-    } > ram
+		. = 0x200;
+		*(.exception)
+	/*        . = 0x600;
+		*(.vector_hwint_0)
+		. = 0x800;
+		*(.vector_hwint_1)*/
+		. = 0xA00;
+		*(.vector_hwint_4)
+	/*        . = 0x8'00;
+		*(.vector_hwint_3)*/
+		. = 0x2000;
+		*(.entry)
+		_text = .;
+		*(.text)
+		*(.text.*)
+		_etext = .;
+	} > ram
 
-    .__drivers_table_init :
-    {
-        __drivers_table_init_start = .;
-        *(.__drivers_table_init)
-        __drivers_table_init_end = .;
-    } > ram
+	.__drivers_table_init :
+	{
+		__drivers_table_init_start = .;
+		*(.__drivers_table_init)
+		__drivers_table_init_end = .;
+	} > ram
     
-    .MIPS.abiflags : {
-        __MIPS_abiflags_start = .;
-        *(.MIPS.abiflags)
-        __MIPS_abiflags_end = .;
-    } > ram
+	.MIPS.abiflags : {
+		__MIPS_abiflags_start = .;
+		*(.MIPS.abiflags)
+		__MIPS_abiflags_end = .;
+	} > ram
     
 	.reginfo : {
 		*(.reginfo)
 	} > ram
 
-    .rodata :
-    {
-        _rodata = .;
-        *(.rodata)
-        *(.rodata.*)
-        _erodata = .;
-    } > ram
+	.rodata :
+	{
+		_rodata = .;
+		*(.rodata)
+		*(.rodata.*)
+		_erodata = .;
+	} > ram
 
-    .data : AT (ADDR (.rodata) + SIZEOF (.rodata))
-    {
-        _data = .;
-        *(.data)
-        *(.data.*)
-        _gp = .;
-        *(.sdata)
-        *(.sdata.*)
-        . = ALIGN(16); 
-    } > ram
+	.data : 
+	{
+		_data = .;
+		*(.data)
+		*(.data.*)
+		_gp = .;
+		*(.sdata)
+		*(.sdata.*)
+		. = ALIGN(16); 
+		_edata = .;
+	} > ram
 
-    _edata = .;
-
-    .bss :
-    {
-        _bss_start = .; 
-        *(.bss) 
-        *(.bss.*)
-        *(.sbss) 
-        *(.sbss.*)
-	*(.scommon)
-        . = ALIGN(4);
-        _bss_end = . ;
-    } > ram
+	.bss :
+	{
+		_bss_start = .; 
+		*(.bss) 
+		*(.bss.*)
+		*(.sbss) 
+		*(.sbss.*)
+		*(.scommon)
+		. = ALIGN(4);
+		_bss_end = . ;
+	} > ram
 
 }
-    _end = .;
-    _heap_start = . ;
-    _heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - _stack_size;
+_end = .;
+_heap_start = . ;
+_heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - _stack_size;
     
 

@@ -21,7 +21,7 @@ SECTIONS
 		. = 0x200;
 		*(.vector0)
 		. = 0x1000;
-        *(.e_entry)
+		*(.e_entry)
 		_text = .;
 		*(.text)
 	        *(.text.*)
@@ -44,7 +44,7 @@ SECTIONS
 		_erodata = .;
 	} > ram
 
-	.data : AT (ADDR (.rodata) + SIZEOF (.rodata))
+	.data : 
 	{
 		_data = .;
 		*(.data)
@@ -70,9 +70,7 @@ SECTIONS
 	} > ram
 
 }
-	_end = .;
-    . = ALIGN(4); 
-    _heap_start = . ;
-    _heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - 4 - _stack_size;
-
-
+_end = .;
+. = ALIGN(4); 
+_heap_start = . ;
+_heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - 4 - _stack_size;

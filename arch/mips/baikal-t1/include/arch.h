@@ -22,5 +22,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <baikal-t1.h>
 #include <p5600.h>
+#include <gpr_context.h>
 
 #endif

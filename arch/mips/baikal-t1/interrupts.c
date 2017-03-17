@@ -68,6 +68,9 @@ static void interrupt_init(){
     /*Enable the Global Interrupt Controller */
     GCB_GIC |= 1;
     
+    /* GIC in Virtualization mode */
+    GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;
+    
     /* Configure the processor to vectored interrupt mode. */
 
 //    mtc0 (CP0_EBASE, 1, 0x80000000);    /* Set an EBase value of 0x9D000000 */
@@ -79,7 +82,6 @@ static void interrupt_init(){
     temp = mfc0(CP0_STATUS, 0);     /* Get Status */
     temp &= ~STATUS_BEV;            /* Clear Status BEV */
     temp &= ~STATUS_EXL; 
-    temp |= (0x7f << STATUS_IM_SHIFT);
     mtc0(CP0_STATUS, 0, temp);      /* Update Status */
     
     temp = mfc0(CP0_INTCTL, 1);
