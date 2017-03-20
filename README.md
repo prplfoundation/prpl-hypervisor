@@ -1,4 +1,4 @@
-##What is the prplHypervisor™?
+## What is the prplHypervisor™?
 
 The prplHypervisor™ is the industry-first open source hypervisor specifically designed to provide security 
 through separation for the billions of embedded connected devices that power the Internet of Things. The MIPS 
@@ -12,7 +12,7 @@ communications. prplHypervisor™, prplPUF™, and prplSecureInterVM™ technolo
 framework and are released under prpl Foundation permissive license – see http://prplfoundation.org/ip-policy.
 
 
-##How to build?
+## How to build?
 
 Once you have the building environment configured, go to a platform board folder:
 
