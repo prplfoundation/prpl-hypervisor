@@ -84,7 +84,7 @@ void interrupt_injection(){
 			guestctl = getGuestCTL2();
 			
 			/* Avoid inject the same interrupt twoice. */
-			if (!(guestctl && (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT))){
+			if (!(guestctl & (interrupt_mapping_list[i].irq_guest << GUESTCLT2_GRIPL_SHIFT))){
 				/* Disable interrupt - The guest must reenable the interrupt on its handler.  */
 				IECCLR(interrupt_mapping_list[i].irq_number >> 5) = 1 << (interrupt_mapping_list[i].irq_number & 31);
 			
