@@ -16,15 +16,19 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 */
     
 
-    .section .exception
-_isr:
+######################## EXCEPTION #############################################
+.section .exception
+exception:
     .set noreorder
     .set noat
     
-    mtc0 $sp, $30, 2		#kscratch1
+    mtc0 $sp, $31, 2		#kscratch1
+    mtc0 $gp, $31, 3		#kscratch2
     
     la  $sp, _stack          # set hypervisor stack
     addi $sp, $sp, -132      # reserved space for gpr st stack
+    
+    la  $gp, _gp
 
     sw    $at, 0($sp)           #save all GPR
     sw    $v0, 4($sp)
@@ -53,11 +57,13 @@ _isr:
     sw    $s7, 96($sp)
     sw    $k0, 100($sp)
     sw    $k1, 104($sp)
-    sw    $gp, 108($sp)
+    #save gp to position 108.
     sw    $fp, 112($sp)
     sw    $ra, 116($sp)
-    mfc0  $k1, $30, 2	    # saved $sp
+    mfc0  $k1, $31, 2	    # saved $sp
     sw	  $k1, 120($sp)	
+    mfc0  $k1, $31, 3	    # saved $gp
+    sw	  $k1, 108($sp)		
     mfhi  $k1
     sw    $k1, 124($sp)
     mflo  $k1
@@ -109,16 +115,20 @@ _isr:
     ehb
     eret
     nop
-    
 
+    
+######################## HARDWARE INT 4 ###############################################
 .section .vector_hwint_4
-vector_hwint_2:
+vector_hwint_4:
     .set noat
 
-    mtc0 $sp, $30, 2		#kscratch1
+    mtc0 $sp, $31, 2		#kscratch1
+    mtc0 $gp, $31, 3		#kscratch2
     
-    la  $sp, _stack         	# set hypervisor stack
-    addi $sp, $sp, -132      	# reserved space for gpr st stack
+    la  $sp, _stack          # set hypervisor stack
+    addi $sp, $sp, -132      # reserved space for gpr st stack
+    
+    la  $gp, _gp
 
     sw    $at, 0($sp)		#save all GPR
     sw    $v0, 4($sp)
@@ -147,11 +157,13 @@ vector_hwint_2:
     sw    $s7, 96($sp)
     sw    $k0, 100($sp)
     sw    $k1, 104($sp)
-    sw    $gp, 108($sp)
+    #save gp to position 108.
     sw    $fp, 112($sp)
     sw    $ra, 116($sp)
-    mfc0  $k0, $30, 2	    	# saved $sp
+    mfc0  $k0, $31, 2	    	# saved $sp
     sw	  $k0, 120($sp)	
+    mfc0  $k0, $31, 3	    	# saved $gp
+    sw	  $k0, 108($sp)		
     mfhi  $k0
     sw    $k0, 124($sp)
     mflo  $k0
@@ -213,7 +225,7 @@ _entry:
     .set noreorder
     .set noat
 
-    #la  $gp, _gp
+    la  $gp, _gp
     la  $sp, _stack
     
     # clear the .bss

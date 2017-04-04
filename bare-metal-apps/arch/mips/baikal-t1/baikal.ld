@@ -26,14 +26,17 @@ SECTIONS
 		*(.text)
 	        *(.text.*)
 		_etext = .;
+		. = ALIGN(4);
 	} > ram
 
 	.MIPS.abiflags : {
 		*(.MIPS.abiflags)
+		. = ALIGN(4);
 	} > ram
 
 	.reginfo : {
 		*(.reginfo)
+		. = ALIGN(4);
 	} > ram
     
 	.rodata :
@@ -42,6 +45,7 @@ SECTIONS
 		*(.rodata)
 		*(.rodata.*)
 		_erodata = .;
+		. = ALIGN(4);
 	} > ram
 
 	.data : 
@@ -65,9 +69,11 @@ SECTIONS
 		*(.sbss) 
 		*(.sbss.*)
 		*(.scommon)
-		. = ALIGN(4);
+		. = ALIGN(4);				
 		_bss_end = . ;
+		
 	} > ram
+	
 
 }
 _end = .;

@@ -55,40 +55,36 @@ handler_vector_t * interrupt_handlers[MAX_NUM_INTERRUPTS] = {NULL};
  * could not be registered. 
  */
 uint32_t register_interrupt(handler_vector_t * handler){
-    interrupt_handlers[2] = handler;
-    return 0;
+	interrupt_handlers[2] = handler;
+	return 0;
 }
 
 /** 
  * @brief Configures the P5600 in vectored interrupt mode. 
  */
 static void interrupt_init(){
-    uint32_t temp;
+	uint32_t temp;
     
-    /*Enable the Global Interrupt Controller */
-    GCB_GIC |= 1;
+	/*Enable the Global Interrupt Controller */
+	GCB_GIC |= 1;
+	
+	mtc0(CP0_EBASE, 0, 0x80000000);
     
-    /* GIC in Virtualization mode */
-    GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;
-    
-    /* Configure the processor to vectored interrupt mode. */
+	/* Configure the processor to vectored interrupt mode. */
+	temp = mfc0(CP0_CAUSE, 0);      /* Get Cause */
+	temp |= CAUSE_IV;               /* Set Cause IV */
+	mtc0(CP0_CAUSE, 0, temp);       /* Update Cause */
 
-//    mtc0 (CP0_EBASE, 1, 0x80000000);    /* Set an EBase value of 0x9D000000 */
-    temp = mfc0(CP0_CAUSE, 0);      /* Get Cause */
-    temp |= CAUSE_IV;               /* Set Cause IV */
-    mtc0(CP0_CAUSE, 0, temp);       /* Update Cause */
-
-
-    temp = mfc0(CP0_STATUS, 0);     /* Get Status */
-    temp &= ~STATUS_BEV;            /* Clear Status BEV */
-    temp &= ~STATUS_EXL; 
-    mtc0(CP0_STATUS, 0, temp);      /* Update Status */
+	temp = mfc0(CP0_STATUS, 0);     /* Get Status */
+	temp &= ~STATUS_BEV;            /* Clear Status BEV */
+	temp &= ~STATUS_EXL; 
+	mtc0(CP0_STATUS, 0, temp);      /* Update Status */
     
-    temp = mfc0(CP0_INTCTL, 1);
-    temp = (temp & ~(0x1f<<INTCTL_VS_SHIFT)) | (0x10 << INTCTL_VS_SHIFT);
-    mtc0(CP0_INTCTL, 1, temp);
+	temp = mfc0(CP0_INTCTL, 1);
+	temp = (temp & ~(0x1f<<INTCTL_VS_SHIFT)) | (0x10 << INTCTL_VS_SHIFT);
+	mtc0(CP0_INTCTL, 1, temp);
    
-    INFO("P5600 core in Vectored Interrupt Mode.");
+	INFO("P5600 core in Vectored Interrupt Mode.");
 }
 
 driver_init(interrupt_init);

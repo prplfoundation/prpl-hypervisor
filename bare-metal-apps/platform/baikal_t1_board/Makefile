@@ -64,7 +64,7 @@ else
 endif
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -mips32r5 -Wall
+CFLAGS += -EL -mips32r2 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt
 #flointing pointing options

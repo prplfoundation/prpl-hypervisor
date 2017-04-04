@@ -50,7 +50,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define NONCACHEABLE    0
 
 /* cache coherency attributes */
-#define WRITE_BACK	4
+#define WRITE_BACK 4
+#define CWB		5
+#define CWBE		4
+#define WB		3
 #define UNCACHED	2
 
 

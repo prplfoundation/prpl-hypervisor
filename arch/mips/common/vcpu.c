@@ -32,25 +32,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <scheduler.h>
 #include <guest_interrupts.h>
 
-void initialize_vcpu_cp0(vcpu_t *vcpu){
-	 vcpu->cp0_registers[0] = mfgc0(4,0);	
-	 vcpu->cp0_registers[1] = mfgc0(6,0);
-	 vcpu->cp0_registers[2] = mfgc0(8,0);
-	 vcpu->cp0_registers[3] = mfgc0(11,0);
-	 vcpu->cp0_registers[4] = mfgc0(12,0);
-	 vcpu->cp0_registers[5] = mfgc0(12,1);	
-	 vcpu->cp0_registers[6] = mfgc0(12,2);
-	 vcpu->cp0_registers[7] = mfgc0(12,3);
-	 vcpu->cp0_registers[8] = mfgc0(13,0);
-	 vcpu->cp0_registers[9] = mfgc0(14,0);
-	 vcpu->cp0_registers[10] = mfgc0(14,2);
-	 vcpu->cp0_registers[11] = mfgc0(15,1);
-	 vcpu->cp0_registers[12] = mfgc0(16,0);
-	 vcpu->cp0_registers[13] = mfgc0(17,0);
-	 vcpu->cp0_registers[14] = mfgc0(16,3);
-	 vcpu->cp0_registers[15] = mfgc0(30,0);
-}
-
 /**
  * @brief Save the VCPU context. Saving only the necessary registers for 
  * the supported OSs. 

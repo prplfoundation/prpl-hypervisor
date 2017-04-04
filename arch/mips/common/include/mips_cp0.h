@@ -99,6 +99,7 @@
 #define CP0_CONFIG3             16
 #define CP0_CONFIG4             16
 #define CP0_CONFIG5             16
+#define CP0_CONFIG6             16
 #define CP0_CONFIG7             16
 #define CP0_LLADDR              17
 #define CP0_WATCHLO             18
@@ -184,6 +185,8 @@
 #define CONFIG3_SP      (1<<4)
 
 #define CONFIG5_K       (1<<30)
+
+#define CONFIG6_FTLBEN	(1<<15)
 
 #define GUESTCTL0_GM    (1<<31)
 #define GUESTCTL0_CP0   (1<<28)

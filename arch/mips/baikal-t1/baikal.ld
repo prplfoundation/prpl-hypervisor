@@ -25,7 +25,7 @@ ram     (rw!x) : ORIGIN = 0x80000000, LENGTH = 64K /* RAM area. */
 /* define a global symbol _stack  */
 
 _stack = ORIGIN(ram) + LENGTH(ram);
-_stack_size = 1024;
+_stack_size = 2048;
 
 /* now define the output sections  */
 
@@ -53,23 +53,27 @@ SECTIONS
 
 	.__drivers_table_init :
 	{
+		. = ALIGN(4);
 		__drivers_table_init_start = .;
 		*(.__drivers_table_init)
 		__drivers_table_init_end = .;
 	} > ram
     
 	.MIPS.abiflags : {
+		. = ALIGN(4);
 		__MIPS_abiflags_start = .;
 		*(.MIPS.abiflags)
 		__MIPS_abiflags_end = .;
 	} > ram
     
 	.reginfo : {
+		. = ALIGN(4);
 		*(.reginfo)
 	} > ram
 
 	.rodata :
 	{
+		. = ALIGN(4);
 		_rodata = .;
 		*(.rodata)
 		*(.rodata.*)
@@ -78,31 +82,32 @@ SECTIONS
 
 	.data : 
 	{
+		. = ALIGN(4); 
 		_data = .;
 		*(.data)
 		*(.data.*)
 		_gp = .;
 		*(.sdata)
 		*(.sdata.*)
-		. = ALIGN(16); 
 		_edata = .;
 	} > ram
 
 	.bss :
 	{
+		. = ALIGN(4);
 		_bss_start = .; 
 		*(.bss) 
 		*(.bss.*)
 		*(.sbss) 
 		*(.sbss.*)
 		*(.scommon)
-		. = ALIGN(4);
 		_bss_end = . ;
 	} > ram
+	
 
 }
 _end = .;
 _heap_start = . ;
-_heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - _stack_size;
+_heap_size = LENGTH(ram) - (_heap_start - ORIGIN(ram)) - 4 - _stack_size;
     
 

@@ -59,7 +59,7 @@ VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 LINKER_SCRIPT = ../../arch/mips/baikal-t1/baikal.ld
 
 ### GCC flags configuration: processor tunning ###
-CFLAGS += -EL -O2 -mips32r5 -Wall
+CFLAGS += -EL -O2 -mips32r2 -Wall
 #MIPZ VZ support
 CFLAGS += -Wa,-mvirt 
 #flointing pointing options

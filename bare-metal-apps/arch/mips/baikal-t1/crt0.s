@@ -19,7 +19,14 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 
 
-	.section .exception
+
+    .section .exception
+    .org    0xf8
+_ebase:
+    .word   0x80000000
+_imgptr:
+    .word   -1
+	
 
 	.section .vector0
 	.global _isr
@@ -97,10 +104,6 @@ isr_return:
 _entry:
 	.set noreorder
 
-$L2:
-	beq	$zero, $zero, $L2
-	nop
-	
 	la	$gp, _gp
 	la	$sp, _stack
 

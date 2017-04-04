@@ -54,7 +54,6 @@ void initializeMachines(void) {
 	
 	scheduler_info.virtual_machines_list = NULL;
 	
-	
 	if(NVMACHINES > 0){
 		for(i=0; i<NVMACHINES; i++){
 			/* VMCONF is automatically generated and it can be found at the config.h file. 
@@ -106,7 +105,7 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 	/* Allocate a TLB entry to the VM */
 	vm->tlbentries = (struct tlbentry *)malloc(sizeof(struct tlbentry)*(ntlbent)); 
 	memset(vm->tlbentries, 0, sizeof(struct tlbentry)*ntlbent);
-
+	
 	/* Fill the TLB entries to the VM */
 	for(i=0; i<ntlbent; i++, tlbindex++){
 		vm->tlbentries[i].guestid = vm->id;
@@ -155,7 +154,7 @@ vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){
 
     memset(vcpu, 0, sizeof(vcpu_t));
     
-   // initialize_vcpu_cp0(vcpu);
+    initialize_vcpu_cp0(vcpu);
 
     /* Lowest GPR shadown (zero) is used by the hypervisor */
     vcpu->gprshadowset = vcpu_id;
@@ -179,7 +178,7 @@ vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){
 
     vcpu->id = vcpu_id;	
     vcpu_id++;
-
+    
     /* Mark VCPU as not initialized */
     vcpu->init=1;
 
@@ -189,6 +188,6 @@ vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){
 
     /* Point to the VM owner */
     vcpu->vm = vm;
-            
+    
     return vcpu;
 }

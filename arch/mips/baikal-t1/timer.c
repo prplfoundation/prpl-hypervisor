@@ -55,10 +55,11 @@ static void write64_compare(uint64_t compare){
  */
 static void calc_next_timer_interrupt(uint32_t interval){
 	uint64_t count;
-	
-	count = read64_counter();
+
+	count = mfc0(CP0_COUNT, 0);
 	count += interval;
-        write64_compare(count);
+	mtc0(CP0_COMPARE, 0, count);
+
 }
 
 
@@ -68,11 +69,12 @@ static void calc_next_timer_interrupt(uint32_t interval){
  * Perfoms VCPUs scheduling and virtual timer interrupt injection on guests. 
  */
 static void timer_interrupt_handler(){
-        
+	
+	uint32_t CauseCode = getCauseCode();
+
 	calc_next_timer_interrupt(SYSTEM_TICK_INTERVAL);
 	
 	run_scheduler();
-	
 }
 
 
@@ -88,8 +90,11 @@ void start_timer(){
 	/* TODO: Missing interrupt registration */
 	register_interrupt(timer_interrupt_handler);
 	
+	/*TODO: Use the GIC 64 counter/compare interrupt. */
 	/* Stop counter */
-	GIC_SH_CONFIG |= GIC_SH_CONFIG_COUNTSTOP;
+	/*GIC_SH_CONFIG |= GIC_SH_CONFIG_COUNTSTOP;
+	
+	GIC_SH_MAP2_PIN  = 0x80000002;
        
 	GIC_SH_COUNTERLO = 0;
 	GIC_SH_COUNTERHI = 0;
@@ -99,7 +104,7 @@ void start_timer(){
         
 	GIC_CL_COREi_SMASK = 0x2;
         
-	GIC_CL_COREi_COMPARE_MAP = 0x80000002; 
+	GIC_CL_COREi_COMPARE_MAP = 0x80000002; */
     
 	/* enable timer interrupt IM4 */
 	temp = mfc0(CP0_STATUS, 0);   
@@ -108,13 +113,24 @@ void start_timer(){
     
 	INFO("Starting hypervisor execution.\n");
 	
-	asm volatile ("ei");    
-        
+	GIC_CL_COREi_TIMER_MAP = 0x80000002;
+	
+	mtc0(CP0_COUNT, 0, 0);
+	mtc0(CP0_COMPARE, 0, 1000000);
+	
+	asm volatile ("ei");
+	asm volatile("ehb");
+	
 	/* Start counter */
-	GIC_SH_CONFIG &= ~GIC_SH_CONFIG_COUNTSTOP;
-        
+	/*GIC_SH_CONFIG &= ~GIC_SH_CONFIG_COUNTSTOP;*/
+	
+	/* TODO: GIC in virtualziation mode. */
+	/* GIC in Virtualization mode */
+	//GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;
+
 	/* Wait for a timer interrupt */
-	while(1){}
+	asm("wait");
+	
 }
 
 

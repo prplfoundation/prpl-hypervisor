@@ -45,7 +45,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
 
 /* Intermediate Physical address of the first VM on the RAM */
-#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80008000
+#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80010000
 
 /* Virtual address for VM's RAM */
 #define VMS_RAM_VIRTUAL_BASE_ADDRESS  0x80000000
@@ -403,7 +403,7 @@ int process_tlb_entry(int vm_number,
 			return ret;
 		}
 	}else {
-		sprintf(straux, "0x%05x", kseg0_addr_to_physical(*mem_base));
+		sprintf(straux, "0x%05x", kseg0_addr_to_physical(*mem_base) );
 		strings_cat(str, STRSZ, "\t\t\t\tentrylo0: ", straux, ",\n", NULL);
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
@@ -422,7 +422,7 @@ int process_tlb_entry(int vm_number,
 	}
     
 	/* Virtual address */
-	sprintf(straux, "0x%05x", kseg0_addr_to_physical(va));        
+	sprintf(straux, "0x%05x", kseg0_addr_to_physical(va) );        
 	strings_cat(str, STRSZ, "\t\t\t\tentryhi: ", straux, ",\n", NULL);
 	if ( (ret = write_to_conf_file(outfile, str)) ) {
 		return ret;
@@ -671,6 +671,12 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return EXIT_FAILURE;
 		}
 		
+		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
+		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+		
 		/* Generate the TLB entries to the current VM's configuration */
 		if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
 			return ret;
@@ -686,9 +692,9 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			fprintf(stderr, "Invalide value for RAM_size_bytes: %s.\n", auxstrp);
 			return EXIT_FAILURE;
 		}
-        
+		
 		/* Create a TLB entry to the RAM memory */
-		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
+		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, "CWB", outfile))){
 			return ret;
 		}
 		
@@ -750,12 +756,6 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
         
 		/* Close the TLB array group  */
 		if ( (ret = write_to_conf_file(outfile, "\t\t},\n")) ) {
-			return ret;
-		}
-		
-		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
-		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x\n", vm_ram_inter_addr);
-		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
 			return ret;
 		}
 		
