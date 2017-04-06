@@ -15,12 +15,25 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 */
 
-#define LEAF(name)\
-    .##text;\
-    .##globl    name;\
-    .##ent  name;\
-name:
+#ifndef _GRP_CONTEXT_H
+#define _GRP_CONTEXT_H
 
-#define END(name)\
-    .##size name,.-name;\
-    .##end  name
+/** 
+  * These macros can read/write registers on the previous GPR Shadow.  
+  * On PIC32MZ, the guests are kept on separated GRP shadows. Thus,
+  * the hypercall parameters are read from them.
+  */
+
+/* Write to previous gpr shadow */
+#define MoveToPreviousGuestGPR(reg, value) asm volatile (                    \
+        "wrpgpr   $%0, %1"                                   \
+        : : "K" (reg), "r" ((uint32_t) (value)))
+
+/* Read from previous gpr shadow */        
+#define MoveFromPreviousGuestGPR(reg) ({ int32_t __value;                      \
+        asm volatile (                                          \
+        "rdpgpr   %0, $%1"                                    \
+        : "=r" (__value) : "K" (reg));               \
+        __value; })
+
+#endif /* _GRP_CONTEXT_H */

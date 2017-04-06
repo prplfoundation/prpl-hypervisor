@@ -41,16 +41,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <platform.h>
 
 
-extern uint32_t _stack;
-
-
-void print_stack(){
-    uint32_t i;
-    for(i=((uint32_t)(&_stack))-(32*4); i<((int)(&_stack)); i+=sizeof(uint32_t*)){
-        printf("0x%08x\n", ((uint32_t)*(uint32_t*)i));
-    }
-}
-
 /** 
  * @brief UART TX hypercall.
  * Write characters to the hardware queue and block the VCPU when
@@ -58,6 +48,7 @@ void print_stack(){
  */
 static void send(){
 	/*TODO: Implement interrupt-driven support to avoid to block the hypervisor for long periods. */
+	
 	uint32_t i = 0;
 	char* str  = (char*)MoveFromPreviousGuestGPR(REG_A0);
 	uint32_t size = MoveFromPreviousGuestGPR(REG_A1); 
@@ -66,8 +57,8 @@ static void send(){
 	char* str_mapped = (char*)tlbCreateEntry((uint32_t)str, vm_in_execution->base_addr, size, 0xf, CACHEABLE);
 	
 	for(i=0; i<size; i++){
-		while(UART_LSR & 0x40);
-		UART_THR = str[i];   
+		while(!(UART_LSR & 0x40));
+		UART_THR = str_mapped[i];   
 	}
 	
 	MoveToPreviousGuestGPR(REG_V0, size);

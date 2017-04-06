@@ -23,5 +23,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define initialize_vcpu_cp0(vcpu)
 
 #include <pic32mz.h>
+#include <gpr_context.h>
 
 #endif

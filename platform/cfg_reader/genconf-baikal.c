@@ -671,12 +671,6 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return EXIT_FAILURE;
 		}
 		
-		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
-		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
-		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
-			return ret;
-		}
-		
 		/* Generate the TLB entries to the current VM's configuration */
 		if ( (ret = write_to_conf_file(outfile, "\t\ttlb: (const struct tlb_entries const []){\n")) ) {
 			return ret;
@@ -759,7 +753,13 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			return ret;
 		}
 		
-		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", ram_size, ram_size, vm_code_inter_addr);
+		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
+		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x,\n", vm_ram_inter_addr);
+		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
+			return ret;
+		}
+		
+		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", ram_size, ram_size, vm_ram_inter_addr);
 
 		strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
 		strcat(vms_info, str);

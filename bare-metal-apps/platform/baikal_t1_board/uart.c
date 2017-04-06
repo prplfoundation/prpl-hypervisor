@@ -40,10 +40,3 @@ uint32_t getchar(void){
 }
 
 
-uint32_t uart_send(uint8_t *msg, uint32_t size){
-	while(*msg){
-		putchar(*msg);
-		msg++;
-	}
-	
-}

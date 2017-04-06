@@ -67,7 +67,7 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
-CFLAGS += -DCPU_SPEED=$(F_CLK) -DHYPVERSION=${VERSION} 
+CFLAGS += -DHYPVERSION=${VERSION} 
 # LD flags
 LDFLAGS = -EL  
 
