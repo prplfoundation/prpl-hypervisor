@@ -44,20 +44,39 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define SYSTEM_COMMENT "/* Hypervisor kernel configuration */\n"
 #define VM_MAP_COMMENT "/* VMs mapping */\n"
 
-/* Intermediate Physical address of the first VM on the RAM */
-#define VMS_RAM_INTERMEDIATE_BASE_ADDRESS 0x80008000
-
 /* Virtual address for VM's RAM */
 #define VMS_RAM_VIRTUAL_BASE_ADDRESS  0x80000000
 
+#ifndef BAIKAL_T1
+
+/* Intermediate Physical address of the first VM on the RAM */
+#define VMS_DATA_INTERMEDIATE_BASE_ADDRESS 0x80008000
+
 /* Intermediate Physical address of the first VM on the FLASH */
-#define VMS_FLASH_INTERMEDIATE_BASE_ADDRESS  0x9D008000
+#define VMS_CODE_INTERMEDIATE_BASE_ADDRESS  0x9D008000
 
 /* Virtual address for VM's FLASH */
-#define VMS_FLASH_VIRTUAL_BASE_ADDRESS  0x9D000000
+#define VMS_CODE_VIRTUAL_BASE_ADDRESS  0x9D000000
 
 /* Number of TLB entries available for use. */
 #define TOTAL_TLB_ENTRIES      15
+
+#else
+
+/* Intermediate Physical address of the first VM on the RAM */
+#define VMS_DATA_INTERMEDIATE_BASE_ADDRESS 0x80010000
+
+/* Intermediate Physical address of the first VM on the FLASH */
+#define VMS_CODE_INTERMEDIATE_BASE_ADDRESS  0x80010000
+
+/* Virtual address for VM's FLASH */
+#define VMS_CODE_VIRTUAL_BASE_ADDRESS  0x80000000
+
+/* Number of TLB entries available for use. */
+#define TOTAL_TLB_ENTRIES      63
+
+#endif
+
 
 #define DEBUG
 #ifdef DEBUG
@@ -440,8 +459,8 @@ int process_tlb_entry(int vm_number,
  */
 int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, char* vms_info){
 	int vm_number = 1;
-	unsigned int vm_ram_inter_addr = VMS_RAM_INTERMEDIATE_BASE_ADDRESS;
-	unsigned int vm_flash_inter_addr = VMS_FLASH_INTERMEDIATE_BASE_ADDRESS;
+	unsigned int vm_data_inter_addr = VMS_DATA_INTERMEDIATE_BASE_ADDRESS;
+	unsigned int vm_code_inter_addr = VMS_CODE_INTERMEDIATE_BASE_ADDRESS;
 	int i, num_el, ret, aux, ram_size, flash_size, j, num_mm;
 	unsigned int value;
 	char auxstr[STRSZ], str[STRSZ], app_name[STRSZ];
@@ -454,7 +473,11 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 	strcpy(app_list, "");
     
 	/* Generates a list of VM's flash and RAM sizes */
+#ifndef BAIKAL_T1	
 	strcpy(vms_info, "VM name \tflash_size \tram_size \t address_start\n");
+#else
+	strcpy(vms_info, "VM name \tcode_size \tram_size \t address_start\n");
+#endif	
     
 	/* Write comment */
 	if ( (ret = write_to_conf_file(outfile, VM_MAP_COMMENT)) ) {
@@ -633,8 +656,15 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		/* write num of tlb entries */
 		config_setting_t *mem_maps = config_setting_lookup(vm_conf, "memory_maps");
 		aux = mem_maps? config_setting_length(mem_maps) : 0;
-		/* RAM and FLASH mapping requires 2 additional TLB entries */
+#ifndef BAIKAL_T1		
+		/* RAM and FLASH mapping requires 2 additional TLB entries 
+		 * for code on flash and data on RAM.
+		 */
 		aux += 2;
+#else
+		/* Data and code running on RAM, only one TLB entry required. */
+		aux += 1;
+#endif
 		snprintf(auxstr, STRSZ, "\t\tnum_tlb_entries: 0x%x,\n", aux);
 		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
 			return ret;
@@ -666,23 +696,26 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
         
 		/* Create a TLB entry to the RAM memory */
-		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_ram_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
+		if ((ret = process_tlb_entry(vm_number, ram_size, &vm_data_inter_addr, VMS_RAM_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
 			return ret;
 		}
 		
 		/* get FLASH size */
 		if( !config_setting_lookup_string(vm_conf, "flash_size_bytes", &auxstrp)){
+#ifndef BAIKAL_T1			
 			fprintf(stderr, "Missing flash_size_bytes proprierty on virtual_machines group.\n");
 			return EXIT_FAILURE;
-		}
-		if ( (flash_size = get_value_from_str((struct mem_sizes_def*)MemSizes, sizeof(MemSizes)/sizeof(struct mem_sizes_def), (char*)auxstrp)) == 0){
-			fprintf(stderr, "Invalide value for flash_size_bytes: %s.\n", auxstrp);
-			return EXIT_FAILURE;
-		}
-        
-		/* Create a TLB entry to the FLASH memory */
-		if ((ret = process_tlb_entry(vm_number, flash_size, &vm_flash_inter_addr, VMS_FLASH_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
-			return ret;
+#endif			
+		}else{
+			if ( (flash_size = get_value_from_str((struct mem_sizes_def*)MemSizes, sizeof(MemSizes)/sizeof(struct mem_sizes_def), (char*)auxstrp)) == 0){
+				fprintf(stderr, "Invalide value for flash_size_bytes: %s.\n", auxstrp);
+				return EXIT_FAILURE;
+			}
+		
+			/* Create a TLB entry to the FLASH memory */
+			if ((ret = process_tlb_entry(vm_number, flash_size, &vm_code_inter_addr, VMS_CODE_VIRTUAL_BASE_ADDRESS, "WRITE_BACK", outfile))){
+				return ret;
+			}
 		}
 		
 		/* process the additional memory mapping */
@@ -730,21 +763,28 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
 		
 		/* write the a ddress where the VM is in the RAM as seeing by the hypervisor (physical intermediate address) */
-		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x\n", vm_ram_inter_addr);
+		snprintf(auxstr, STRSZ, "\t\tram_base: 0x%x\n", vm_data_inter_addr);
 		if ( (ret = write_to_conf_file(outfile, auxstr)) ) {
 			return ret;
 		}
 		
-        
-		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_flash_inter_addr);
+#ifndef BAIKAL_T1        
+		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", flash_size, ram_size, vm_code_inter_addr);
+#else
+		snprintf(auxstr, STRSZ, "%d \t%d \t0x%x\n", ram_size, ram_size, vm_code_inter_addr);
+#endif		
 		strings_cat(str, STRSZ, app_name, " \t", auxstr, NULL);
 		strcat(vms_info, str);
 		
 		/* Increment to the intermediate address of the next VM */
-		vm_ram_inter_addr += ram_size;
+		vm_data_inter_addr += ram_size;
 		
 		/* Increment to the intermediate address of the next VM */
-		vm_flash_inter_addr += flash_size;
+#ifndef BAIKAL_T1		
+		vm_code_inter_addr += flash_size;
+#else
+		vm_code_inter_addr += ram_size;
+#endif		
         
 		vm_number++;
         
