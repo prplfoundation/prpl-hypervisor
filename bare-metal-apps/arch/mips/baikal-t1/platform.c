@@ -27,6 +27,7 @@ typedef void interrupt_handler_t();
 
 static interrupt_handler_t * interrupt_handlers[NUM_GUEST_INTERRUPTS] = {[0 ... NUM_GUEST_INTERRUPTS-1] = NULL};
 
+
 /**
  * @brief Interrupt registration. 
  *   	Register interruts rotines. The valid interrupt numbers are
@@ -57,7 +58,7 @@ void _irq_handler(uint32_t status, uint32_t cause){
 
 	/* extract RIPL field */
 	uint32_t ripl = (cause & 0x3FC00) >> 10;
-    
+	
 	do{
 		if(ripl & 1){
 			if (interrupt_handlers[i]){
@@ -84,20 +85,26 @@ void init_proc(){
 	temp_CP0 = mfc0(CP0_CAUSE, 0);      	/* Get Cause */
 	temp_CP0 |= CAUSE_IV;           	/* Set Cause IV */
 	mtc0(CP0_CAUSE, 0, temp_CP0);       	/* Update Cause */
- 
+	
 	temp_CP0 = mfc0(CP0_STATUS, 0);     	/* Get Status */
-	temp_CP0 &= ~STATUS_BEV;        	/* Clear Status BEV */
+	temp_CP0 &= ~(STATUS_ERL | STATUS_BEV); /* Clear Status BEV */
 	mtc0(CP0_STATUS, 0, temp_CP0);      	/* Update Status */
+	
     
 	temp_CP0 = mfc0(CP0_INTCTL,1); 			/* configure intCTL IV */
-	temp_CP0 |= 8<<INTCTL_VS_SHIFT;
+	temp_CP0 =  (temp_CP0 & (0x1f<<INTCTL_VS_SHIFT));
 	mtc0(CP0_INTCTL, 1, temp_CP0);
     
 	memset(interrupt_handlers, 0, sizeof(interrupt_handlers));
-
+	
+	/* Clear all interrupts and enable timer interrupt IP7. */
+	temp_CP0 = mfc0(CP0_STATUS, 0);   
+	temp_CP0 &= ~(0xff << STATUS_IM_SHIFT);
+	mtc0(CP0_STATUS, 0, temp_CP0);  
+	
 	asm volatile ("ei");
-    
 }
+
 
 
 /**

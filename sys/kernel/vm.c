@@ -154,8 +154,6 @@ vcpu_t *create_vcpu(vm_t *vm, uint32_t entry_point, uint32_t priority){
 
     memset(vcpu, 0, sizeof(vcpu_t));
     
-    initialize_vcpu_cp0(vcpu);
-
     /* Lowest GPR shadown (zero) is used by the hypervisor */
     vcpu->gprshadowset = vcpu_id;
     

@@ -671,8 +671,8 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 		}
         
 		/* The current hypervisor implementation uses static tlb configuration.	
-		Only 15 TLB entries are available, 1 is reserved for interVM communication. 
-		Stop compilation if more then 15 TLB entries are used. */
+		One TLB entry is reserved for interVM communication. 
+		Stop compilation if more then TOTAL_TLB_ENTRIES TLB entries are used. */
 		total_tlb_entries += aux;
 		if(total_tlb_entries > TOTAL_TLB_ENTRIES){
 			fprintf(stderr, "You are using more than %d TLB entries.\n", TOTAL_TLB_ENTRIES);

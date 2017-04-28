@@ -24,26 +24,25 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <platform.h>
 #include <io.h>
 
-
 volatile int32_t t2 = 0;
-
 
 void irq_timer(){
 	t2++;
+	NEXT_TIMER();
 }
+
 
 int main() {
     
-	interrupt_register(irq_timer, GUEST_TIMER_INT);
-   
-	ENABLE_LED1;
+	interrupt_register(irq_timer, 0x20);
+	
+	START_TIMER();
+	
+	NEXT_TIMER();
    
 	while (1){
-		printf("\nBlink red LED! Total of %d timer ticks.", t2);
-        
-		/* Blink Led */
-		TOGGLE_LED1;
-	
+		printf("\r\nBlink red LED! Total of %d timer ticks.", t2); 
+       
 		/* 1 second delay */
 		mdelay(1000);
 	}

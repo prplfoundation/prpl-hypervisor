@@ -68,35 +68,39 @@ void tlbEntryWrite(struct tlbentry *entry){
  *    @return Mapped address. 
  */
 uint32_t tlbCreateEntry(uint32_t address, uint32_t baseaddr, uint32_t size, uint32_t tlbindex, uint32_t use_cache){ 
-    struct tlbentry entry;
-    uint32_t KSEG = use_cache? 0x80000000 : 0xA0000000;
+	struct tlbentry entry;
+	uint32_t KSEG = use_cache? 0x80000000 : 0xA0000000;
     
-    /* this is a root entry */
-    entry.guestid = 0;
+	/* this is a root entry */
+	entry.guestid = 0;
     
-    /* FIXME: highest tlb entry reserved for hypercalls mapping. Depending on the hardware the highest can be 0xf. */
-    entry.index = tlbindex;
+	/* FIXME: highest tlb entry reserved for hypercalls mapping. Depending on the hardware the highest can be 0xf. */
+	entry.index = tlbindex;
     
-    entry.entrylo0 = ((baseaddr - 0x80000000) + (address - 0x80000000)) >> 12;
+	entry.entrylo0 = ((baseaddr - 0x80000000) + (address - 0x80000000)) >> 12;
     
-    entry.lo0flags = ENTRYLO_V | ENTRYLO_D;
+	entry.lo0flags = ENTRYLO_V | ENTRYLO_D;
     
-    /* check if the address + size exceeds the page limits, maps the next page */
-    if((address/0x1000) < ((address+size)/0x1000)){
-        entry.entrylo1 = ((baseaddr - 0x80000000) + address + size - 0x80000000) >> 12;
-        entry.lo1flags = ENTRYLO_V | ENTRYLO_D;
-    }else {
-        entry.entrylo1 = 0;
-        entry.lo1flags = 0;
-    }
+	/* check if the address + size exceeds the page limits, maps the next page */
+	if((address/0x1000) < ((address+size)/0x1000)){
+		entry.entrylo1 = ((baseaddr - 0x80000000) + address + size - 0x80000000) >> 12;
+		entry.lo1flags = ENTRYLO_V | ENTRYLO_D;
+	}else {
+		entry.entrylo1 = 0;
+		entry.lo1flags = 0;
+	}
     
-    entry.pagemask = PAGEMASK_4KB;
+	entry.pagemask = PAGEMASK_4KB;
+	
+	entry.entryhi = (baseaddr - KSEG) >> 12;
     
-    entry.entryhi = (baseaddr - KSEG) >> 12;
+	if(use_cache){
+		entry.coherency = 4;
+	}else{
+		entry.coherency = 2;
+	}
     
-    entry.coherency = 4;
+	tlbEntryWrite(&entry);
     
-    tlbEntryWrite(&entry);
-    
-    return (address & 0xFFF) + baseaddr - KSEG;
+	return (address & 0xFFF) + baseaddr - KSEG;
 }

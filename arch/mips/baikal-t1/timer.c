@@ -54,7 +54,7 @@ static void write64_compare(uint64_t compare){
  * @param interval Time interval to the next interrupt in CPU ticks (CPU_FREQ/2)
  */
 static void calc_next_timer_interrupt(uint32_t interval){
-	uint64_t count;
+	uint32_t count;
 
 	count = mfc0(CP0_COUNT, 0);
 	count += interval;
@@ -70,11 +70,10 @@ static void calc_next_timer_interrupt(uint32_t interval){
  */
 static void timer_interrupt_handler(){
 	
-	uint32_t CauseCode = getCauseCode();
-
 	calc_next_timer_interrupt(SYSTEM_TICK_INTERVAL);
 	
 	run_scheduler();
+
 }
 
 
@@ -90,22 +89,6 @@ void start_timer(){
 	/* TODO: Missing interrupt registration */
 	register_interrupt(timer_interrupt_handler);
 	
-	/*TODO: Use the GIC 64 counter/compare interrupt. */
-	/* Stop counter */
-	/*GIC_SH_CONFIG |= GIC_SH_CONFIG_COUNTSTOP;
-	
-	GIC_SH_MAP2_PIN  = 0x80000002;
-       
-	GIC_SH_COUNTERLO = 0;
-	GIC_SH_COUNTERHI = 0;
-        
-	GIC_CL_COMPARELO = 0x100000;
-	GIC_CL_COMPAREHI = 0;
-        
-	GIC_CL_COREi_SMASK = 0x2;
-        
-	GIC_CL_COREi_COMPARE_MAP = 0x80000002; */
-    
 	/* enable timer interrupt IM4 */
 	temp = mfc0(CP0_STATUS, 0);   
 	temp |= (IM4_COMPARE_INT << STATUS_IM_SHIFT);
@@ -117,17 +100,13 @@ void start_timer(){
 	
 	mtc0(CP0_COUNT, 0, 0);
 	mtc0(CP0_COMPARE, 0, 1000000);
+
+	/* GIC in Virtualization mode */
+	GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;	
 	
 	asm volatile ("ei");
 	asm volatile("ehb");
 	
-	/* Start counter */
-	/*GIC_SH_CONFIG &= ~GIC_SH_CONFIG_COUNTSTOP;*/
-	
-	/* TODO: GIC in virtualziation mode. */
-	/* GIC in Virtualization mode */
-	//GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;
-
 	/* Wait for a timer interrupt */
 	asm("wait");
 	

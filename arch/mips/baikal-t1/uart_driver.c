@@ -54,7 +54,7 @@ static void send(){
 	uint32_t size = MoveFromPreviousGuestGPR(REG_A1); 
 
 	/* Map the guest's buffer. */
-	char* str_mapped = (char*)tlbCreateEntry((uint32_t)str, vm_in_execution->base_addr, size, 0xf, CACHEABLE);
+	char* str_mapped = (char*)tlbCreateEntry((uint32_t)str, vm_in_execution->base_addr, size, 0xf, NONCACHEABLE);
 	
 	for(i=0; i<size; i++){
 		while(!(UART_LSR & 0x40));

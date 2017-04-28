@@ -231,6 +231,7 @@
 #define STATUS_IM_SHIFT         8
 #define GUESTCTL1_RID_SHIFT     16
 #define GUESTCLT2_GRIPL_SHIFT   24
+#define GUESTCLT2_VIP_SHIFT   	10
 #define VIEWIPL_IPL_SHIFT       2
 
 //Hypercall fields

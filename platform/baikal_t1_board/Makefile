@@ -15,7 +15,7 @@
 
 #Input CFG file for VMs configuration
 #CFG_FILE = cfg/sample-blink.cfg
-CFG_FILE = cfg/sample-blink.cfg
+CFG_FILE = cfg/sample-ping-pong.cfg
 
 # CROSS Compiler 
 CROSS_COMPILER = mipsel-unknown-linux-gnu-
@@ -67,7 +67,7 @@ CFLAGS +=  -mno-check-zero-division -msoft-float -fshort-double
 #General options
 CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Additional features flags
-CFLAGS += -DHYPVERSION=${VERSION} 
+CFLAGS += -DHYPVERSION=${VERSION} -DBAIKAL_T1
 # LD flags
 LDFLAGS = -EL  
 
