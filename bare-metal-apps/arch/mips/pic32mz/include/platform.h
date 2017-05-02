@@ -23,6 +23,9 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define CPU_TICK_TO_US(ticks) ((ticks)/((CPU_SPEED/2)/100000))
 #define CPU_TICK_TO_MS(ticks) ((ticks)/((CPU_SPEED/2)/1000))
 
+#define START_TIMER() 	do{}while(0)
+#define NEXT_TIMER() 	do{}while(0)
+
 typedef void interrupt_handler_t();
 
 uint32_t interrupt_register(interrupt_handler_t *handler, uint32_t interrupt);

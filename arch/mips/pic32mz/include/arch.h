@@ -20,7 +20,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define BARE_METAL_ENTRY_POINT 0x9d001000
 #define GPR_SIZE 32
-#define initialize_vcpu_cp0(vcpu)
 
 #include <pic32mz.h>
 #include <gpr_context.h>

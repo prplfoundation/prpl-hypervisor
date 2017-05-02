@@ -36,8 +36,10 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GUEST_USER_DEFINED_INT_2	0x20
 
 #else
-#define GUEST_INTERVM_INT		2
+
 #define GUEST_TIMER_INT			0x20
+#define GUEST_INTERVM_INT		2
+
 #endif
 
 #endif

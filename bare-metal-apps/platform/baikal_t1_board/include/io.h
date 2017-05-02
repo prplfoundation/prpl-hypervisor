@@ -20,4 +20,13 @@
 
 #include <arch.h>
 
+#define ENABLE_LED1 do{}while(0)
+#define ENABLE_LED2 do{}while(0)
+#define ENABLE_LED3 do{}while(0)
+
+#define TOGGLE_LED1 do{}while(0)
+#define TOGGLE_LED2 do{}while(0)
+#define TOGGLE_LED3 do{}while(0)
+
+
 #endif

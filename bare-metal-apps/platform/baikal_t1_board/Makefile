@@ -74,7 +74,7 @@ CFLAGS += -c -ffreestanding -nostdlib -fomit-frame-pointer -G 0
 #Reserve registers t8 and t9 for hypervisor purposes
 #CFLAGS += -ffixed-t8 -ffixed-t9
 #Additional features flags
-CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK) -DLITTLE_ENDIAN
+CFLAGS += $(ETHERNET) -DCPU_SPEED=$(F_CLK) -DLITTLE_ENDIAN -DBAIKAL_T1
 # AS flags
 ASFLAGS += -EL -mvirt -mips32r5
 # LD flags

@@ -18,7 +18,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __ARCH_H
 #define __ARCH_H
 
-#define MILISECOND (100000000/ 1000)
+#define MILISECOND ((850000000/2)/1000)
 
 #include <../../../../../arch/mips/baikal-t1/include/baikal-t1.h>
 #include <../../../../../arch/mips/baikal-t1/include/p5600.h>

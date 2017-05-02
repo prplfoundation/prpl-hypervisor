@@ -34,15 +34,20 @@ void irq_timer(){
 
 int main() {
     
-	interrupt_register(irq_timer, 0x20);
+	interrupt_register(irq_timer, GUEST_TIMER_INT);
 	
 	START_TIMER();
 	
 	NEXT_TIMER();
+	
+	ENABLE_LED1;
    
 	while (1){
-		printf("\r\nBlink red LED! Total of %d timer ticks.", t2); 
+		printf("\r\nBlink LED! Total of %d timer ticks.", t2); 
        
+		/* Blink Led */
+		TOGGLE_LED1;
+		
 		/* 1 second delay */
 		mdelay(1000);
 	}
