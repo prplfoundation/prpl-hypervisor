@@ -35,6 +35,17 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <guest_interrupts.h>
 #include <libc.h>
 
+/*guestclt2 fields are different on M5150 and */ 
+#ifdef BAIKAL_T1
+
+#define VI_SHIFT GUESTCLT2_VIP_SHIFT
+
+#else
+
+#define VI_SHIFT GUESTCLT2_GRIPL_SHIFT
+
+#endif
+
 
 /**
  * @brief Hypercall implementation. Returns the VM identifier number for the calling VM. 
@@ -104,7 +115,7 @@ void intervm_send_msg(){
 	}     
      
 	/* copy message to message queue */
-	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, message_size, 0xf, CACHEABLE);
+	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, message_size, 0xf, NONCACHEABLE);
 	memcpy(vcpu->messages.message_list[vcpu->messages.in].message,message_ptr_mapped,message_size);
 	vcpu->messages.message_list[vcpu->messages.in].size = message_size;
 	vcpu->messages.message_list[vcpu->messages.in].source_id = vm_in_execution->id;
@@ -113,7 +124,7 @@ void intervm_send_msg(){
 	vcpu->messages.in = (vcpu->messages.in + 1) % MESSAGELIST_SZ;
                         
 	/* generate virtual interrupt to guest */
-	vcpu->guestclt2 |= (GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT);
+	vcpu->guestclt2 |= (GUEST_INTERVM_INT<<VI_SHIFT);
                                 
 	/* Return success to sender */
 	MoveToPreviousGuestGPR(REG_V0, message_size);
@@ -144,7 +155,7 @@ void intervm_recv_msg(){
 
 	/* Copy the message the receiver */
 	messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
-	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, messagesz, 0xf, CACHEABLE);
+	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, messagesz, 0xf, NONCACHEABLE);
 	memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
     
 	/* Return the message size to the receiver */
@@ -156,8 +167,8 @@ void intervm_recv_msg(){
 	vcpu->messages.out = (vcpu->messages.out + 1) % MESSAGELIST_SZ;
 	
 	/* clean interrupt */
-	setGuestCTL2(getGuestCTL2() & ~(GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT));
-	vcpu->guestclt2 &= ~(GUEST_INTERVM_INT<<GUESTCLT2_GRIPL_SHIFT);
+	setGuestCTL2(getGuestCTL2() & ~(GUEST_INTERVM_INT<<VI_SHIFT));
+	vcpu->guestclt2 &= ~(GUEST_INTERVM_INT<<VI_SHIFT);
                        
 }
 

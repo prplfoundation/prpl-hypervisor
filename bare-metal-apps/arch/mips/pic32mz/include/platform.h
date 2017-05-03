@@ -25,6 +25,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define START_TIMER() 	do{}while(0)
 #define NEXT_TIMER() 	do{}while(0)
+#define ENABLE_INTERVM_INT() do{}while(0)
 
 typedef void interrupt_handler_t();
 

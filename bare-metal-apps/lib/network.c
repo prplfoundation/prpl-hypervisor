@@ -26,7 +26,7 @@ static struct message_list_t message_list;
 
 int32_t ReceiveMessage(uint32_t *source, void* message, uint32_t bufsz, uint32_t block){
         unsigned int size, out;
-        
+	
         asm volatile("di");
         if(message_list.num_messages == 0 && block){
             asm volatile("ei");
@@ -105,6 +105,7 @@ void print_net_error(int32_t error){
 }
 
 void init_network(){
+	ENABLE_INTERVM_INT();
 	interrupt_register(irq_network, GUEST_INTERVM_INT);
 	memset((void *)&message_list, 0, sizeof(message_list));
 }

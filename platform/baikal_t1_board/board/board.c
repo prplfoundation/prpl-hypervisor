@@ -23,7 +23,7 @@
  * Specific platform initialization.
  */
 
-#include <pic32mz.h>
+#include <baikal-t1.h>
 #include <config.h>
 #include <uart.h>
 

@@ -28,4 +28,23 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define UART_LSR	BAIKAL_PBASE(0xBF04A014)
 #define UART_THR	BAIKAL_PBASE(0xBF04A000)
 
+typedef union {
+    struct{
+	    unsigned exl:1;
+	    unsigned k:1;
+	    unsigned :1;
+	    unsigned u:1;
+	    unsigned ie:1;
+	    unsigned event:10;
+	    unsigned :8;
+	    unsigned ec:2;
+	    unsigned :6;
+	    unsigned m:1;
+    };
+    struct{
+        unsigned w:32;
+    };
+} perf_control_t;
+
+
 #endif /* _BAIKAL_T1_H */

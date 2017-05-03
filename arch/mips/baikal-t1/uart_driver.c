@@ -46,14 +46,13 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #include <globals.h>
 #include <hal.h>
-#include <pic32mz.h>
+#include <baikal-t1.h>
 #include <mips_cp0.h>
 #include <libc.h>
 #include <hypercall_defines.h>
 #include <hypercall.h>
 #include <driver.h>
 #include <interrupts.h>
-#include <pic32mz.h>
 #include <platform.h>
 
 

@@ -57,7 +57,7 @@ void _irq_handler(uint32_t status, uint32_t cause){
 
 	/* extract RIPL field */
 	uint32_t ripl = (cause & 0x3FC00) >> 10;
-    
+	
 	do{
 		if(ripl & 1){
 			if (interrupt_handlers[i]){
