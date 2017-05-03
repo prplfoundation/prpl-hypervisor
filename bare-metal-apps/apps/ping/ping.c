@@ -97,7 +97,8 @@ int main() {
 						/* calc round trip average, worst and best cases. */
 						diff_time = calc_diff_time(timenow, timestart);
 						
-						//average_round_trip = (average_round_trip + diff_time)/2.0;
+						diff_time = CPU_TICK_TO_US(diff_time);
+						
 						average_round_trip += diff_time;
 						
 						if(diff_time > worst_round_trip){
@@ -110,6 +111,8 @@ int main() {
 						
 						/* get one way delay from VM's 2 response */ 
 						memcpy(&diff_time, message_buffer, sizeof(uint32_t));
+						
+						diff_time = CPU_TICK_TO_US(diff_time);
 						
 						/* calc one way average, worst and best cases. */
 						average_one_way += diff_time;
@@ -130,15 +133,15 @@ int main() {
 		/* show results and move the next message size. */
 		printf("\nRound trip latency for messages %d bytes long.\n\tAverage %0.2f us\n\tWorst %d us\n\tBest %d us", 
 			message_size, 
-			CPU_TICK_TO_US((float)average_round_trip/NUMBER_OF_ROUNDS), 
-			CPU_TICK_TO_US(worst_round_trip), 
-			CPU_TICK_TO_US(best_round_trip));
+			(float)average_round_trip/NUMBER_OF_ROUNDS, 
+			worst_round_trip, 
+			best_round_trip);
 		
 		printf("\nOne way latency for messages %d bytes long.\n\tAverage %0.2f us\n\tWorst %d us\n\tBest %d us\n", 
 			message_size, 
-			CPU_TICK_TO_US((float)average_one_way/NUMBER_OF_ROUNDS), 
-			CPU_TICK_TO_US(worst_one_way), 
-			CPU_TICK_TO_US(best_one_way));
+			(float)average_one_way/NUMBER_OF_ROUNDS, 
+			worst_one_way, 
+			best_one_way);
 			
 		puts("\n");
 		
