@@ -38,6 +38,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 apt-get update
+apt-get --yes --force-yes install srecord
 apt-get --yes --force-yes install libconfig-dev
 
 mkdir -p $DOWNLOAD_DIR
@@ -51,7 +52,7 @@ fi;
 popd
 
 echo  >> ~/.profile
-echo "export PATH=\"\$PATH:\"~/baikal-bsp/baikal/usr/x-tools/mipsel-unknown-linux-gnu/bin/\"\"" >> ~/.profile
+echo "export PATH=\"\$PATH:\"$HOME/baikal-bsp/baikal/usr/x-tools/mipsel-unknown-linux-gnu/bin/\"\"" >> ~/.profile
 echo  >> ~/.profile
 
 echo "***********************************************************"
