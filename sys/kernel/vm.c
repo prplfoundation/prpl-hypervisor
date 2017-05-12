@@ -123,10 +123,16 @@ vm_t *create_vm(const struct vmconf_t const *vm_conf) {
 		tlbEntryWrite(&vm->tlbentries[i]);
 	}
 
-	if(vm->os_type == BARE_METAL){
-		entry_point = BARE_METAL_ENTRY_POINT;
-	}else{
-		WARNING("OS type not defined.");
+	switch(vm->os_type){
+		case BARE_METAL:	
+			entry_point = BARE_METAL_ENTRY_POINT;
+			break;
+		case	LINUX:
+			entry_point = LINUX_ENTRY_POINT;
+			break;
+		default:
+			WARNING("OS type not defined.");
+			break;
 	}
 	
 	/* Set the VM entry Point and scheduler*/

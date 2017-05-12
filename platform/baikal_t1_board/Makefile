@@ -111,10 +111,12 @@ $(APP):
 	$(SIZE) $(APP).elf
 
 bare_apps:
-	for i in $(APP_LIST) ; do \
-		$(MAKE) -C ../../bare-metal-apps/platform/baikal_t1_board APP=$$i CLEAN=1 clean; \
-		$(MAKE) -C ../../bare-metal-apps/platform/baikal_t1_board APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` DEBUG_GUEST=$(DEBUG_GUEST) \
-	;done
+	for i in $(APP_LIST) ""; do  \
+		if [ -n "$$i" ]; then \
+			$(MAKE) -C ../../bare-metal-apps/platform/baikal_t1_board APP=$$i CLEAN=1 clean; \
+			$(MAKE) -C ../../bare-metal-apps/platform/baikal_t1_board APP=$$i CROSS_COMPILER=$(CROSS_COMPILER) F_CLK=$(F_CLK) FLASH_SIZE=`awk  '$$1=="'$$i'" {print $$2}' include/vms.info` RAM_SIZE=`awk '$$1=="'$$i'" {print $$3}' include/vms.info` DEBUG_GUEST=$(DEBUG_GUEST); \
+		fi; \
+	done;
 
 generate_firmware:
 	$(shell export BASE_ADDR=0x80000000; ../../scripts/genhex.sh $(APP_LIST))

@@ -116,7 +116,12 @@ const struct mem_sizes_def MemSizes[] = {
 	{name: "MEM_SIZE_128KB",  value: 131072},    
 	{name: "MEM_SIZE_256KB",  value: 262144},    
 	{name: "MEM_SIZE_512KB",  value: 524288},    
-	{name: "MEM_SIZE_1MB",    value: 1048576}
+	{name: "MEM_SIZE_1MB",    value: 1048576},
+	{name: "MEM_SIZE_2MB",    value: 2097152},
+	{name: "MEM_SIZE_4MB",    value: 4194304},
+	{name: "MEM_SIZE_8MB",    value: 8388608},
+	{name: "MEM_SIZE_16MB",   value: 16777216},
+	{name: "MEM_SIZE_32MB",   value: 33554432}
 };  
 
 /**
@@ -510,20 +515,28 @@ int gen_conf_vms(config_t cfg, FILE* outfile, char *app_list, int* vm_count, cha
 			fprintf(stderr, "Missing app_name proprierty on virtual_machines group.\n");
 			return EXIT_FAILURE;
 		}
-		strncat(app_list, auxstrp, STRSZ);
-		strncat(app_list, " ", STRSZ);
+		
 		strncpy(app_name, auxstrp, STRSZ);
+
+		/* get OS type  */
+		if( !config_setting_lookup_string(vm_conf, "os_type", &auxstrp)){
+			fprintf(stderr, "Missing os_type proprierty on virtual_machines group.\n");
+			return EXIT_FAILURE;
+		}
+		
+		/* Linux VM's are not generated together the hypervisor.*/
+		if(strcmp(auxstrp, "LINUX")){
+			strncat(app_list, app_name, STRSZ);
+			strncat(app_list, " ", STRSZ);
+		}
 	
+		/* Write vm_name to config file. */
 		strings_cat(str, STRSZ, "\t\tvm_name: \"", app_name, "\",\n", NULL);
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;
 		}
         
-		/* get OS type  */
-		if( !config_setting_lookup_string(vm_conf, "os_type", &auxstrp)){
-			fprintf(stderr, "Missing os_type proprierty on virtual_machines group.\n");
-			return EXIT_FAILURE;
-		}	
+		/* Write OS type to config file. */
 		strings_cat(str, STRSZ, "\t\tos_type: ", auxstrp, ",\n", NULL);
 		if ( (ret = write_to_conf_file(outfile, str)) ) {
 			return ret;

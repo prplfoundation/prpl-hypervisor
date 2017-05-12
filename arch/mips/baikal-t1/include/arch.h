@@ -18,7 +18,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef __ARCH_H
 #define __ARCH_H
 
-#define BARE_METAL_ENTRY_POINT 0x80001000
+#define BARE_METAL_ENTRY_POINT 	0x80001000
+#define LINUX_ENTRY_POINT 	0x80100400
 
 #include <baikal-t1.h>
 #include <p5600.h>

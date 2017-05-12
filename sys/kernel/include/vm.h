@@ -35,6 +35,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Identification for different operating system types */
 #define BARE_METAL	1
+#define LINUX		2
 
 struct vcpu_t;
 typedef struct vcpu_t vcpu_t;

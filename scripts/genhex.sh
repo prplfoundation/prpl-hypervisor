@@ -16,7 +16,6 @@
 
 
 #hypervisor base address
-
 BASE_ADDR=${BASE_ADDR:=0x9d000000}
 
 # Determine the list of the VM's flash start addresses.
@@ -28,36 +27,40 @@ for i in $*; do
     
 done 
 
-# Determines the hypervisor padding based on the start address of the first VM.  
-AUX=$(echo $(($BASE_ADDR)))
-PADDING=$(expr ${address_array[0]} - $AUX)
+if [ $NUM_VM -ne 0 ]; then
+	# Determines the hypervisor padding based on the start address of the first VM.  
+	AUX=$(echo $(($BASE_ADDR)))
+	PADDING=$(expr ${address_array[0]} - $AUX)
 
-#increment to the first VM address
-BASE_ADDR=$(expr $AUX + $PADDING)
+	#increment to the first VM address
+	BASE_ADDR=$(expr $AUX + $PADDING)
 
-# fill the hypervisor bin file to the padding
-dd if=prplHypervisor.bin of=/tmp/prplHypervisor.bin bs=$PADDING conv=sync
+	# fill the hypervisor bin file to the padding
+	dd if=prplHypervisor.bin of=/tmp/prplHypervisor.bin bs=$PADDING conv=sync
 
-#padding of the VM's
-COUNT=1
-for i in $*; do 
-    # Determines the VM's padding size based on the start address of the next VM, or 
-    #use the size of the VM in case of the last one
-    if [ $COUNT -lt $NUM_VM ]; then 
-        PADDING=$(expr ${address_array[$COUNT]} - $BASE_ADDR)
-    else
-        flash_size=$(awk '$1=='\"$i\"' {print $2}' include/vms.info)
-        PADDING=$(echo $(($flash_size)))
-    fi
+	#padding of the VM's
+	COUNT=1
+	for i in $*; do 
+		# Determines the VM's padding size based on the start address of the next VM, or 
+		#use the size of the VM in case of the last one
+		if [ $COUNT -lt $NUM_VM ]; then 
+			PADDING=$(expr ${address_array[$COUNT]} - $BASE_ADDR)
+		else
+			flash_size=$(awk '$1=='\"$i\"' {print $2}' include/vms.info)
+			PADDING=$(echo $(($flash_size)))
+		fi
     
-    #padding the VM's bin to its maximum size
-    dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
+		#padding the VM's bin to its maximum size
+		dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
     
-    ((COUNT++))
-    BASE_ADDR=$(expr $BASE_ADDR + $PADDING)
-done
+		((COUNT++))
+		BASE_ADDR=$(expr $BASE_ADDR + $PADDING)
+	done
 
-rm -rf /tmp/tmp.bin
+	rm -rf /tmp/tmp.bin
+else
+	cp prplHypervisor.bin /tmp
+fi
 
 cat /tmp/prplHypervisor.bin > /tmp/firmware.bin 
 
