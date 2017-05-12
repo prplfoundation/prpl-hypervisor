@@ -137,7 +137,6 @@ clean: config_vms
 	rm -f include/config.h
 	rm -f genconf
 	rm -f firmware.bin
-	$(MAKE) -C ../../arch/mips/baikal-t1/boot-qemu clean
 	
 	for i in $(APP_LIST) ; do \
 		$(MAKE) -C ../../bare-metal-apps/platform/baikal_t1_board APP=$$i CLEAN=1 clean \
