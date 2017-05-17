@@ -19,8 +19,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define __ARCH_H
 
 #define BARE_METAL_ENTRY_POINT 0x9d001000
-#define LINUX_ENTRY_POINT 	0x80100400
-
+#define LINUX_ENTRY_POINT 0x80100400
 #define GPR_SIZE 32
 
 #include <pic32mz.h>

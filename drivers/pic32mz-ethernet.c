@@ -72,7 +72,7 @@ void receive_frame(){
 	char* frame_ptr = (char*)MoveFromPreviousGuestGPR(REG_A0);
     
 	/* Copy the message to the receiver */
-	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame_ptr, vm_in_execution->base_addr, MTU, 0xf, NONCACHEABLE);
+	char* frame_ptr_mapped = (char*)tlbCreateEntry((uint32_t)frame_ptr, vm_in_execution->base_addr, MTU, 0xf, CACHEABLE);
     
 	framesz = en_ll_input((uint8_t*)frame_ptr_mapped);
     
