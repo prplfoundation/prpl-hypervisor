@@ -57,6 +57,7 @@
 #define CP0_WIRED               6
 #define CP0_HWRENA              7
 #define CP0_BADVADDR            8
+#define CP0_BADINS	        8
 #define CP0_COUNT               9
 #define CP0_ENTRYHI             10
 #define CP0_GUESTCTL1           10

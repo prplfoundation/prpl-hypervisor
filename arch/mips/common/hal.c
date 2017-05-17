@@ -582,6 +582,14 @@ uint32_t getRandom(){
     return mfc0(CP0_RANDOM, 0);
 }
 
+/**
+ * @brief Get the most recent instruction which caused a exception.
+ * @return Bad Instruction.
+ */
+uint32_t getBadInstruction(){
+	return mfc0(CP0_BADINS, 1);
+}
+
 
 /**
  * @brief Wait for microseconds. 

@@ -46,7 +46,7 @@ static uint32_t guest_exit_exception(){
 	
 	switch (guestcause) {
 		case GUEST_INSTRUCTION_EMULATION:	
-			WARNING("Instruction emulation not implemented.");
+			instruction_emulation(epc);
 			break;
 		case GUEST_HYPERCALL:
 			hypercall_execution();			

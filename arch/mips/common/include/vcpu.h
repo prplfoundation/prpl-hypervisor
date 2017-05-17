@@ -23,19 +23,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 #define NUM_ASIDS 64
 
-/* Extract instructions fields */
-#define OPCODE(x) (x >> 26)
-#define FUNC(x) (x & 0x3F)
-#define RS(x) ((x >> 21) & 0x1f)
-#define RT(x) ((x >> 16) & 0x1f)
-#define RD(x) ((x >> 11) & 0x1f)
-#define SEL(x) (x & 0x7)
-#define IMED(x) (x & 0xFFFF)
-#define SIMED(x) (IMED(x) & 0x8000 ? 0xFFFF0000 | IMED(x) : IMED(x))
-#define JT(x) ((x & 0x3FFFFFF) << 2)
-#define UPPERPC(x) (x & 0xF0000000)
-#define CO(x) ((x >> 25) & 0x1)
-
 #define ESPECIAL 	0x00
 #define JR 		0x08
 #define JALR 		0x09

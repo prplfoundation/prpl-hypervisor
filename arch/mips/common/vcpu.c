@@ -167,3 +167,15 @@ void contextRestore(){
 		gpr_context_restore(vcpu->gpr);
 	}
 }
+
+/**
+ * @brief Call low level instruction emulation. Not all architectures will 
+ * implement it. 
+ * 
+ * @param epc Error PC.
+ * @return 0 on success, otherwise error.
+ */
+uint32_t instruction_emulation(uint32_t epc){
+	return __instruction_emulation(epc);
+}
+

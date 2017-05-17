@@ -19,5 +19,6 @@ baikal:
 		$(TOPDIR)arch/mips/baikal-t1/interrupts.c \
 		$(TOPDIR)arch/mips/baikal-t1/boot.S \
 		$(TOPDIR)arch/mips/baikal-t1/uart_driver.c \
-		$(TOPDIR)arch/mips/baikal-t1/gpr_context.c
+		$(TOPDIR)arch/mips/baikal-t1/gpr_context.c \
+		$(TOPDIR)arch/mips/baikal-t1/instruction_emulation.c
 		

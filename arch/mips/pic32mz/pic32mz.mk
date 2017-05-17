@@ -18,5 +18,7 @@ pic32mz:
 	        $(TOPDIR)arch/mips/pic32mz/timer.c \
 		$(TOPDIR)arch/mips/pic32mz/interrupts.c \
 		$(TOPDIR)arch/mips/pic32mz/boot.S \
-		$(TOPDIR)arch/mips/pic32mz/uart_driver.c
+		$(TOPDIR)arch/mips/pic32mz/uart_driver.c \
+		$(TOPDIR)arch/mips/pic32mz/instruction_emulation.c 
+		
 		

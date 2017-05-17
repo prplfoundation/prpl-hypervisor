@@ -23,30 +23,20 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _GRP_CONTEXT_H
 #define _GRP_CONTEXT_H
 
+#include <types.h>
+
 #define GPR_SIZE (34*4) /* 32 GPR + HI and LO  */
 
+void gpr_context_restore(uint32_t* gpr_p);
+void gpr_context_save(uint32_t* gpr_p);
+
 /** 
-  * These macros can read/write the saved registers from the stack.  
+  * These functions can read/write the saved registers from the stack.  
   * On P5600, the guests share the same GPR set (GPR Shadows are not implemented). Thus,
   * the hypercall parameters are read/write from the stack.
   */
-
-/* Write to a register saved on the stack */
-#define MoveToPreviousGuestGPR(reg, value) asm volatile (	\
-	"la  $t1, _stack \n					\
-	 addiu $t1, $t1, -136 \n				\
-	 sw  %1,  %0($t1)"					\
-        : : "I" (reg<<2), "r" ((uint32_t) (value)) : "t1")
-
-
-/* Read from a register from the stack */
-#define MoveFromPreviousGuestGPR(reg) ({ int32_t __value;	\
-        asm volatile (                                       	\
-        "la   $t1, _stack \n					\
-         addiu $t1, $t1, -136 \n				\
-         lw   %0, %1($t1)" 					\
-        : "=r" (__value) : "I" (reg<<2) : "t1");			\
-        __value; })
+void MoveToPreviousGuestGPR(uint32_t reg, uint32_t value);
+uint32_t MoveFromPreviousGuestGPR(uint32_t reg);
 
 
 #endif /* _GRP_CONTEXT_H */
