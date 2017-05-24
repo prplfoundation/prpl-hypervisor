@@ -57,16 +57,98 @@ static uint32_t mfc0_instructions(uint32_t badinstr){
 	uint32_t rd = RD(badinstr);
 	uint32_t rt = RT(badinstr);
 	uint32_t regvalue;
+	
 	switch (rd){
-		case 0xf: /* read from COP0 15.*/
-			regvalue = mfc0(15, 0);
-			MoveToPreviousGuestGPR(rt, regvalue);
-			return 0;
+		case 12:
+			if(SEL(badinstr) == 2){
+				/* read from COP0 (12, 2) SRSCTL */
+				regvalue = mfc0(CP0_SRSCTL, 2);
+				regvalue = regvalue & ~SRSCLT_HSS;
+				MoveToPreviousGuestGPR(rt, regvalue);
+				return 0;
+			}
+			return 1;
+		case 15: 
+			if (SEL(badinstr) == 0){
+				/* read from COP0 (15, 0) PRID */
+				//regvalue = (mfc0(CP0_PRID, 0) & ~0xff00) | 0x8000;
+				regvalue = mfc0(CP0_PRID, 0);
+				MoveToPreviousGuestGPR(rt, regvalue);
+				return 0;
+			}
+			return 1;
+		case 18: 
+			if (SEL(badinstr) == 0){
+				/* read from COP0 (18, 0) WATCHLo0 */
+				regvalue = mfgc0(CP0_WATCHLO, 0);
+				MoveToPreviousGuestGPR(rt, regvalue);
+				return 0;
+			}else if (SEL(badinstr) == 1){
+				/* read from COP0 (18, 0) WATCHLo1 */
+				MoveToPreviousGuestGPR(rt, 0);
+				return 0;
+			}
+			return 1;
+		case 19: 
+			if (SEL(badinstr) == 0){
+				/* read from COP0 (18, 0) WATCHHi0 */
+				regvalue = mfgc0(CP0_WATCHHI, 0);
+				MoveToPreviousGuestGPR(rt, regvalue);
+				return 0;
+			}else if (SEL(badinstr) == 1){
+				/* read from COP0 (18, 0) WATCHHi1 */
+				MoveToPreviousGuestGPR(rt, 0);
+				return 0;
+			}
+			return 1;
+			
 		default:
 			return 1;
 	}
 	return 0;
 }
+
+/**
+ * @brief Emulate mtc0 instructions.
+ * 
+ * @param badinstr Instruction that caused the trap.
+ * @return 0 on success, otherwise error.
+ */
+static uint32_t mtc0_instructions(uint32_t badinstr){
+	uint32_t rd = RD(badinstr);
+	uint32_t rt = RT(badinstr);
+	uint32_t regvalue;
+	
+	switch (rd){
+		case 18: 
+			if (SEL(badinstr) == 0){
+				/* write to COP0 (18, 0) WATCHLo0 */
+				regvalue = MoveFromPreviousGuestGPR(rd);
+				mtgc0(CP0_WATCHLO, 0, regvalue);
+				return 0;
+			}else if (SEL(badinstr) == 1){
+				/* write to COP0 (18, 1) WATCHLo1 */
+				return 0;
+			}
+			return 1;
+		case 19: 
+			if (SEL(badinstr) == 0){
+				/* write to COP0 (19, 0) WATCHHi0 */
+				regvalue = MoveFromPreviousGuestGPR(rd);
+				mtgc0(CP0_WATCHHI, 0, regvalue);
+				return 0;
+			}else if (SEL(badinstr) == 1){
+				/* write to COP0 (19, 1) WATCHHi1 */
+				return 0;
+			}
+			return 1;
+			
+		default:
+			return 1;
+	}
+	return 0;
+}
+
 
 
 /** 
@@ -76,7 +158,7 @@ static uint32_t mfc0_instructions(uint32_t badinstr){
 uint32_t __instruction_emulation(uint32_t epc){
 	uint32_t badinstr = getBadInstruction();
 	uint32_t rs;
-	
+
 	switch(OPCODE(badinstr)){
 		/* COP0 instructions */
 		case CP0:
@@ -90,7 +172,10 @@ uint32_t __instruction_emulation(uint32_t epc){
 					rs = RS(badinstr);
 					switch (rs){
 						case MTC:
-							goto instr_not_supported;
+							if(mtc0_instructions(badinstr)){
+								goto instr_not_supported;
+							}
+							break;
 						case MFC:
 							if(mfc0_instructions(badinstr)){
 								goto instr_not_supported;
@@ -99,9 +184,11 @@ uint32_t __instruction_emulation(uint32_t epc){
 						default:
 							goto instr_not_supported;
 					}
+					break;
 				default:
 					goto instr_not_supported;
 			}
+			break;
 		/* Cache instructions */
 		case CACHE:
 			goto instr_not_supported;
@@ -112,7 +199,7 @@ uint32_t __instruction_emulation(uint32_t epc){
 	return 0;
 
 instr_not_supported:
-	WARNING("Instruction 0x%x at 0x%x not supported on VCPU.", badinstr, epc);
+	WARNING("Instruction 0x%x emulation at 0x%x not supported.", badinstr, epc);
 	return 1;
 	
 }
