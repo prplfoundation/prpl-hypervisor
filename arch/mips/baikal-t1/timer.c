@@ -36,7 +36,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #include <interrupts.h>
 #include <libc.h>
 
-#define SYSTEM_TICK_INTERVAL (SYSTEM_TICK_US * MICROSECOND)
+#define SYSTEM_TICK_INTERVAL (QUANTUM_SCHEDULER_MS * MILISECOND)
 #define QUEST_TICK_INTERVAL (GUEST_QUANTUM_MS * MILISECOND)
 
 static uint64_t read64_counter(){
@@ -69,11 +69,9 @@ static void calc_next_timer_interrupt(uint32_t interval){
  * Perfoms VCPUs scheduling and virtual timer interrupt injection on guests. 
  */
 static void timer_interrupt_handler(){
-	
 	calc_next_timer_interrupt(SYSTEM_TICK_INTERVAL);
 	
 	run_scheduler();
-
 }
 
 
@@ -87,7 +85,7 @@ void start_timer(){
 	uint32_t temp;
 	
 	/* TODO: Missing interrupt registration */
-	register_interrupt(timer_interrupt_handler);
+	register_interrupt(timer_interrupt_handler, 4);
 	
 	/* enable timer interrupt IM4 */
 	temp = mfc0(CP0_STATUS, 0);   
@@ -101,9 +99,6 @@ void start_timer(){
 	mtc0(CP0_COUNT, 0, 0);
 	mtc0(CP0_COMPARE, 0, 1000000);
 
-	/* GIC in Virtualization mode */
-	GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;	
-	
 	asm volatile ("ei");
 	asm volatile("ehb");
 	

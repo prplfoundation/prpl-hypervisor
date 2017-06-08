@@ -19,8 +19,7 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 typedef void  handler_vector_t();
 
-uint32_t register_interrupt(handler_vector_t * handler);
-uint32_t InterruptHandler();
+uint32_t register_interrupt(handler_vector_t * handler, uint32_t interrupt_number);
 
 
 #endif
