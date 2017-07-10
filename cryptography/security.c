@@ -17,6 +17,7 @@
 #include <globals.h>
 //#include <crypto.h>
 
+
 int sha_test(void) {
 
 
@@ -27,14 +28,15 @@ int sha_test(void) {
 
 }
 
-int isVmTrust(void) {
+int isVmTrust(void)
+{
     uint32_t initialCountTotal = 0, finalCountTotal = 0;
     uint32_t initialCountHash = 0, finalCountHash = 0;
     uint32_t initialCountVerifySignature = 0;
     uint32_t initialCountVerifyPK = 0, finalCounterVerifyPK = 0;
     
-    printf("\nInicio validacao VMS\n");
-    printf("\nNUM MACHINES: %d\n", NVMACHINES);
+    printf("\nVerifying virtual machines.\n");
+    printf("Number of VMs: %d\n", NVMACHINES);
 
 
     unsigned char *lAddrVm = NULL;
@@ -42,6 +44,9 @@ int isVmTrust(void) {
 
     //loop to verify all vms
     for (; countNumMachines < NVMACHINES; countNumMachines++) {
+
+        printf("Verifying signature authenticity for VM %d ... ", countNumMachines);
+
         initialCountTotal = getCounter();
 
         (lAddrVm) = (unsigned char*) VMCONF[countNumMachines].flash_base_add;
@@ -67,11 +72,11 @@ int isVmTrust(void) {
         initialCountVerifyPK = getCounter();
         //verify public key
         if (!uECC_valid_public_key(public, uECC_secp256k1())) {
-            printf("\nuECC_valid_public_key() failed\n");
-            return 1;
-        } else {
-            printf("\nValid Public Key\n");
-        }
+            printf("failed (invalid public key).\n");
+            return 0;
+        }/* else {
+            printf("OK.\n", countNumMachines);
+        }*/
         finalCounterVerifyPK = getCounter();
         //----------------------------------------------------------------------
         //read signature
@@ -139,10 +144,10 @@ int isVmTrust(void) {
         //verify signature
         initialCountVerifySignature = getCounter();
         if (!uECC_verify(public, buf, sizeof (buf), sigReceived, uECC_secp256k1())) {
-            printf("uECC_verify() failed\n");
-            return 1;
+            printf("failed.\n");
+            return 0;
         } else {
-            printf("uECC_verify() OK\n");
+            printf("OK.\n");
         }
         //    count = hal_lr_rcount();
         finalCountTotal = getCounter();       

@@ -47,8 +47,6 @@ for i in $*; do
     else
         flash_size=$(awk '$1=='\"$i\"' {print $2}' include/vms.info)
         PADDING=$(echo $(($flash_size)))
-        echo "padding"
-        echo $PADDING
         PADDING=$((PADDING - 128))
     fi
     echo "padding"
@@ -58,18 +56,12 @@ for i in $*; do
     dd if=../../bare-metal-apps/apps/$i/$i.bin of=/tmp/$i.bin bs=$PADDING conv=sync
     
     #calculate hash after adjust vm size
-    /tmp/ecdsa /tmp/$i.bin &
-    #wait ecdsa program to finish
-    wait &
-    while [ ! -f /tmp/$i.bin.security.tmp ]; do sleep 1; done
-    #concat hash + sig in vm
-    #ok 
+    /tmp/ecdsa_sign /tmp/$i.bin /tmp/private_key.txt
     cat /tmp/$i.bin  /tmp/$i.bin.security.tmp >> /tmp/$i.temp.bin
     mv /tmp/$i.temp.bin /tmp/$i.bin
 
-
     ((COUNT++))
-    BASE_ADDR=$(expr $BASE_ADDR + $PADDING)
+    BASE_ADDR=$(expr $BASE_ADDR + $PADDING + 128)
     rm -rf /tmp/$i.bin.security.tmp
 done
 

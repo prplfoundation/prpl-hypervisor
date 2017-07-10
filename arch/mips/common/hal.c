@@ -92,8 +92,10 @@ void hyper_init(){
 	/* Configure the HEAP space on the allocator */ 
 	init_mem();
 	
-        isVmTrust();
-        
+	if (!isVmTrust()) {
+		CRITICAL("Virtual machines validation error.");
+	}
+
 	/*Initialize VCPUs and virtual machines*/
 	initializeMachines();
 	
