@@ -45,8 +45,8 @@ void init_uart(uint32_t baudrate_u2, uint32_t baudrate_u6, uint32_t sysclk){
  * @param c Character to be writed. 
  */
 void putchar(uint8_t c){   
-	while( !(UART_LSR&0x40) );
-	UART_THR = c;   
+	while( !(UART0_LSR&0x40) );
+	UART0_RBR = c;   
 }
 
 

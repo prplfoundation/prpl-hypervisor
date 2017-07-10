@@ -62,16 +62,26 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GIC_SH_GID_CONFIG31_0  	P5600_GIC_BASE(0x080)
 #define GIC_SH_GID_CONFIG63_32  P5600_GIC_BASE(0x084)
 #define GIC_SH_RMASK31_0        P5600_GIC_BASE(0x300)
+#define GIC_SH_RMASK63_32       P5600_GIC_BASE(0x304)
 #define GIC_SH_SMASK31_0        P5600_GIC_BASE(0x380)
+#define GIC_SH_SMASK63_32       P5600_GIC_BASE(0x384)
 #define GIC_SH_PEND31_0         P5600_GIC_BASE(0x480)
 #define GIC_SH_MAP0_PIN         P5600_GIC_BASE(0x500)
 #define GIC_SH_MAP1_PIN         P5600_GIC_BASE(0x504)
 #define GIC_SH_MAP2_PIN         P5600_GIC_BASE(0x508)
 #define GIC_SH_MAP48_PIN        P5600_GIC_BASE(0x5C0)
+#define GIC_SH_MAP49_PIN	P5600_GIC_BASE(0x5C4)
 #define GIC_SH_MAP55_PIN        P5600_GIC_BASE(0x5DC)
 #define GIC_SH_MAP0_CORE        P5600_GIC_BASE(0x2000)
 #define GIC_SH_MAP1_CORE        P5600_GIC_BASE(0x2020)
 #define GIC_SH_MAP2_CORE        P5600_GIC_BASE(0x2040)
+#define GIC_SH_MAP48_CORE       P5600_GIC_BASE(0x2600)
+#define GIC_SH_MAP49_CORE	P5600_GIC_BASE(0x2620)
+#define GIC_SH_MAP55_CORE       P5600_GIC_BASE(0x26E0)
+#define GIC_SH_POL63_32		P5600_GIC_BASE(0x104)
+
+
+#define GIC_SH_MASK63_32	P5600_GIC_BASE(0x404)
 
 /*Global Interrupt Controler Registers Bits */
 #define GIC_SH_CONFIG_COUNTSTOP (1<<28)
@@ -86,8 +96,8 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #define GCR_GIC_EN              1
 
 /* Core-Local Register Map */
-//#define P5600_GIC_CL_BASE(a)        *(volatile unsigned*) (0xBFBFA000 + a)
 #define P5600_GIC_CL_BASE(a)        *(volatile unsigned*) (0xBBDC8000 + a)
+#define GIC_CL_COREi_CTL            P5600_GIC_CL_BASE(0x00)
 #define GIC_CL_COREi_PEND           P5600_GIC_CL_BASE(0x04)
 #define GIC_CL_COREi_MASK           P5600_GIC_CL_BASE(0x08)
 #define GIC_CL_COREi_RMASK          P5600_GIC_CL_BASE(0x0C)
@@ -100,11 +110,6 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /* Core-Local Registers Bits */
 #define GIC_CL_TIMER_MASK       0x4
-
-/* IM bits of Status Register*/
-
-#define IM4_COMPARE_INT		0x10
-
 
 
 #endif /* _ASM_P5600_H */

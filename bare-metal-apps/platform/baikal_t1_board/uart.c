@@ -27,8 +27,8 @@ int32_t serial_select(uint32_t serial_number){
 
 
 void putchar(int32_t value){
-	while( !(UART_LSR&0x40) );
-	UART_THR = value;   
+	while( !(UART0_LSR&0x40) );
+	UART0_RBR = value;   
 }
 
 int32_t kbhit(void){

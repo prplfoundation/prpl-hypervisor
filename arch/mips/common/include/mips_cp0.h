@@ -132,6 +132,15 @@
 #define STATUS_ERL              0x00000004
 #define STATUS_EXL              0x00000002
 #define STATUS_IE               0x00000001
+#define STATUS_IM0		0x00000001
+#define STATUS_IM1		0x00000002
+#define STATUS_IM2		0x00000004
+#define STATUS_IM3		0x00000008
+#define STATUS_IM4		0x00000010
+#define STATUS_IM5		0x00000020
+#define STATUS_IM6		0x00000040
+#define STATUS_IM7		0x00000080
+
 
 /* CAUSE register */
 #define CAUSE_BD                0x80000000
@@ -196,7 +205,6 @@
 #define GUESTCTL0EXT_CGI (1<<4)
 
 #define DEBUG_DM        (1<<30)
-#define STATUS_IM7      (1<<15)
 #define CAUSE_WP        (1<<22)
 #define CONFIG_K0        0x7
 #define CAUSE_EXECCODE  (0x1F << 2)

@@ -72,8 +72,8 @@ static void send(){
 	char* str_mapped = (char*)tlbCreateEntry((uint32_t)str, vm_in_execution->base_addr, size, 0xf, NONCACHEABLE);
 	
 	for(i=0; i<size; i++){
-		while(!(UART_LSR & 0x40));
-		UART_THR = str_mapped[i];   
+		while(!(UART0_LSR & 0x40));
+		UART0_RBR = str_mapped[i];   
 	}
 	
 	MoveToPreviousGuestGPR(REG_V0, size);

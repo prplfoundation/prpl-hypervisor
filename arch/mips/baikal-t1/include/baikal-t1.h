@@ -23,10 +23,22 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 #ifndef _BAIKAL_T1_H
 #define _BAIKAL_T1_H
 
-#define BAIKAL_PBASE(a)        *(volatile unsigned*) (a)
+#define UART0_BASE(a)	*(volatile unsigned*) (0xBF04A000 + (a<<2))
+#define UART0_RBR	UART0_BASE(0)	
+#define UART0_IER	UART0_BASE(1)
+#define UART0_IIR	UART0_BASE(2)
+#define UART0_LCR	UART0_BASE(3)
+#define UART0_LSR	UART0_BASE(5)
+#define UART0_MSR	UART0_BASE(6)	
 
-#define UART_LSR	BAIKAL_PBASE(0xBF04A014)
-#define UART_THR	BAIKAL_PBASE(0xBF04A000)
+#define UART1_BASE(a)	*(volatile unsigned*) (0xBF04B000 + (a<<2))
+#define UART1_RBR	UART1_BASE(0)	
+#define UART1_IER	UART1_BASE(1)
+#define UART1_IIR	UART1_BASE(2)
+#define UART1_LCR	UART1_BASE(3)
+#define UART1_LSR	UART1_BASE(5)
+#define UART1_MSR	UART1_BASE(6)	
+
 
 typedef union {
     struct{

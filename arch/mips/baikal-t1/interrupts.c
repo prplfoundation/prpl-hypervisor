@@ -65,6 +65,7 @@ void __interrupt_handler(uint32_t interrupt_number){
  */
 uint32_t register_interrupt(handler_vector_t * handler, uint32_t interrupt_number){
 	/*Interrupt 0 is the general exception handler. */
+	
 	if (interrupt_number > 0 && interrupt_number < 64){
 		if(interrupt_handlers[interrupt_number] == NULL){
 			interrupt_handlers[interrupt_number] = handler;
@@ -77,7 +78,7 @@ uint32_t register_interrupt(handler_vector_t * handler, uint32_t interrupt_numbe
 /** 
  * @brief Configures the P5600 in vectored interrupt mode. 
  */
-static void interrupt_init(){
+void interrupt_init(){
 	uint32_t temp;
 	
 	memset(interrupt_handlers, 0, sizeof(interrupt_handlers));
@@ -106,12 +107,7 @@ static void interrupt_init(){
 	
 	/* GIC in Virtualization mode */
 	GIC_SH_CONFIG |= GIC_SH_CONFIG_VZE;	
-	
-	GIC_SH_MAP48_PIN = 0x8000010e;
-	GIC_SH_MAP55_PIN = 0x8000010e;
-	
-	asm volatile("ehb");
-   
+
 	INFO("P5600 core in Vectored Interrupt Mode.");
 }
 

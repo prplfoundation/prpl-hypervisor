@@ -89,7 +89,7 @@ void start_timer(){
 	
 	/* enable timer interrupt IM4 */
 	temp = mfc0(CP0_STATUS, 0);   
-	temp |= (IM4_COMPARE_INT << STATUS_IM_SHIFT);
+	temp |= (STATUS_IM4 << STATUS_IM_SHIFT);
 	mtc0(CP0_STATUS, 0, temp);   
     
 	INFO("Starting hypervisor execution.\n");
