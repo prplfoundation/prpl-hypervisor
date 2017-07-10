@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     print_hex(hash, HASH_LEN);
 
     if (!uECC_sign(private, hash, sizeof(hash), signature, uECC_secp256k1())) {
-        printf("uECC_sign() failed\n");
+        printf("Failed to sign image file.\n");
         return 1;
     }
 
@@ -100,10 +100,10 @@ int main(int argc, char *argv[])
     print_hex(signature, SIGN_LEN);
 
     if (!uECC_verify(public, hash, sizeof(hash), signature, uECC_secp256k1())) {
-        printf("uECC_verify() failed\n");
+        printf("Signature verification failed.\n");
         return 1;
     } else {
-        printf("uECC_verify() OK\n");
+        printf("Signature verification OK.\n");
     }
 
     save_signature(argv[1], signature, public);

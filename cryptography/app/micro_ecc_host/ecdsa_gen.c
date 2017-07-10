@@ -27,8 +27,13 @@ int main(int argc, char *argv[])
     save_key(pubkey_file, public, sizeof(public));
 
     /* load and verify it */
-    load_privkey(privkey_file, private, public);
-    load_pubkey(pubkey_file, public);
+    if(load_privkey(privkey_file, private, public) == 0) {
+        printf("File %s was sucessfully generated.\n", privkey_file);
+    }
+
+    if(load_pubkey(pubkey_file, public) == 0) {
+        printf("File %s was sucessfully generated.\n", pubkey_file);
+    }
 
     return (0);
 }
