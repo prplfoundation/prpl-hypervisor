@@ -55,33 +55,26 @@ This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCR
 
 /*Global Interrupt Controler Registers */
 #define P5600_GIC_BASE(a)        *(volatile unsigned*) (0xBBDC0000 + a)
+
+#define REG_MASK_OFFSET(int) 	((int/32) * 4)
+#define INT_BIT(int)		(1<<(int%32))
+
 #define GIC_SH_CONFIG           P5600_GIC_BASE(0)
 #define GIC_SH_COUNTERLO        P5600_GIC_BASE(0x10)
 #define GIC_SH_COUNTERHI        P5600_GIC_BASE(0x14)
 #define GIC_SH_REV              P5600_GIC_BASE(0x20)
 #define GIC_SH_GID_CONFIG31_0  	P5600_GIC_BASE(0x080)
 #define GIC_SH_GID_CONFIG63_32  P5600_GIC_BASE(0x084)
-#define GIC_SH_RMASK31_0        P5600_GIC_BASE(0x300)
-#define GIC_SH_RMASK63_32       P5600_GIC_BASE(0x304)
-#define GIC_SH_SMASK31_0        P5600_GIC_BASE(0x380)
-#define GIC_SH_SMASK63_32       P5600_GIC_BASE(0x384)
-#define GIC_SH_PEND31_0         P5600_GIC_BASE(0x480)
-#define GIC_SH_MAP0_PIN         P5600_GIC_BASE(0x500)
-#define GIC_SH_MAP1_PIN         P5600_GIC_BASE(0x504)
-#define GIC_SH_MAP2_PIN         P5600_GIC_BASE(0x508)
-#define GIC_SH_MAP48_PIN        P5600_GIC_BASE(0x5C0)
-#define GIC_SH_MAP49_PIN	P5600_GIC_BASE(0x5C4)
-#define GIC_SH_MAP55_PIN        P5600_GIC_BASE(0x5DC)
-#define GIC_SH_MAP0_CORE        P5600_GIC_BASE(0x2000)
-#define GIC_SH_MAP1_CORE        P5600_GIC_BASE(0x2020)
-#define GIC_SH_MAP2_CORE        P5600_GIC_BASE(0x2040)
-#define GIC_SH_MAP48_CORE       P5600_GIC_BASE(0x2600)
-#define GIC_SH_MAP49_CORE	P5600_GIC_BASE(0x2620)
-#define GIC_SH_MAP55_CORE       P5600_GIC_BASE(0x26E0)
-#define GIC_SH_POL63_32		P5600_GIC_BASE(0x104)
 
+#define GIC_SH_RMASK(int)	(P5600_GIC_BASE(0x300 + REG_MASK_OFFSET(int)) = INT_BIT(int))
+#define GIC_SH_SMASK(int)	(P5600_GIC_BASE(0x380 + REG_MASK_OFFSET(int)) = INT_BIT(int))
+#define GIC_SH_MASK(int)	(P5600_GIC_BASE(0x400 + REG_MASK_OFFSET(int)) & INT_BIT(int))
+#define GIC_SH_PEND		(P5600_GIC_BASE(0x480 + REG_MASK_OFFSET(int)) & INT_BIT(int))
+#define GIC_SH_MAP_PIN(int)	P5600_GIC_BASE(0x500 + (int * 4))
+#define GIC_SH_MAP_CORE(int)	P5600_GIC_BASE(0x2000 + (int * 0x20))
+#define GIC_SH_POL_HIGH(int)	(P5600_GIC_BASE(0x100 + REG_MASK_OFFSET(int)) |= INT_BIT(int))
+#define GIC_SH_POL_LOW(int)	(P5600_GIC_BASE(0x100 + REG_MASK_OFFSET(int)) &= (~INT_BIT(int)))
 
-#define GIC_SH_MASK63_32	P5600_GIC_BASE(0x404)
 
 /*Global Interrupt Controler Registers Bits */
 #define GIC_SH_CONFIG_COUNTSTOP (1<<28)

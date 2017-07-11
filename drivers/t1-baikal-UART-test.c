@@ -68,12 +68,11 @@ void uart_init(){
 	temp = mfc0(CP0_STATUS, 0);   
 	temp |= (STATUS_IM3 << STATUS_IM_SHIFT);
 	mtc0(CP0_STATUS, 0, temp);   
-
-	GIC_SH_MAP48_CORE = 1;
-	GIC_SH_MAP48_PIN = 0x80000001;
-	GIC_SH_POL63_32 = 1<<16;
 	
-	GIC_SH_SMASK63_32 = 1<<16;
+	GIC_SH_MAP_CORE(48) = 1;
+	GIC_SH_MAP_PIN(48) = 0x80000001;
+	GIC_SH_POL_HIGH(48);
+	GIC_SH_SMASK(48);
 	
 	INFO("UART Baikal-T1 driver test.");
 }
