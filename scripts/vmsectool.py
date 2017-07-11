@@ -17,7 +17,6 @@ def run_cmd(cmd):
 
 def keygen(args):
     if args.type == 'ecdsa-p256':
-        #print "keygen ecdsa-p256"
         run_cmd(ecdsa_gen)
     else:
         print "Algorithm not supported (%s)." % args.type
@@ -25,7 +24,6 @@ def keygen(args):
 
 def sign(args):
     if args.type == 'ecdsa-p256':
-        #print "sign ecdsa-p256"
         run_cmd("%s %s %s" % (ecdsa_sign, args.image_file, args.key))
     else:
         print "Algorithm not supported (%s)." % args.type

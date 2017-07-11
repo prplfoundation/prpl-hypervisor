@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    printf("private_key: ");
-    print_hex(private, PRIVKEY_SIZE);
+    //printf("private_key: ");
+    //print_hex(private, PRIVKEY_SIZE);
 
     printf("public_key: ");
     print_hex(public, PUBKEY_SIZE);

@@ -30,6 +30,7 @@ int sha_test(void) {
 
 int isVmTrust(void)
 {
+    int i;
     uint32_t initialCountTotal = 0, finalCountTotal = 0;
     uint32_t initialCountHash = 0, finalCountHash = 0;
     uint32_t initialCountVerifySignature = 0;
@@ -44,8 +45,6 @@ int isVmTrust(void)
 
     //loop to verify all vms
     for (; countNumMachines < NVMACHINES; countNumMachines++) {
-
-        printf("Verifying signature authenticity for VM %d ... ", countNumMachines);
 
         initialCountTotal = getCounter();
 
@@ -72,7 +71,7 @@ int isVmTrust(void)
         initialCountVerifyPK = getCounter();
         //verify public key
         if (!uECC_valid_public_key(public, uECC_secp256k1())) {
-            printf("failed (invalid public key).\n");
+            printf("Failed to find public key.\n");
             return 0;
         }/* else {
             printf("OK.\n", countNumMachines);
@@ -140,23 +139,41 @@ int isVmTrust(void)
         //sigReceived[1]=0xAA;
         //buf[30]=0xAA;
 
+        printf("===========================================================\n");
+        printf("VM ID: %d\n", countNumMachines);
+        printf("VM name: %s\n", VMCONF[countNumMachines].vm_name);
+        printf("VM start address: 0x%x\n", lAddrVm);
+        printf("VM length:        0x%x (%d)\n", sizeHash, sizeHash);
+        printf("VM hash:          ");
+        for (i = 0; i < SHA256_BLOCK_SIZE; i++) {
+            printf("%02x", buf[i]);
+        }
+        printf("\n");
+        printf("VM signature:     ");
+        for (i = 0; i < 64; i++) {
+            printf("%02x", sigReceived[i]);
+        }
+        printf("\n");
 
         //verify signature
+        printf("Verifying signature authenticity for VM %d ... ", countNumMachines);
         initialCountVerifySignature = getCounter();
         if (!uECC_verify(public, buf, sizeof (buf), sigReceived, uECC_secp256k1())) {
-            printf("failed.\n");
+            printf("failed.\n\n");
             return 0;
         } else {
-            printf("OK.\n");
+            printf("OK.\n\n");
         }
         //    count = hal_lr_rcount();
         finalCountTotal = getCounter();       
-        
-        
+
+        /*
         printf("Count TOTAL:                  %d\n", (finalCountTotal - initialCountTotal));
         printf("Count TOTAL HASh:             %d\n", (finalCountHash-initialCountHash));
         printf("Count TOTAL Verify PK:        %d\n", (finalCounterVerifyPK-initialCountVerifyPK));
         printf("Count TOTAL Verify Signature: %d\n", (finalCountTotal-initialCountVerifySignature));
+        */
+
         finalCountTotal=0;
         initialCountTotal=0;
         finalCountHash=0;

@@ -82,4 +82,6 @@ for i in $*; do
     mv /tmp/tmp.bin /tmp/firmware.bin
 done
 
+#printf '\x31\xc0\xc3' | dd of=/tmp/firmware.bin bs=1 seek=66536 count=3 conv=notrunc
+
 srec_cat /tmp/firmware.bin -binary -offset 0x1d000000 -o firmware.hex -intel -line-length=44

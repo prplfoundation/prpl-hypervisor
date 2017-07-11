@@ -9,7 +9,6 @@
 #include <arch.h>
 
 /* Debug UART prints */
-#define WARNINGS
 #define INFOS
 #define ERRORS
 
