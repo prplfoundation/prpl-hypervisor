@@ -14,20 +14,26 @@
 
 
 # Define your additional include paths
-INC_DIRS += -I ../../../../picotcp/build/include/ -I../../../bare-metal-apps/apps/iidprpl/include
+#INC_DIRS += 
 
 #Aditional C flags
-CFLAGS += -DPICOTCP  -DVIRTUALIZED_IO 
+CFLAGS += -DVIRTUALIZED_IO
 
 #Aditional Libraries
-LIBS += ../../../../picotcp/build/lib/libpicotcp.a -L../../../bare-metal-apps/apps/iidprpl/ -liidprplpuf
+LIBS += -L../../apps/iidprpl/ -liidprplpuf
 
 #default stack size 512 bytes
-STACK_SIZE = 4096
+STACK_SIZE = 512
 
-#include your additional mk files. 
+# The PUF VM needs a specific linker script. 
+#This section substitute the original pic32mz.ld linker by a modified one (pic32mz.ld.puf). 
+config_linker:
+	cp ../../apps/$(APP)/pic32mz.ld.puf ../../apps/$(APP)/pic32mz.ld
+	sed -i -e 's/FLASH_SIZE/$(FLASH_SIZE)/' ../../apps/$(APP)/pic32mz.ld
+	sed -i -e 's/RAM_SIZE/$(RAM_SIZE)/' ../../apps/$(APP)/pic32mz.ld
+	sed -i -e 's/STACK_SIZE/$(STACK_SIZE)/' ../../apps/$(APP)/pic32mz.ld
+	
 
-app:
-	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/puf.c -o $(TOPDIR)apps/$(APP)/puf.o
+app: config_linker
 	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/$(APP).c -o $(TOPDIR)apps/$(APP)/$(APP).o
 

@@ -288,7 +288,7 @@ int gen_system_configuration(config_t cfg, FILE* outfile){
        
 	/* scheduler_quantum_ms  */
 	if (config_lookup_int(&cfg, "system.scheduler_quantum_ms", &value)){
-		if(value<3){
+		if(value<1){
 			printf("Minimal scheduler_quantum_ms is 3.\n\n");
 			return -1;
 		}

@@ -12,61 +12,83 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OT
 ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
-
 */
 
-/**
- * Simple TCP listener server using picoTCP stack 
+/* TCP listener server using picoTCP stack. 
  * 
- * PicoTCP sources will be cloned from GitHub to folder at
- * the same level of the prpl-hypervisor. Example:
- * 
- *	~/hyper
- *		/prp-hypervisor
- *		/picotcp
- *        
+ * To compile this application, first download the picoTCP sources from:
+ * https://github.com/tass-belgium/picotcp/releases/tag/prpl-v0.1. Then, compile with:
+ *
+ * make CROSS_COMPILE=mips-mti-elf- PLATFORM_CFLAGS="-EL -Os -c -Wa,-mvirt -mips32r5 -mtune=m14k \
+ * -mno-check-zero-division -msoft-float -fshort-double -ffreestanding -nostdlib -fomit-frame-pointer \
+ * -G 0" DHCP_SERVER=0 SLAACV4=0 TFTP=0 AODV=0 IPV6=0 NAT=0 PING=1 ICMP4=1 DNS_CLIENT=0 MDNS=0 DNS_SD=0 \
+ * SNTP_CLIENT=0 PPP=0 MCAST=1 MLD=0 IPFILTER=0 ARCH=pic32
+ *
+ * The compiled picoTCP directory tree must be at the same directory level of the prpl-hypervisor, 
+ * example:
+ *
+ * ~/hyper
+ *	/prp-hypervisor
+ *	/picotcp
+ *
  * Once the application is compiled and uploaded to the board, you can use telnet or nc (netcat)
- *	to interact with this demo connecting to the 192.168.0.2 port 80. 
+ * to interact with this demo connecting to the 192.168.0.2 port 80. 
  */
 
+#include <arch.h>
+#include <libc.h>
+#include <usb.h>
+#include <guest_interrupts.h>
+#include <hypercalls.h>
+#include <network.h>
+#include <platform.h>
+#include <eth.h>
 
 #include <pico_defines.h>
 #include <pico_stack.h>
 #include <pico_ipv4.h>
 #include <pico_tcp.h>
 #include <pico_socket.h>
-
-#include <arch.h>
-#include <eth.h>
-#include <guest_interrupts.h>
-#include <hypercalls.h>
-#include <platform.h>
-#include <libc.h>
-#include <eth.h>
+#include "../iidprpl/include/puf.h"
 
 #define LISTENING_PORT 80
 #define MAX_CONNECTIONS 1
 #define ETH_RX_BUF_SIZE 1536
+#define KEYSIZE 16
+#define LABEL_SIZE  6
 
-static char msg1[] = "\nWelcome on the prpl-Hypervisor and picoTCP demo. ";
-static char msg2[] = "\nWrite a message and press enter: ";
-static char msg3[] = "\nEcho message: ";
-
+static char msg3[] = "\nInvalid Key ";
+static char msg4[] = "\nValid key! Command relayed to robotic arm controller.";
 static char rx_buf[ETH_RX_BUF_SIZE] = {0};
-
 static struct pico_socket *s = NULL;
 static struct pico_ip4 my_eth_addr, netmask;
+uint16_t keySize = KEYSIZE;
+
+/* This is the key that has to be wrapped using PUF */
+uint8_t key[KEYSIZE] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+			 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+
+/* This will contain the unwrapped key */
+uint8_t key_unwrapped[KEYSIZE]; 
+
+uint8_t label[LABEL_SIZE] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+uint8_t context[CONTEXT_SIZE] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 };
+uint16_t keyProperties = KEY_PROP_NONE;
+uint8_t keyIndex = 0;
+uint8_t keyCode[KEYSIZE + KEYCODE_OVERHEAD]; // This will contain the wrapped key
+uint8_t key_wrapped = 0;
 
 volatile unsigned int pico_ms_tick = 0;
 static uint32_t cp0_ms_ticks = CPU_SPEED/2/1000;
 
-static uint32_t calculate_ms_passed(uint32_t old_ticks, uint32_t new_ticks)
-{
+static uint32_t calculate_ms_passed(uint32_t old_ticks, uint32_t new_ticks){
 	uint32_t diff_ticks;
-	if (new_ticks >= old_ticks)
+	
+	if (new_ticks >= old_ticks){
 		diff_ticks = new_ticks - old_ticks;
-	else
+	}else{
 		diff_ticks = 0xffffffff - (old_ticks - new_ticks);
+	}
 
 	return diff_ticks / cp0_ms_ticks;
 }
@@ -77,7 +99,7 @@ void irq_timer()
 	static uint32_t prev_count = 0;
 	uint32_t cur_count = mfc0(CP0_COUNT, 0);
 
-	if (!prev_init){
+	if (!prev_init)	{
 		prev_count = mfc0(CP0_COUNT, 0);
 		prev_init = 1;
 	}
@@ -90,91 +112,136 @@ void irq_timer()
 	}
 }
 
-
-static void cb_tcp(uint16_t ev, struct pico_socket *sock)
-{
+static void cb_tcp(uint16_t ev, struct pico_socket *sock){
 	int r = 0;
 	uint16_t port;
-	uint16_t peer;
+	struct pico_ip4 peer;
 	int ret = 0;
-	int i;
+	int i,j;
+	char c;
+	static int send_key_once = 0;
 	static struct pico_socket *s_client = NULL;
-    
-	/* Read messages from the socket */
+	char str_ip_peer[200];
+	return_t retVal;
+
 	if (ev & PICO_SOCK_EV_RD) {
-    
-		/* Read client message */
+		printf("\nVM#1: Receiving client data.");
+        
 		r = pico_socket_read(s_client, rx_buf, ETH_RX_BUF_SIZE);
-		if (r < 0)
-			printf("\nError while reading from socket!");
+		if (r < 0){
+			printf("VM#1: Error while reading from socket!\n");
+		}
  
-		printf("\nData received(%d bytes):\n Message: ", r);
-		for (i = 0; i < r; i++)
-			printf("%c", rx_buf[i]);
+		printf("\nVM#1: Data received(%d bytes):\n", r);
+		for (i = 0; i < r; i++){
+			if(i%10==0) printf("\n");
+				printf("%02x ", rx_buf[i]);
+		}
+		
 		printf("\n");
-        
-		rx_buf[i] = '\n';
-        
-		/* Replies to the client. */
-		ret = pico_socket_write(s_client, msg3, strlen(msg3));
-		if (ret < 0)
-			printf("Failed to send message\n");
-        
-		ret = pico_socket_write(s_client, rx_buf, r);
-		if (ret < 0)
-			printf("Failed to send message\n");
-        
-		ret = pico_socket_write(s_client, msg2, strlen(msg2));
-		if (ret < 0)
-			printf("Failed to send message\n");
-	}
 
-	/* Incomming connection */
-	if (ev & PICO_SOCK_EV_CONN) {
+		// ---------------------------------------------------------------------------------------------------
+		// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+		// and the arm command as a '1' or '2' ascii. Remove if you send key+command in binary. 
+		// ---------------------------------------------------------------------------------------------------
+		char key_buf[KEYSIZE + KEYCODE_OVERHEAD];
+	
+		for (i=0,j=0; i < r-1; i+=2,j+=1) {
+			char hn = rx_buf[i] >='0' && rx_buf[i] <='9' ? rx_buf[i] - '0' : rx_buf[i] - 'a' +10;
+			char ln = rx_buf[i+1] >='0' && rx_buf[i+1] <='9' ? rx_buf[i+1] - '0' : rx_buf[i+1] - 'a' +10;
+			key_buf[j] = (hn << 4 ) | ln;
+		}
+
+		printf("VM#1: Verifying received key.\n");
+		retVal = PUF_UnwrapKey(key_buf, label, context, &keySize, &keyIndex, key_unwrapped);
+
+		if (IID_PRPL_SUCCESS != retVal) {
+			printf(msg3);
+		} else {
+			printf(msg4);
+			if (rx_buf[r-3]=='1' || rx_buf[r-3]=='2' ){
+				printf("\nVM#1: Command %c.", rx_buf[r-3]);
+				SendMessage(3, &rx_buf[r-3], 1);
+			}
+		}
+		
+        }
+
+	if (ev & PICO_SOCK_EV_CONN){
 		s_client = pico_socket_accept(s, &peer, &port);
-		printf("Accepted connection\n");
+		pico_ipv4_to_string(str_ip_peer, peer.addr);
+		
+		printf("\nVM#1: Accepted connection from %s:%d", str_ip_peer, port);
+		
+		if (key_wrapped == 0){
+			printf("\nVM#1: Key not ready yet");
+		}else{
 
-		/* Send wellcome message to the client. */
-		ret = pico_socket_write(s_client, msg1, strlen(msg1));
-		if (ret < 0)
-			printf("Failed to send message\n");
+			// ---------------------------------------------------------------------------------------------------
+			// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+			// Remove if you send key in binary
+			// ---------------------------------------------------------------------------------------------------
+			printf("\nVM#1: Sending wrapped key to the client %s:%d", str_ip_peer, port);
+        
+			if (send_key_once == 0){
+				char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
 
-		ret = pico_socket_write(s_client, msg2, strlen(msg2));
-		if (ret < 0)
-			printf("Failed to send message\n");
-	}
+				for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
+	
+					c = keyCode[i] >>4;
+					c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
+					keyAscii[j++] = c;
 
-	/* process error event, socket error occured */
-	if (ev & PICO_SOCK_EV_ERR){
-		printf("Socket error!\n");
-	}
+					c = keyCode[i] & 0x0F;
+					c = (c >=0 && c <=9 ? c + '0' : c-10 + 'a');
+					keyAscii[j++] = c;
+
+				}
+
+				// ---------------------------------------------------------------------------------------------------
+				ret = pico_socket_write(s_client, keyAscii, j);
+				if (ret < 0){
+					printf("\nVM#1: Failed to send wrapped key");
+				}else{
+					printf("\nVM#1: Waiting for client message.");
+				}
+		
+				send_key_once = 1;	
+			}
+		}
+
+		/* process error event, socket error occured */
+		if (ev & PICO_SOCK_EV_ERR){
+			printf("VM#1: Socket error!\n");
+		}
     
-	/* Client closed the connection. */
-	if (ev & PICO_SOCK_EV_CLOSE){
-		printf("Connection Close!\n");
-		pico_socket_close(s_client);
+		if (ev & PICO_SOCK_EV_CLOSE){
+			pico_socket_close(s_client);
+			printf("\nVM#1: Client connection close.");
+		}
 	}
 }
 
-int main()
-{
+int main(){
 	uint8_t mac[6];
-	uint32_t timer = 0;
-    
-	/* Obtain the ethernet MAC address */
-	eth_mac(mac);
-    
 	const char *ipaddr="192.168.0.2";
 	uint16_t port_be = 0;
-    
+	int i = 0;
+	uint32_t timer;
+	return_t retVal;
+	
 	interrupt_register(irq_timer, GUEST_TIMER_INT);
-  
+	
+	/* Get the Ethernet MAC address. */
+	eth_mac(mac);
+	
 	/* Select output serial 2 = UART2, 6 = UART6 */
 	serial_select(UART2);
 
 	/* Configure the virtual ethernet driver */
 	struct pico_device* eth_dev = PICO_ZALLOC(sizeof(struct pico_device));
 	if(!eth_dev) {
+		printf("\nVM#1: Error on allocating pico_device structure.");
 		return 0;
 	}   
     
@@ -183,13 +250,12 @@ int main()
 	eth_dev->link_state = eth_link_state;
     
 	if( 0 != pico_device_init((struct pico_device *)eth_dev, "virt-eth", mac)) {
-		printf ("\nDevice init failed.");
+		printf ("\nVM#1: Device init failed.");
 		PICO_FREE(eth_dev);
 		return 0;
 	}    
-
-	/* picoTCP initialization */
-	printf("\nInitializing pico stack\n");
+    
+	printf("\nVM#1: Initializing pico stack");
 	pico_stack_init();
     
 	pico_string_to_ipv4(ipaddr, &my_eth_addr.addr);
@@ -198,22 +264,47 @@ int main()
 
 	port_be = short_be(LISTENING_PORT);
 
-	printf("Opening socket\n");
+	printf("\nVM#1: Opening socket");
 	s = pico_socket_open(PICO_PROTO_IPV4, PICO_PROTO_TCP, &cb_tcp);
-	if (!s)
-		printf("Failed to open socket!\n");
+	if (!s){
+		printf("\nVM#1: Failed to open socket!");
+	}
 
-	if (pico_socket_bind(s, &my_eth_addr.addr, &port_be) != 0)
-		printf("Failed to bind socket!\n");
+	if (pico_socket_bind(s, &my_eth_addr.addr, &port_be) != 0){
+		printf("\nVM#1: Failed to bind socket!");
+	}
 
-	if (pico_socket_listen(s, MAX_CONNECTIONS) != 0)
-		printf("Failed to listen on socket!\n");
+	if (pico_socket_listen(s, MAX_CONNECTIONS) != 0){
+		printf("\nVM#1: Failed to listen on socket!");
+	}
+    
+	printf("\nVM#1: TCP server waiting for incoming connections on %s:%d\n", ipaddr, LISTENING_PORT);
 
 	while (1){
+		
 		eth_watchdog(&timer, 500);
-		/* pooling picoTCP stack */
-		pico_stack_tick();
         
+		pico_stack_tick();
+
+		/* Only wrap key when VM 2 is up and only do it once */
+        
+		if (key_wrapped == 0){
+			retVal = PUF_WrapKey(key, label, context, keySize, keyProperties, keyIndex, keyCode);
+
+			if (IID_PRPL_SUCCESS != retVal) {
+				printf("VM#1: Error PUF_WrapKey: %x\n", retVal);
+			} else {
+				printf("VM#1: keyCode: ");
+				for (i = 0; i < KEYSIZE + KEYCODE_OVERHEAD; ++i) {
+					printf("%02x", keyCode[i]);
+				}
+                
+				printf("\n");
+
+			}
+
+			key_wrapped = 1;
+		}
 	}
 
 	return 0;

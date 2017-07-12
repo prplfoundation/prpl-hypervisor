@@ -14,20 +14,20 @@
 
 
 # Define your additional include paths
-INC_DIRS += -I ../../../../picotcp/build/include/ -I../../../bare-metal-apps/apps/iidprpl/include
+#INC_DIRS += 
 
 #Aditional C flags
-CFLAGS += -DPICOTCP  -DVIRTUALIZED_IO 
+CFLAGS += -DVIRTUALIZED_IO
 
 #Aditional Libraries
-LIBS += ../../../../picotcp/build/lib/libpicotcp.a -L../../../bare-metal-apps/apps/iidprpl/ -liidprplpuf
+#LIBS +=
 
 #default stack size 512 bytes
-STACK_SIZE = 4096
+STACK_SIZE = 512
 
-#include your additional mk files. 
+#Include your additional mk files here. 
 
 app:
-	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/puf.c -o $(TOPDIR)apps/$(APP)/puf.o
 	$(CC) $(CFLAGS) $(INC_DIRS) $(TOPDIR)apps/$(APP)/$(APP).c -o $(TOPDIR)apps/$(APP)/$(APP).o
+
 

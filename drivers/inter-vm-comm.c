@@ -115,7 +115,7 @@ void intervm_send_msg(){
 	}     
      
 	/* copy message to message queue */
-	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, message_size, 0xf, NONCACHEABLE);
+	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, message_size, 0xf, CACHEABLE);
 	memcpy(vcpu->messages.message_list[vcpu->messages.in].message,message_ptr_mapped,message_size);
 	vcpu->messages.message_list[vcpu->messages.in].size = message_size;
 	vcpu->messages.message_list[vcpu->messages.in].source_id = vm_in_execution->id;
@@ -155,7 +155,7 @@ void intervm_recv_msg(){
 
 	/* Copy the message the receiver */
 	messagesz = vcpu->messages.message_list[vcpu->messages.out].size;
-	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, messagesz, 0xf, NONCACHEABLE);
+	char* message_ptr_mapped = (char*)tlbCreateEntry((uint32_t)message_ptr, vm_in_execution->base_addr, messagesz, 0xf, CACHEABLE);
 	memcpy(message_ptr_mapped, vcpu->messages.message_list[vcpu->messages.out].message, messagesz);
     
 	/* Return the message size to the receiver */
