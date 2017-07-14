@@ -177,13 +177,11 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock){
 			printf("\nVM#1: Key not ready yet");
 		}else{
 
-			// ---------------------------------------------------------------------------------------------------
-			// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
-			// Remove if you send key in binary
-			// ---------------------------------------------------------------------------------------------------
-			printf("\nVM#1: Sending wrapped key to the client %s:%d", str_ip_peer, port);
-        
 			if (send_key_once == 0){
+				// ---------------------------------------------------------------------------------------------------
+				// This code is only needed to demo the tcp listener via telnet by sending the key in a HH notation
+				// Remove if you send key in binary
+				// ---------------------------------------------------------------------------------------------------
 				char keyAscii[ (KEYSIZE+KEYCODE_OVERHEAD)*2];
 
 				for (i=0,j=0; i < KEYSIZE + KEYCODE_OVERHEAD; i++) {
@@ -197,7 +195,9 @@ static void cb_tcp(uint16_t ev, struct pico_socket *sock){
 					keyAscii[j++] = c;
 
 				}
-
+				
+				printf("\nVM#1: Sending wrapped key to the client %s:%d", str_ip_peer, port);
+				
 				// ---------------------------------------------------------------------------------------------------
 				ret = pico_socket_write(s_client, keyAscii, j);
 				if (ret < 0){
