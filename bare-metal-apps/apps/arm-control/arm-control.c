@@ -104,7 +104,7 @@ struct owi_command move_sequence [] = {
 	{ .command = owi_light_on, .duration_ms = 500 },
 	{ .command = owi_pincher_close, .duration_ms = 1500 },
 	{ .command = owi_base_counter_clockwise, .duration_ms = (4000-200) },
-	{ .command = owi_arm_up, .duration_ms = (1800+300) },
+	{ .command = owi_arm_up, .duration_ms = (1800+350) },
 	{ .command = owi_wrist_down, .duration_ms = (1900-225) },
 	{ .command = owi_pincher_open, .duration_ms = 1550 },
 	{ .command = owi_stop, .duration_ms = 500 }
