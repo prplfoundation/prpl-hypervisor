@@ -15,9 +15,9 @@
 #This code was written by Carlos Moratelli at Embedded System Group (GSE) at PUCRS/Brazil.
 
 
-URL_MPLABIPE=http://www.microchip.com/mplabx-ide-linux-installer
-URL_CODESCAPE=https://community.imgtec.com/?do-download=linux-x64-mti-bare-metal-2016-05-03
-MPLABIPE=MPLABX-v3.51-linux-installer.tar
+URL_MPLABIPE=http://ww1.microchip.com/downloads/en/DeviceDoc/MPLABX-v4.05-linux-installer.tar
+URL_CODESCAPE=https://www.mips.com/?do-download=linux-x64-mti-bare-metal-2016-05-06
+MPLABIPE=MPLABX-v4.05-linux-installer.tar
 CODESCAPE=Codescape-Bare-Metal.tar.gz
 DOWNLOAD_DIR=~/Downloads/hyper_files
 
@@ -68,8 +68,8 @@ if [ ! -f "$CODESCAPE" ]; then
 	download_codescape;
 fi;
 
-tar -xvf MPLABX-v3.51-linux-installer.tar
-./MPLABX-v3.51-linux-installer.sh
+tar -xvf $MPLABIPE
+./MPLABX-v4.05-linux-installer.sh
 
 tar -zxvf Codescape-Bare-Metal.tar.gz 
 mv mips-mti-elf /opt
@@ -77,7 +77,7 @@ mv mips-mti-elf /opt
 popd
 
 echo  >> ~/.profile
-echo "export PATH=\"\$PATH:\"/opt/mips-mti-elf/2016.05-03/bin\"\"" >> ~/.profile
+echo "export PATH=\"\$PATH:\"/opt/mips-mti-elf/2016.05-06/bin\"\"" >> ~/.profile
 echo  >> ~/.profile
 
 echo "***********************************************************"
