@@ -51,6 +51,11 @@ ifeq ($(CONFIG_PIC32MZ_ETHERNET_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-ethernet.c
 endif 
 
+ifeq ($(CONFIG_PIC32MZ_ETHERNET_SHARED_DRV),yes)
+	DRIVERS_LIST += $(TOPDIR)drivers/pic32mz-ethernet-shared.c
+endif 
+
+
 ifeq ($(CONFIG_BAIKALT1_UART_DRV),yes)
 	DRIVERS_LIST += $(TOPDIR)drivers/t1-baikal-UART-test.c
 endif 

@@ -27,6 +27,12 @@ CONFIG_PIC32MZ_ETHERNET_DRV = yes
 CONFIG_VIRTUAL_IO_DRV = yes
 CONFIG_INTERRUPT_REDIRECT_DRV = yes
 
+# The PIC32MZ Ethernet shared driver allows to share the 
+# ethernet device among several VMs. See instruction on the
+# pic32mz-ethernet-shared.c file. 
+# To use it comment the CONFIG_PIC32MZ_ETHERNET_DRV.
+#CONFIG_PIC32MZ_ETHERNET_SHARED_DRV = yes
+
 # The following drivers is only for tests/performance purpose. 
 #CONFIG_TIMER_TEST_DRV = yes
 #CONFIG_PERFORMANCE_COUNTER_DRV = yes
@@ -57,7 +63,6 @@ SERIAL_DEV=/dev/ttyACM0
 TOPDIR=../../
 
 PLATFORM_DIR=platform/pic32mz_starter_kit/
-
 VERSION:=$(shell $(TOPDIR)/scripts/genversion.sh)
 
 LINKER_SCRIPT = ../../arch/mips/pic32mz/pic32mz.ld
